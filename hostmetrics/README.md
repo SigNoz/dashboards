@@ -2,7 +2,16 @@
 
 The Host Metrics dashboard consists of combination of charts that would help to monitor metrics of the instances.
 
-## Configurations
+## Dashboard with Variable
+
+For a generic dashboard with `hostname` variable, you can import the `hostmetrics-with-variable.json`
+file in SigNoz UI.
+
+## Static Dashboard
+
+To generate a static dashboard with fixed `hostname`, follow the instructions below:
+
+### Configurations
 
 Supported environment variables:
 
