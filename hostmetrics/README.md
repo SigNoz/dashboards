@@ -20,7 +20,7 @@ Supported environment variables:
 - `BEARER_TOKEN` : If set, imports generated dashboard in SigNoz. If not set, dashboard JSON file is generated locally.
 - `SIGNOZ_ENDPOINT` : Endpoint of SigNoz to import dashboard. default=`http://localhost:3301`
 
-## Import using Script
+### Import using Script
 
 You can use the following command to generate the dashboard JSON:
 
