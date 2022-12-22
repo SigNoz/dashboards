@@ -25,14 +25,14 @@ Supported environment variables:
 You can use the following command to generate the dashboard JSON:
 
 ```bash
-curl -sL https://github.com/SigNoz/benchmark/raw/main/dashboards/hostmetrics/hostmetrics-import.sh \
+curl -sL https://github.com/SigNoz/Dashboards/raw/main/hostmetrics/hostmetrics-import.sh \
     | HOSTNAME="test-instance-1" DASHBOARD_TITLE="HostMetrics Dashboard for test-instance-1" bash
 ```
 
 Also, you can import generated dashboard JSON in SigNoz using the same:
 
 ```bash
-curl -sL https://github.com/SigNoz/benchmark/raw/main/dashboards/hostmetrics/hostmetrics-import.sh \
+curl -sL https://github.com/SigNoz/Dashboards/raw/main/hostmetrics/hostmetrics-import.sh \
     | SIGNOZ_ENDPOINT="http://localhost:3301" BEARER_TOKEN="<bearer-token-here>" bash
 
 ```
@@ -40,9 +40,9 @@ curl -sL https://github.com/SigNoz/benchmark/raw/main/dashboards/hostmetrics/hos
 Alternatively, you can use the clone the repository and run the script:
 
 ```bash
-git clone https://github.com/SigNoz/benchmark.git
+git clone https://github.com/SigNoz/Dashboards.git
 
-cd dashboards/hostmetrics
+cd hostmetrics
 
 cat hostmetrics-import.sh \
     | HOSTNAME="test-instance-2" DASHBOARD_TITLE="HostMetrics Dashboard for test-instance-2" bash
