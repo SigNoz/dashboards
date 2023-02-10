@@ -1,5 +1,8 @@
 # Kubernetes Infra Dashboard
 
-The Kubernetes Infra dashboard consists of basic charts to monitor resource requests, limits and usages.
+The Kubernetes Infra dashboard consists of charts plotted using Kubelet and K8s Cluster metrics.
 
-We will including more charts in the future to improve it futher.
+- Container ready or restart counts
+- Node conditions: ready and memory pressure
+- Memory/CPU utilization, requests, and limits
+- Filesystem: Usage and Capacity
