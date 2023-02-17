@@ -7,6 +7,8 @@ The Host Metrics dashboard consists of combination of charts that would help to 
 For a generic dashboard with `hostname` variable, you can import the `hostmetrics-with-variable.json`
 file in SigNoz UI.
 
+In case of **Kubernetes Nodes**, import the `hostmetrics-k8s.json` file in SigNoz UI.
+
 ## Static Dashboard
 
 To generate a static dashboard with fixed `hostname`, follow the instructions below:
