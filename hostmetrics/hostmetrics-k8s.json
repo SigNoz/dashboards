@@ -1,5 +1,5 @@
 {
-  "description": "",
+  "description": "HostMetrics Dashboard for K8s - SigNoz",
   "layout": [
     {
       "h": 2,
@@ -219,17 +219,32 @@
     }
   ],
   "name": "",
-  "tags": ["hostmetrics", "signoz"],
-  "title": "HostMetrics Dashboard (non K8s)- SigNoz SaaS",
+  "tags": ["hostmetrics", "signoz", "k8s"],
+  "title": "HostMetrics Dashboard (K8s)",
+  "uploadedGrafana": false,
   "variables": {
-    "hostname": {
+    "k8s_cluster_name": {
       "allSelected": false,
       "customValue": "",
-      "description": "Hostname of the instance",
+      "description": "Kubernetes cluster name",
+      "modificationUUID": "e44a96fa-8b05-437c-a0ed-4af300bac000",
       "multiSelect": false,
-      "name": "hostname",
-      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'host_name'))\nFROM signoz_metrics.time_series_v2",
-      "selectedValue": "my-release-k8s-infra-otel-agent-62gvg",
+      "name": "k8s_cluster_name",
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'k8s_cluster_name'))\nFROM signoz_metrics.time_series_v2",
+      "selectedValue": "",
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "k8s_node_name": {
+      "customValue": "",
+      "description": "Kubernetes Node Name",
+      "modificationUUID": "a468ba88-1a1b-40da-9796-6788d1265f13",
+      "multiSelect": false,
+      "name": "k8s_node_name",
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'k8s_node_name'))\nFROM signoz_metrics.time_series_v2",
+      "selectedValue": "",
       "showALLOption": false,
       "sort": "DISABLED",
       "textboxValue": "",
@@ -289,7 +304,7 @@
             "disabled": false,
             "legend": "{{state}}",
             "name": "A",
-            "query": "avg by(host_name,state) (system_memory_usage{host_name=\"{{.hostname}}\",state=~\"buffered|cached|free|used\"})"
+            "query": "avg by(k8s_node_name,state) (system_memory_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=~\"buffered|cached|free|used\"})"
           }
         ],
         "queryType": "promql"
@@ -360,7 +375,7 @@
             "disabled": false,
             "legend": "{{state}}",
             "name": "A",
-            "query": "avg by(state) (irate(system_cpu_time{host_name=\"{{.hostname}}\",state!=\"idle\"}[5m]))"
+            "query": "avg by(state) (irate(system_cpu_time{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state!=\"idle\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -431,7 +446,7 @@
             "disabled": false,
             "legend": "{{device}}",
             "name": "A",
-            "query": "avg by(device) (system_filesystem_usage{host_name=\"{{.hostname}}\",state=\"used\",device!~\"/dev/loop.*\", device!~\"tmpfs|nsfs\"})"
+            "query": "avg by(device) (system_filesystem_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=\"used\",device!~\"/dev/loop.*\", device!~\"tmpfs|nsfs\"})"
           }
         ],
         "queryType": "promql"
@@ -502,7 +517,7 @@
             "disabled": false,
             "legend": "{{device}}",
             "name": "A",
-            "query": "avg by(device) (system_filesystem_usage{host_name=\"{{.hostname}}\",state=\"free\",device!~\"/dev/loop.*\", device!~\"tmpfs | nsfs\"})"
+            "query": "avg by(device) (system_filesystem_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=\"free\",device!~\"/dev/loop.*\", device!~\"tmpfs | nsfs\"})"
           }
         ],
         "queryType": "promql"
@@ -573,7 +588,7 @@
             "disabled": false,
             "legend": "{{state}}",
             "name": "A",
-            "query": "avg by(state) (irate(system_cpu_time{host_name=\"{{.hostname}}\",state=\"idle\"}[5m]))"
+            "query": "avg by(state) (irate(system_cpu_time{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=\"idle\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -644,7 +659,7 @@
             "disabled": false,
             "legend": "{{direction}}",
             "name": "A",
-            "query": "avg by(direction) (irate(system_network_io{host_name=\"{{.hostname}}\"}[5m]))"
+            "query": "avg by(direction) (irate(system_network_io{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -715,7 +730,7 @@
             "disabled": false,
             "legend": "{{device}}: {{direction}}",
             "name": "A",
-            "query": "avg by(device,direction) (irate(system_network_io{host_name=\"{{.hostname}}\"}[5m]))"
+            "query": "avg by(device,direction) (irate(system_network_io{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -786,7 +801,7 @@
             "disabled": false,
             "legend": "{{device}}-{{direction}}",
             "name": "A",
-            "query": "avg by(device,direction) (irate(system_disk_io{host_name=\"{{.hostname}}\",device!~\"loop.*\", device!~\"tmpfs | nsfs\"}[5m]))"
+            "query": "avg by(device,direction) (irate(system_disk_io{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"loop.*\", device!~\"tmpfs | nsfs\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -857,7 +872,7 @@
             "disabled": false,
             "legend": "{{direction}}",
             "name": "A",
-            "query": "avg by(direction) (irate(system_disk_io{host_name=\"{{.hostname}}\",device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
+            "query": "avg by(direction) (irate(system_disk_io{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -928,19 +943,19 @@
             "disabled": false,
             "legend": "1m-average",
             "name": "A",
-            "query": "avg by(hostname) (system_cpu_load_average_1m{host_name=\"{{.hostname}}\"})"
+            "query": "avg by(k8s_node_name) (system_cpu_load_average_1m{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\"})"
           },
           {
             "disabled": false,
             "legend": "5m-average",
             "name": "B",
-            "query": "avg by(hostname) (system_cpu_load_average_5m{host_name=\"{{.hostname}}\"})"
+            "query": "avg by(k8s_node_name) (system_cpu_load_average_5m{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\"})"
           },
           {
             "disabled": false,
             "legend": "15m-average",
             "name": "C",
-            "query": "avg by(hostname) (system_cpu_load_average_15m{host_name=\"{{.hostname}}\"})"
+            "query": "avg by(k8s_node_name) (system_cpu_load_average_15m{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\"})"
           }
         ],
         "queryType": "promql"
@@ -1011,7 +1026,7 @@
             "disabled": false,
             "legend": "{{device}}-{{state}}",
             "name": "A",
-            "query": "avg by(device,state) (system_filesystem_usage{host_name=\"{{.hostname}}\",device!~\"/dev/loop.*\", device!~\"tmpfs | nsfs\"})"
+            "query": "avg by(device,state) (system_filesystem_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"/dev/loop.*\", device!~\"tmpfs | nsfs\"})"
           }
         ],
         "queryType": "promql"
@@ -1082,7 +1097,7 @@
             "disabled": false,
             "legend": "{{state}}",
             "name": "A",
-            "query": "sum by(state) (system_filesystem_usage{host_name=\"{{.hostname}}\",device!~\"/dev/loop.*\", device!~\"tmpfs | nsfs\"})"
+            "query": "sum by(state) (system_filesystem_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"/dev/loop.*\", device!~\"tmpfs | nsfs\"})"
           }
         ],
         "queryType": "promql"
@@ -1153,7 +1168,7 @@
             "disabled": false,
             "legend": "{{direction}}",
             "name": "A",
-            "query": "avg by(direction) (irate(system_disk_operations{host_name=\"{{.hostname}}\",device!~\"loop.*\",device!~\"tmpfs|nsfs\"}[5m]))"
+            "query": "avg by(direction) (irate(system_disk_operations{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"loop.*\",device!~\"tmpfs|nsfs\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -1196,16 +1211,15 @@
               "filters": {
                 "items": [
                   {
-                    "id": "2c6bd3a0",
+                    "id": "666cc06b",
                     "key": {
-                      "dataType": "string",
-                      "id": "6256542f-08aa-4378-a022-5bd75c7670b5",
-                      "isColumn": false,
-                      "key": "k8s_node_name",
-                      "type": "tag"
+                      "dataType": null,
+                      "isColumn": null,
+                      "key": "tag_k8s_cluster_name",
+                      "type": null
                     },
                     "op": "=",
-                    "value": "{{.hostname}}"
+                    "value": "{{.k8s_cluster_name}}"
                   }
                 ],
                 "op": "AND"
@@ -1237,14 +1251,357 @@
             "disabled": false,
             "legend": "",
             "name": "A",
-            "query": "up{host_name=\"{{.hostname}}\"}"
+            "query": "up{k8s_node_name=\"{{.k8s_node_name}}\"}"
           }
         ],
         "queryType": "promql"
       },
       "queryData": {
         "data": {
-          "queryData": []
+          "queryData": [
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "clickhouse",
+                "k8s_namespace_name": "groundswell",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "chi-my-release-clickhouse-cluster-0-0-0",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "2db26613-b887-47ee-a3ce-13cd23d3de9d",
+                "signoz_k8s_component": "clickhouse",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "clickhouse",
+                "k8s_namespace_name": "net2phone",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "chi-my-release-clickhouse-cluster-0-0-0",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "4d531cd0-7919-4f99-990f-24ca24cfcce0",
+                "signoz_k8s_component": "clickhouse",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "clickhouse",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "chi-my-release-clickhouse-cluster-0-0-0",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "ca609ecd-ce57-4d24-a00b-c9d9b7e345fe",
+                "signoz_k8s_component": "clickhouse",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-clickhouse-metrics-exporter",
+                "k8s_namespace_name": "groundswell",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-clickhouse-operator-56b56754d6-9h5gm",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "ce07c1a6-642e-4faa-a3e7-48167ae74200",
+                "signoz_k8s_component": "operator",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-clickhouse-metrics-exporter",
+                "k8s_namespace_name": "net2phone",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-clickhouse-operator-f7dfc8db9-5hx85",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "3659e5ff-f072-4b93-95c0-407b384ab18b",
+                "signoz_k8s_component": "operator",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-clickhouse-metrics-exporter",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-clickhouse-operator-7bcb76588c-zrnks",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "b2f69b32-4e39-486e-9421-e638eec1d0ea",
+                "signoz_k8s_component": "operator",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-clickhouse-operator",
+                "k8s_namespace_name": "groundswell",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-clickhouse-operator-56b56754d6-9h5gm",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "ce07c1a6-642e-4faa-a3e7-48167ae74200",
+                "signoz_k8s_component": "operator",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-clickhouse-operator",
+                "k8s_namespace_name": "net2phone",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-clickhouse-operator-f7dfc8db9-5hx85",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "3659e5ff-f072-4b93-95c0-407b384ab18b",
+                "signoz_k8s_component": "operator",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-clickhouse-operator",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-clickhouse-operator-7bcb76588c-zrnks",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "b2f69b32-4e39-486e-9421-e638eec1d0ea",
+                "signoz_k8s_component": "operator",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "clickhouse"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-k8s-infra-otel-agent",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-k8s-infra-otel-agent-95crr",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "aaae20ff-75e4-4ab4-a337-06655f90cb19",
+                "signoz_k8s_component": "otel-agent",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "k8s-infra"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-k8s-infra-otel-deployment",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-k8s-infra-otel-deployment-6c5c8756c7-2sdjc",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "f0da73d3-094a-4124-ba00-5f5f56705ffb",
+                "signoz_k8s_component": "otel-deployment",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "k8s-infra"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-signoz-otel-collector",
+                "k8s_namespace_name": "groundswell",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-signoz-otel-collector-fdb4f8458-jz77q",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "eb46886b-2b76-4390-8113-d4a0d40b27eb",
+                "signoz_k8s_component": "otel-collector",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "signoz"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-signoz-otel-collector",
+                "k8s_namespace_name": "net2phone",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-signoz-otel-collector-648dc6b897-c92xn",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "2306ba2a-2e5f-44e6-b8ba-119b098ceb09",
+                "signoz_k8s_component": "otel-collector",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "signoz"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-signoz-otel-collector",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-signoz-otel-collector-5c74874c8c-7v5nj",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "d543d1bd-e7ee-4561-a8ea-093882802d7e",
+                "signoz_k8s_component": "otel-collector",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "signoz"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-signoz-otel-collector-metrics",
+                "k8s_namespace_name": "groundswell",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-signoz-otel-collector-metrics-8596f6679f-whbnd",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "bef5424c-034d-4566-9715-f290ec2d9252",
+                "signoz_k8s_component": "otel-collector-metrics",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "signoz"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-signoz-otel-collector-metrics",
+                "k8s_namespace_name": "net2phone",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-signoz-otel-collector-metrics-7d88bb49ff-mh6tg",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "b6e9b4eb-0d2f-4c27-90ae-4ea248d4ec62",
+                "signoz_k8s_component": "otel-collector-metrics",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "signoz"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "generic-collector",
+                "k8s_container_name": "my-release-signoz-otel-collector-metrics",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-signoz-otel-collector-metrics-67d6d67f44-wcklh",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "fdfa0ca8-d5f2-48b5-a01e-d5c50ac6b6bc",
+                "signoz_k8s_component": "otel-collector-metrics",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "signoz"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            },
+            {
+              "legend": "",
+              "metric": {
+                "__name__": "up",
+                "job_name": "signoz-spanmetrics-collector",
+                "k8s_container_name": "my-release-signoz-otel-collector",
+                "k8s_namespace_name": "test",
+                "k8s_node_name": "gke-signoz-saas-default-pool-8bfa91fc-3p87",
+                "k8s_pod_name": "my-release-signoz-otel-collector-5c74874c8c-7v5nj",
+                "k8s_pod_phase": "Running",
+                "k8s_pod_ready": "true",
+                "k8s_pod_uid": "d543d1bd-e7ee-4561-a8ea-093882802d7e",
+                "signoz_k8s_component": "otel-collector",
+                "signoz_k8s_instance": "my-release",
+                "signoz_k8s_name": "signoz"
+              },
+              "queryName": "A",
+              "values": [[1684996617, "1"]]
+            }
+          ]
         },
         "error": false,
         "errorMessage": "",
@@ -1306,7 +1663,7 @@
             "disabled": false,
             "legend": "{{device}}",
             "name": "A",
-            "query": "avg by(device) (irate(system_disk_weighted_io_time{host_name=\"{{.hostname}}\",device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
+            "query": "avg by(device) (irate(system_disk_weighted_io_time{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -1377,7 +1734,7 @@
             "disabled": false,
             "legend": "",
             "name": "A",
-            "query": "sum by(host_name) (system_filesystem_usage{host_name=\"{{.hostname}}\",state=\"used\",device!~\"/dev/loop.*\", device!~\"tmpfs|nsfs\"}) / sum by(host_name) (system_filesystem_usage{host_name=\"{{.hostname}}\",device!~\"/dev/loop.*\", device!~\"tmpfs|nsfs\"})"
+            "query": "sum by(k8s_node_name) (system_filesystem_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=\"used\",device!~\"/dev/loop.*\", device!~\"tmpfs|nsfs\"}) / sum by(k8s_node_name) (system_filesystem_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"/dev/loop.*\", device!~\"tmpfs|nsfs\"})"
           }
         ],
         "queryType": "promql"
@@ -1448,16 +1805,23 @@
             "disabled": false,
             "legend": "",
             "name": "A",
-            "query": "sum by(host_name) (system_memory_usage{host_name=\"{{.hostname}}\",state=\"used\"}) / sum by(host_name) (system_memory_usage{host_name=\"{{.hostname}}\"})"
+            "query": "sum by(k8s_node_name) (system_memory_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=\"used\"}) / sum by(k8s_node_name) (system_memory_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\"})"
           }
         ],
         "queryType": "promql"
       },
       "queryData": {
         "data": {
-          "legend": "",
-          "query": "",
-          "queryData": []
+          "queryData": [
+            {
+              "legend": "",
+              "metric": {
+                "k8s_node_name": "my-release-k8s-infra-otel-agent-95crr"
+              },
+              "queryName": "A",
+              "values": [[1684996660, "0.09486796636393424"]]
+            }
+          ]
         },
         "error": false,
         "errorMessage": "",
@@ -1519,7 +1883,7 @@
             "disabled": false,
             "legend": "",
             "name": "A",
-            "query": "1 - (avg by(host_name) (irate(system_cpu_time{host_name=\"{{.hostname}}\",state=\"idle\"}[5m])))"
+            "query": "1 - (avg by(k8s_node_name) (irate(system_cpu_time{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=\"idle\"}[5m])))"
           }
         ],
         "queryType": "promql"
@@ -1590,7 +1954,7 @@
             "disabled": false,
             "legend": "",
             "name": "A",
-            "query": "avg by(host_name) (irate(system_disk_io{host_name=\"{{.hostname}}\",direction=\"read\",device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
+            "query": "avg by(k8s_node_name) (irate(system_disk_io{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",direction=\"read\",device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -1661,7 +2025,7 @@
             "disabled": false,
             "legend": "",
             "name": "A",
-            "query": "avg by(host_name) (irate(system_disk_io{host_name=\"{{.hostname}}\", direction=\"write\", device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
+            "query": "avg by(k8s_node_name) (irate(system_disk_io{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\", direction=\"write\", device!~\"loop.*\", device!~\"tmpfs|nsfs\"}[5m]))"
           }
         ],
         "queryType": "promql"
@@ -1732,7 +2096,7 @@
             "disabled": false,
             "legend": "{{state}}",
             "name": "A",
-            "query": "sum by(host_name, state) (system_filesystem_inodes_usage{host_name=\"{{.hostname}}\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"})"
+            "query": "sum by(k8s_node_name, state) (system_filesystem_inodes_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"})"
           },
           {
             "disabled": false,
@@ -1809,7 +2173,7 @@
             "disabled": false,
             "legend": "{{device}}-{{state}}",
             "name": "A",
-            "query": "avg by(device,state) (system_filesystem_inodes_usage{host_name=\"{{.hostname}}\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"})"
+            "query": "avg by(device,state) (system_filesystem_inodes_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"})"
           }
         ],
         "queryType": "promql"
@@ -1880,7 +2244,7 @@
             "disabled": false,
             "legend": "",
             "name": "A",
-            "query": "sum by(host_name) (system_filesystem_inodes_usage{host_name=\"{{.hostname}}\",state=\"used\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"}) / sum by(host_name) (system_filesystem_inodes_usage{host_name=\"{{.hostname}}\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"})"
+            "query": "sum by(k8s_node_name) (system_filesystem_inodes_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",state=\"used\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"}) / sum by(k8s_node_name) (system_filesystem_inodes_usage{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"/dev/loop.*\",device!~\"tmpfs|nsfs\"})"
           }
         ],
         "queryType": "promql"
@@ -1951,7 +2315,7 @@
             "disabled": false,
             "legend": "{{device}}-{{direction}}",
             "name": "A",
-            "query": "avg by(device,direction) (irate(system_disk_operations{host_name=\"{{.hostname}}\",device!~\"loop.*\",device!~\"tmpfs|nsfs\"}[5m]))"
+            "query": "avg by(device,direction) (irate(system_disk_operations{k8s_cluster_name=\"{{.k8s_cluster_name}}\",k8s_node_name=\"{{.k8s_node_name}}\",device!~\"loop.*\",device!~\"tmpfs|nsfs\"}[5m]))"
           }
         ],
         "queryType": "promql"
