@@ -9,3 +9,4 @@ Check out the directories in the repository root for following dashboards:
 - [Hostmetrics Dashboard and related files](./hostmetrics/)
 - [Kubernetes Infra Dashboard](./k8s-infra-metrics/)
 - [Key Operation Dashboard](./key-operations/)
+- [OtelCol Internal Metrics](./otelcol-metrics/)
