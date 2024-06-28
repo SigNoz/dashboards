@@ -1,0 +1,399 @@
+{
+    "description": "",
+    "layout": [
+      {
+        "h": 6,
+        "i": "e74ffa44-2a9d-47ec-9e3a-5e1862227ca7",
+        "moved": false,
+        "static": false,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      {
+        "h": 2,
+        "i": "c464b653-6c32-46f6-bef0-af846f3450ab",
+        "moved": false,
+        "static": false,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "h": 6,
+        "i": "bb864571-2bd8-4b00-8c1a-33ce9c427aa3",
+        "moved": false,
+        "static": false,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      {
+        "h": 8,
+        "i": "54b18ffc-6547-41b5-a96d-83f8609f2785",
+        "moved": false,
+        "static": false,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      }
+    ],
+    "name": "",
+    "tags": [
+      "langchain"
+    ],
+    "title": "SigNoz Chat PDF Performance Metrics",
+    "variables": {
+      "7782d271-9e5a-4678-9eeb-173fa73d752b": {
+        "allSelected": true,
+        "customValue": "",
+        "description": "",
+        "id": "7782d271-9e5a-4678-9eeb-173fa73d752b",
+        "key": "7782d271-9e5a-4678-9eeb-173fa73d752b",
+        "modificationUUID": "c65ad0e7-6735-49a2-b915-01c65dbfade7",
+        "multiSelect": true,
+        "name": "userNames",
+        "order": 0,
+        "queryValue": "SELECT DISTINCT stringTagMap['traceloop.association.properties.user_id'] as userNames\nFROM signoz_traces.distributed_signoz_index_v2\nWHERE userNames != ''\n\n",
+        "selectedValue": [
+          "Hans Gruber",
+          "Lucy McClane",
+          "John McClane",
+          "0",
+          "1",
+          "2"
+        ],
+        "showALLOption": true,
+        "sort": "DISABLED",
+        "textboxValue": "",
+        "type": "QUERY"
+      }
+    },
+    "widgets": [
+      {
+        "description": "",
+        "id": "54b18ffc-6547-41b5-a96d-83f8609f2785",
+        "isStacked": false,
+        "nullZeroValues": "zero",
+        "opacity": "1",
+        "panelTypes": "graph",
+        "query": {
+          "builder": {
+            "queryData": [
+              {
+                "aggregateAttribute": {
+                  "dataType": "float64",
+                  "id": "signoz_latency_sum--float64----true",
+                  "isColumn": true,
+                  "isJSON": false,
+                  "key": "signoz_latency_sum",
+                  "type": ""
+                },
+                "aggregateOperator": "sum_rate",
+                "dataSource": "metrics",
+                "disabled": false,
+                "expression": "A",
+                "filters": {
+                  "items": [],
+                  "op": "AND"
+                },
+                "groupBy": [
+                  {
+                    "dataType": "string",
+                    "id": "service_name--string--tag--false",
+                    "isColumn": false,
+                    "isJSON": false,
+                    "key": "service_name",
+                    "type": "tag"
+                  }
+                ],
+                "having": [],
+                "legend": "",
+                "limit": null,
+                "orderBy": [],
+                "queryName": "A",
+                "reduceTo": "sum",
+                "stepInterval": 60
+              }
+            ],
+            "queryFormulas": []
+          },
+          "clickhouse_sql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "id": "cf61c45e-47c9-4301-8f22-161a3e8a26c4",
+          "promql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "queryType": "builder"
+        },
+        "thresholds": [
+          {
+            "index": "3db29ba6-eabb-4c68-b8c2-97300112d6ee",
+            "isEditEnabled": false,
+            "keyIndex": 0,
+            "selectedGraph": "graph",
+            "thresholdColor": "Red",
+            "thresholdFormat": "Text",
+            "thresholdLabel": "5000",
+            "thresholdOperator": ">",
+            "thresholdTableOptions": "",
+            "thresholdUnit": "ms",
+            "thresholdValue": 5000
+          }
+        ],
+        "timePreferance": "GLOBAL_TIME",
+        "title": "Latency",
+        "yAxisUnit": "ms"
+      },
+      {
+        "description": "",
+        "id": "bb864571-2bd8-4b00-8c1a-33ce9c427aa3",
+        "isStacked": false,
+        "nullZeroValues": "zero",
+        "opacity": "1",
+        "panelTypes": "graph",
+        "query": {
+          "builder": {
+            "queryData": [
+              {
+                "aggregateAttribute": {
+                  "dataType": "float64",
+                  "id": "llm.usage.completion_tokens--float64--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "llm.usage.completion_tokens",
+                  "type": "tag"
+                },
+                "aggregateOperator": "rate_sum",
+                "dataSource": "traces",
+                "disabled": false,
+                "expression": "A",
+                "filters": {
+                  "items": [
+                    {
+                      "id": "fc5ce265",
+                      "key": {
+                        "dataType": "string",
+                        "id": "traceloop.association.properties.user_id--string--tag--false",
+                        "isColumn": false,
+                        "isJSON": false,
+                        "key": "traceloop.association.properties.user_id",
+                        "type": "tag"
+                      },
+                      "op": "in",
+                      "value": [
+                        "{{ .userNames }}"
+                      ]
+                    }
+                  ],
+                  "op": "AND"
+                },
+                "groupBy": [
+                  {
+                    "dataType": "string",
+                    "id": "serviceName--string--tag--true",
+                    "isColumn": true,
+                    "isJSON": false,
+                    "key": "serviceName",
+                    "type": "tag"
+                  }
+                ],
+                "having": [],
+                "legend": "",
+                "limit": null,
+                "orderBy": [],
+                "queryName": "A",
+                "reduceTo": "sum",
+                "stepInterval": 60
+              }
+            ],
+            "queryFormulas": []
+          },
+          "clickhouse_sql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "id": "be769cc0-7e50-44d2-b9de-6d816b3a8ebc",
+          "promql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "queryType": "builder"
+        },
+        "thresholds": [],
+        "timePreferance": "GLOBAL_TIME",
+        "title": "Token Throughput",
+        "yAxisUnit": "ops"
+      },
+      {
+        "description": "",
+        "id": "c464b653-6c32-46f6-bef0-af846f3450ab",
+        "isStacked": false,
+        "nullZeroValues": "zero",
+        "opacity": "1",
+        "panelTypes": "value",
+        "query": {
+          "builder": {
+            "queryData": [
+              {
+                "aggregateAttribute": {
+                  "dataType": "float64",
+                  "id": "signoz_calls_total--float64----true",
+                  "isColumn": true,
+                  "isJSON": false,
+                  "key": "signoz_calls_total",
+                  "type": ""
+                },
+                "aggregateOperator": "noop",
+                "dataSource": "metrics",
+                "disabled": false,
+                "expression": "A",
+                "filters": {
+                  "items": [],
+                  "op": "AND"
+                },
+                "groupBy": [],
+                "having": [],
+                "legend": "",
+                "limit": null,
+                "orderBy": [],
+                "queryName": "A",
+                "reduceTo": "last",
+                "stepInterval": 60
+              }
+            ],
+            "queryFormulas": []
+          },
+          "clickhouse_sql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "id": "09971ba8-2e27-437c-ae5d-a85a3d0c655b",
+          "promql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "queryType": "builder"
+        },
+        "thresholds": [],
+        "timePreferance": "GLOBAL_TIME",
+        "title": "Total LLM Calls",
+        "yAxisUnit": "none"
+      },
+      {
+        "description": "",
+        "id": "e74ffa44-2a9d-47ec-9e3a-5e1862227ca7",
+        "isStacked": false,
+        "nullZeroValues": "zero",
+        "opacity": "1",
+        "panelTypes": "graph",
+        "query": {
+          "builder": {
+            "queryData": [
+              {
+                "aggregateAttribute": {
+                  "dataType": "float64",
+                  "id": "llm.usage.total_tokens--float64--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "llm.usage.total_tokens",
+                  "type": "tag"
+                },
+                "aggregateOperator": "sum",
+                "dataSource": "traces",
+                "disabled": false,
+                "expression": "A",
+                "filters": {
+                  "items": [
+                    {
+                      "id": "f4cffdac",
+                      "key": {
+                        "dataType": "string",
+                        "id": "traceloop.association.properties.user_id--string--tag--false",
+                        "isColumn": false,
+                        "isJSON": false,
+                        "key": "traceloop.association.properties.user_id",
+                        "type": "tag"
+                      },
+                      "op": "in",
+                      "value": [
+                        "{{ .userNames }}"
+                      ]
+                    }
+                  ],
+                  "op": "AND"
+                },
+                "groupBy": [
+                  {
+                    "dataType": "string",
+                    "id": "llm.response.model--string--tag--false",
+                    "isColumn": false,
+                    "isJSON": false,
+                    "key": "llm.response.model",
+                    "type": "tag"
+                  }
+                ],
+                "having": [],
+                "legend": "{{llm.response.model}}",
+                "limit": null,
+                "orderBy": [],
+                "queryName": "A",
+                "reduceTo": "sum",
+                "stepInterval": 60
+              }
+            ],
+            "queryFormulas": []
+          },
+          "clickhouse_sql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "id": "c1af7348-f432-44d7-8928-25cc69a15e1d",
+          "promql": [
+            {
+              "disabled": false,
+              "legend": "",
+              "name": "A",
+              "query": ""
+            }
+          ],
+          "queryType": "builder"
+        },
+        "thresholds": [],
+        "timePreferance": "GLOBAL_TIME",
+        "title": "Model vs Total Tokens",
+        "yAxisUnit": "none"
+      }
+    ]
+  }

@@ -1,0 +1,756 @@
+{
+  "description": "",
+  "layout": [
+    {
+      "h": 4,
+      "i": "9e3ed7c0-c006-4083-a31e-cc53f7f7bb92",
+      "w": 6,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 4,
+      "i": "8a646ed7-c565-4825-ba79-ca90c8b928e2",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 8
+    },
+    {
+      "h": 4,
+      "i": "befbed66-3e3e-4650-bcf6-057e8b916d60",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 6
+    },
+    {
+      "h": 4,
+      "i": "9d680eab-e2c1-4d8b-b355-285bc53a398c",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 8
+    },
+    {
+      "h": 4,
+      "i": "7b4b8f13-caae-4574-a7a3-8f096414facb",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 4
+    },
+    {
+      "h": 4,
+      "i": "82e500cb-3c08-4a69-86be-edc74728b453",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 6
+    },
+    {
+      "h": 4,
+      "i": "4b132ab7-252c-4ecf-be39-7c2937379ef4",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 2
+    },
+    {
+      "h": 4,
+      "i": "c52b1b47-59de-4528-99e2-8497afa1151e",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 4
+    },
+    {
+      "h": 4,
+      "i": "6fa12df6-48af-4a4e-a9f4-49c8f7684c43",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 0
+    },
+    {
+      "h": 4,
+      "i": "ce35efb1-5bc7-4727-8dad-429134e519ce",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 2
+    }
+  ],
+  "name": "",
+  "tags": [],
+  "title": "Ingress Nginx - Request Handling Performance",
+  "variables": {
+    "ingress": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "",
+      "modificationUUID": "e0206939-7657-49d0-8b42-3024551a176f",
+      "multiSelect": false,
+      "name": "ingress",
+      "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'ingress') FROM signoz_metrics.distributed_time_series_v2\nWHERE metric_name='nginx_ingress_controller_requests' AND fingerprint GLOBAL IN\n(\n    SELECT DISTINCT fingerprint FROM signoz_metrics.distributed_samples_v2 WHERE\n    metric_name='nginx_ingress_controller_requests' AND timestamp_ms>toUnixTimestamp(now() - INTERVAL 5 MINUTE)*1000\n)",
+      "selectedValue": "",
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "widgets": [
+    {
+      "description": "Total time for NGINX and upstream servers to process a request and send a response\n",
+      "id": "ce35efb1-5bc7-4727-8dad-429134e519ce",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "b84ed6a2-01b2-4a37-a0d0-c10c98bda51f",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p50",
+            "name": "A",
+            "query": "histogram_quantile( 0.5, sum by (le)( rate( nginx_ingress_controller_request_duration_seconds_bucket{ ingress =~ \"{{.ingress}}\" }[5m] ) ) )"
+          },
+          {
+            "disabled": false,
+            "legend": "p95",
+            "name": "B",
+            "query": "histogram_quantile( 0.95, sum by (le)( rate( nginx_ingress_controller_request_duration_seconds_bucket{ ingress =~ \"{{.ingress}}\" }[5m] ) ) )"
+          },
+          {
+            "disabled": false,
+            "legend": "p99",
+            "name": "C",
+            "query": "histogram_quantile( 0.99, sum by (le)( rate( nginx_ingress_controller_request_duration_seconds_bucket{ ingress =~ \"{{.ingress}}\" }[5m] ) ) )"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Latency Percentiles",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "The time spent on receiving the response from the upstream server",
+      "id": "6fa12df6-48af-4a4e-a9f4-49c8f7684c43",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "47fe5c24-6b5d-4eb7-9704-d3699596e295",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p50",
+            "name": "A",
+            "query": "histogram_quantile( 0.5, sum by (le)( rate( nginx_ingress_controller_response_duration_seconds_bucket{ ingress =~ \"{{.ingress}}\" }[5m] ) ) )"
+          },
+          {
+            "disabled": false,
+            "legend": "p95",
+            "name": "B",
+            "query": "histogram_quantile( 0.95, sum by (le)( rate( nginx_ingress_controller_response_duration_seconds_bucket{ ingress =~ \"{{.ingress}}\" }[5m] ) ) )"
+          },
+          {
+            "disabled": false,
+            "legend": "p99",
+            "name": "C",
+            "query": "histogram_quantile( 0.99, sum by (le)( rate( nginx_ingress_controller_response_duration_seconds_bucket{ ingress =~ \"{{.ingress}}\" }[5m] ) ) )"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Upstream Response Latency Percentiles",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "",
+      "id": "c52b1b47-59de-4528-99e2-8497afa1151e",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "3e60eff5-d5ea-472d-956c-8119be1f95a4",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{method}} {{host}}{{path}}",
+            "name": "A",
+            "query": "sum by (method, host, path)( rate( nginx_ingress_controller_request_duration_seconds_count{ ingress =~ \"{{.ingress}}\" }[5m] ) )"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate by Method and Path",
+      "yAxisUnit": "cps"
+    },
+    {
+      "description": "For each path observed, its median upstream response time",
+      "id": "4b132ab7-252c-4ecf-be39-7c2937379ef4",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "8682a633-e229-4659-935a-ffeb87ca0898",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{method}} {{host}}{{path}}",
+            "name": "A",
+            "query": "histogram_quantile(0.5, sum by (le, method, host, path)( rate( nginx_ingress_controller_response_duration_seconds_bucket{ ingress =~ \"{{.ingress}}\" }[5m] ) ) )"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Median Upstream Response Time by Method and Path",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "Percentage of 4xx and 5xx responses among all responses",
+      "id": "82e500cb-3c08-4a69-86be-edc74728b453",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "\"Response Error Rate by Method and Path\"------false",
+                "isColumn": false,
+                "key": "\"Response Error Rate by Method and Path\"",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "5cfeaf21-b754-480a-bd13-881c54cb3e68",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{method}} {{host}}{{path}}",
+            "name": "A",
+            "query": "sum by (method, host, path) (rate(nginx_ingress_controller_request_duration_seconds_count{ ingress =~ \"{{.ingress}}\", status =~ \"[4-5].*\" }[5m])) / sum by (method, host, path) (rate(nginx_ingress_controller_request_duration_seconds_count{ ingress =~ \"{{.ingress}}\", }[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Response Error Rate by Method and Path",
+      "yAxisUnit": "cps"
+    },
+    {
+      "description": "For each path observed, the sum of upstream request time",
+      "id": "7b4b8f13-caae-4574-a7a3-8f096414facb",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "e52a41ca-029b-4f7e-86d9-1f673a9d041d",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{method}} {{host}}{{path}}",
+            "name": "A",
+            "query": "sum by (method, host, path) (rate(nginx_ingress_controller_response_duration_seconds_sum{ingress =~ \"{{.ingress}}\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Upstream Response Time by Method and Path",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "",
+      "id": "9d680eab-e2c1-4d8b-b355-285bc53a398c",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "0d6f1b15-cc68-419d-b000-68bfe6d4bfd5",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{method}} {{host}}{{path}} {{status}}",
+            "name": "A",
+            "query": "sum ( rate( nginx_ingress_controller_request_duration_seconds_count{ ingress =~ \"{{.ingress}}\", status =~\"[4-5].*\", }[5m] ) ) by(method, host, path, status) "
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Response Error Rate by Method and Path",
+      "yAxisUnit": "cps"
+    },
+    {
+      "description": "",
+      "id": "befbed66-3e3e-4650-bcf6-057e8b916d60",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "90f050b1-74be-44ed-95b3-f17786c4dbd6",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{method}} {{host}}{{path}}",
+            "name": "A",
+            "query": "sum ( rate ( nginx_ingress_controller_response_size_sum { ingress =~ \"{{.ingress}}\", }[5m] ) ) by (method, host, path) / sum ( rate( nginx_ingress_controller_response_size_count { ingress =~ \"{{.ingress}}\", }[5m] ) ) by (method, host, path)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Average Response Size by Method and Path",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "",
+      "id": "8a646ed7-c565-4825-ba79-ca90c8b928e2",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "cc91338e-12c2-4276-946b-e6974a77b321",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "average",
+            "name": "A",
+            "query": "sum ( rate( nginx_ingress_controller_ingress_upstream_latency_seconds_sum { ingress =~ \"{{.ingress}}\", }[5m] )) / sum ( rate( nginx_ingress_controller_ingress_upstream_latency_seconds_count { ingress =~ \"{{.ingress}}\", }[5m] ) )"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Upstream Service Latency",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "",
+      "id": "9e3ed7c0-c006-4083-a31e-cc53f7f7bb92",
+      "isStacked": false,
+      "nullZeroValues": "",
+      "opacity": "",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "sum",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "41ad9773-2b3a-4366-aa54-dd79001d45d4",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": ""
+    }
+  ]
+}
