@@ -101,7 +101,7 @@ Your README file should include the following sections:
 
 ### Example README
 
-For an example of how your README should look, please refer to the [MySQL Dashboard README](link-to-example-readme) provided in this repository.
+For an example of how your README should look, please refer to the [MySQL Dashboard README](https://github.com/SigNoz/dashboards/blob/main/mysql/readme.md) provided in this repository.
 
 ## Adding Screenshots
 
@@ -160,6 +160,7 @@ Once you have prepared your dashboard JSON file, README, and screenshots, you're
    - Click on "New Pull Request".
    - Select your fork and the branch you just pushed.
    - Provide a clear and descriptive title and description for your pull request.
+   - Add the link of GitHub issue for requested dashboard in the PR description
 
 8. **Address Review Comments**
 
