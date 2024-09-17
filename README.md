@@ -78,4 +78,5 @@ Your contributions will help the SigNoz community grow and make monitoring easie
 ## License
 
 This repository is licensed under the Apache 2.0 License. By contributing to this repository, you agree that your contributions will also be licensed under the same.
+
 [![License](https://img.shields.io/badge/License-Apache_2.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
