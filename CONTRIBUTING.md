@@ -45,6 +45,11 @@ name-of-dashboard-source-version.json
 - `mysql-otlp-v1.json`
 - `mongodb-prometheus-v1.json`
 
+## Setup SigNoz
+If you don't have [SigNoz setup on your local](https://signoz.io/docs/install/docker/) then you get invited to test tenant from us.
+1. Join SigNoz [Slack Community](https://signoz.io/slack)
+2. Please ping `@vishal-signoz` or ask in the [`#contributing`](https://signoz-community.slack.com/archives/C01LWQ8KS7M) channel in our [Slack Community](https://signoz.io/slack) and we will invite you to test tenant.
+
 ## Creating the Dashboard JSON File
 
 1. Create your dashboard in SigNoz.
