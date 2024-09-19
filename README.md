@@ -6,6 +6,7 @@ Welcome to the **SigNoz Dashboards** repository! This repository hosts a collect
 
 - [Overview](#overview)
 - [Available Dashboards](#available-dashboards)
+- [Request New Dashboard Template](#request-new-dashboard-template)
 - [Adding New Dashboards](#adding-new-dashboards)
 - [Dashboard Naming Convention](#dashboard-naming-convention)
 - [Contributing](#contributing)
@@ -45,6 +46,14 @@ Below is a list of available dashboard templates in this repository:
 - [**LLM Observability Dashboard**](https://github.com/SigNoz/dashboards/tree/main/llm-observability): Visualizes metrics for monitoring large language models.
 
 More services will be added in the future!
+
+## Request New Dashboard Template
+
+Before requesting a new dashboard, please check if a similar request has already been made by searching through the open issues here: [Existing Dashboard Requests](https://github.com/SigNoz/signoz/issues?q=is%3Aopen+is%3Aissue+label%3Adashboard-template).
+
+If no similar request exists, you can create a new issue using the following link: [Request a New Dashboard](https://github.com/SigNoz/signoz/issues/new?assignees=&labels=dashboard-template&projects=&template=request_dashboard.md&title=).
+
+Please make sure to provide the necessary details when submitting your request to ensure that it can be addressed appropriately.
 
 ## Adding New Dashboards
 
