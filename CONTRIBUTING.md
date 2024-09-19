@@ -52,7 +52,7 @@ If you don't have [SigNoz setup on your local](https://signoz.io/docs/install/do
 
 ## Creating the Dashboard JSON File
 
-1. Create your dashboard in SigNoz.
+1. Create your dashboard in SigNoz according to the guidelines mentioned in the issue. Prefer building panels with [SigNoz Query Builder](https://signoz.io/docs/userguide/query-builder/) over custom ClickHouse Query or PromQL
 2. Export the dashboard to a JSON file.
 3. Ensure that the JSON file follows the naming convention.
 4. Place the JSON file in an appropriate subdirectory if one exists.
