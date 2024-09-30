@@ -44,6 +44,7 @@ Below is a list of available dashboard templates in this repository:
 - [**RabbitMQ Dashboard**](https://github.com/SigNoz/dashboards/tree/main/rabbitmq): Tracks RabbitMQ metrics like queue sizes and message throughput.
 - [**Temporal.io Dashboard**](https://github.com/SigNoz/dashboards/tree/main/temporal.io): Monitors Temporal.io workflow metrics.
 - [**LLM Observability Dashboard**](https://github.com/SigNoz/dashboards/tree/main/llm-observability): Visualizes metrics for monitoring large language models.
+- [**SigNoz Ingestion Analysis**](https://github.com/SigNoz/dashboards/tree/main/signoz-ingestion-analysis): Visualizes the volume the metrics, traces and logs ingested into SigNoz. Useful for cost optimization.
 
 More services will be added in the future!
 
