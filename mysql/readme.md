@@ -1,6 +1,6 @@
 # MySQL Dashboard - OTLP
 
-## Metrics Ingestion
+## Data Ingestion
 
 ### With OTLP MySQL Receiver
 
