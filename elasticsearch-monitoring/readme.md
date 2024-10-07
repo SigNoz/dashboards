@@ -28,7 +28,7 @@ service:
       receivers: [elasticsearch]
 ```
 
-Below is sample `otel-config.yaml` file with two mysql instances:
+Below is sample `otel-config.yaml` file with an elasticsearch instance:
 
 ```yaml
 receivers:
