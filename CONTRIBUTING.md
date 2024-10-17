@@ -145,6 +145,7 @@ Once you have prepared your dashboard JSON file, README, and screenshots, you're
 4. **Add Your Files**
 
    - Add your dashboard JSON file, README, and assets to the repository.
+   - Make sure to update the [repository's README](https://github.com/SigNoz/dashboards?tab=readme-ov-file#available-dashboards) with a link to your dashboard.
 
 5. **Commit Your Changes**
 
