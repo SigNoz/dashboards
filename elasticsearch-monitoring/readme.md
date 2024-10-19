@@ -42,8 +42,8 @@ receivers:
     nodes: ["_local"]
     indices: [".geoip_databases"]
     endpoint: http://localhost:9200
-    username: elastic
-    password: 7Bupx55b
+    username: local-username
+    password: local-password
     collection_interval: 10s
 processors:
   resource/env:
@@ -82,5 +82,17 @@ service:
 - `{{elasticsearch_node_name}}`: Elasticsearch node name
 - `{{elasticsearch_cluster_name}}`: Elasticsearch cluster name
 
-### Sections 
-!TODO
+### Sections
+
+- Node Metrics
+  - Node Disk Free - `elasticsearch_node_fs_disk_free`
+  - Node Disk Available - `elasticsearch_node_fs_disk_available`
+  - Node CPU Usage - `elasticsearch_os_cpu_usage`
+  - Node JVM Memory Usage - `jvm_memory_used`
+  - Node Heap Memory Usage - `jvm_memory_heap_used`
+  - Screenshot of Node Metrics Section - ![Node Metrics Screenshot](assets/node_metrics.png)
+- Cluster Health Metrics
+  - Cluster Health Status - `elasticsearch_cluster_health`
+  - Cluster Active Shards - `elasticsearch_cluster_shards`
+  - Cluster Pending Tasks - `elasticsearch_cluster_pending_tasks`
+  - Screenshot of Cluster Health Metrics Section - ![Cluster Health Metrics Screenshot](assets/cluster_health_metrics.png)
