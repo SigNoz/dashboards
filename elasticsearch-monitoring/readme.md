@@ -96,3 +96,7 @@ service:
   - Cluster Active Shards - `elasticsearch_cluster_shards`
   - Cluster Pending Tasks - `elasticsearch_cluster_pending_tasks`
   - Screenshot of Cluster Health Metrics Section - ![Cluster Health Metrics Screenshot](assets/cluster_health_metrics.png)
+- Index Metrics
+  - Index Document Count - `elasticsearch_index_documents`
+- Cache Metrics
+  - Cache Evictions - `elasticsearch_node_cache_evictions`
