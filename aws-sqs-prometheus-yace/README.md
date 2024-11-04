@@ -3,7 +3,7 @@
 ## Metrics Ingestion
 
 ### Configure AWS SQS Prometheus Exporter 
-For more details about the exporter, visit [nerdswords/yet-another-cloudwatch-exporter](https://github.com/nerdswords/yet-another-cloudwatch-exporter) on GitHub.\
+For more details about the exporter, visit [nerdswords/yet-another-cloudwatch-exporter](https://github.com/nerdswords/yet-another-cloudwatch-exporter) on GitHub.
 1. First write the configuration for yace. for more details about yace configuration visit [here].(https://github.com/nerdswords/yet-another-cloudwatch-exporter/blob/master/docs/configuration.md)
 ```yaml
 apiVersion: v1alpha1
