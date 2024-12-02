@@ -1,4 +1,4 @@
-# AWS SQS Dashboard - Prometheus
+# Argocd Dashboard
 
 ## Metrics Ingestion
 
