@@ -6,9 +6,50 @@
 
 You can collect the metrics from Snowflake using the Snowflake receiver in OpenTelemetry as shown [here](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/snowflakereceiver).
 
+## OTel Config
+
+Here is the config file used for gathering Snowflake metrics for SigNoz:
+
+```
+receivers:
+  snowflake:
+    username: <snowflake_username>
+    password: <snowflake_password>
+    account: <snowflake_account>
+    warehouse: <snowflake_warehouse>
+    collection_interval: 1m
+    metrics:
+      snowflake.database.bytes_scanned.avg:
+        enabled: true
+      snowflake.database.query.count:
+        enabled: true
+processors:
+  resource/env:
+    attributes:
+    - key: deployment.environment
+      value: prod
+      action: upsert
+  batch: {}
+exporters:
+  otlp:
+    endpoint: "ingest.{region}.signoz.cloud:443"
+    tls:
+      insecure: false
+    headers:
+      "signoz-access-token": "<SIGNOZ_INGESTION_KEY>"
+service:
+  pipelines:
+    metrics:
+      receivers: [snowflake]
+      processors: [resource/env,batch]
+      exporters: [otlp]
+```
+
+The complete list of available Snowflake metrics can be found [here](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/snowflakereceiver/documentation.md).
+
 ## Dashboard panels
 
-## Variables
+### Variables
 
 - `{{deployment_environment}}`: The deployment environment for the service.
 - `{{snowflake_account_name}}`: Snowflake account name.
