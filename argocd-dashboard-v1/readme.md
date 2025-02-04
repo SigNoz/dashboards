@@ -136,6 +136,7 @@ service:
 - `{{health.status}}`: Health status of the application
 - `{{repo}}`: Name of the repository
 
+
 ## Sections
 
 - Overview
@@ -191,3 +192,12 @@ service:
   `argocd_git_request_total`
   - Count of Git Fetch Requests -
   `argocd_git_request_total`
+  
+## Dashboard Panels
+
+![Argocd Dashboard Overview](assets/argocd-1.png)
+![Argocd Dashboard Overview](assets/argocd-2.png)
+![Argocd Dashboard Overview](assets/argocd-3.png)
+![Argocd Dashboard Overview](assets/argocd-4.png)
+
+
