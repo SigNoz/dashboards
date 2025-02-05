@@ -137,7 +137,6 @@ service:
 - `{{repo}}`: Name of the repository
 
 ## Sections
-
 - Overview
   - Number of applications -
   `argocd_app_info`
