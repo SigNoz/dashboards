@@ -136,11 +136,57 @@ service:
 - `{{health.status}}`: Health status of the application
 - `{{repo}}`: Name of the repository
 
-## Dashboard Panels
-
-![Argocd Dashboard Overview](assets/argocd-1.png)
-![Argocd Dashboard Overview](assets/argocd-2.png)
-![Argocd Dashboard Overview](assets/argocd-3.png)
-![Argocd Dashboard Overview](assets/argocd-4.png)
-
-*Overview of the Argocd monitoring dashboard*
+## Sections
+- Overview
+  - Number of applications -
+  `argocd_app_info`
+  - Repository server -
+  `argocd_app_info`
+  ![Overview](assets/overview.png)
+- Applications Health
+  - Healthy -
+  `argocd_app_info`
+  - Processing -
+  `argocd_app_info`
+  - Suspended -
+  `argocd_app_info`
+  - Degraded -
+  `argocd_app_info`
+  ![Applications Health](assets/applications-health.png)
+- Applications Sync Status
+  - Synced -
+  `argocd_app_info`
+  - OutOfSync -
+  `argocd_app_info`
+  - Application By Repository -
+  `argocd_app_info`
+  ![Applications Sync Status](assets/applications-sync-status.png)
+- Controller Stats
+  - Sync activity -
+  `argocd_app_sync_total`
+  - Reconciliation activity -
+  `argocd_app_reconcile_count`
+  - Count of Application Reconciliation by Duration Bounds -
+  `argocd_app_reconcile_duration`
+  - Reconciliation Performance -
+  `argocd_app_reconcile_bucket`
+  - K8s API Activity -
+  `argocd_app_k8s_request_total`
+  - Workqueue Depth -
+  `workqueue_depth`
+  ![Controller Stats](assets/controller-stats.png)
+  ![Controller Stats](assets/controller-stats-1.png)
+- Cluster Stats
+  - Age of Cluster Cache -
+  `argocd_cluster_cache_age_seconds`
+  - Count of Cluster Resource Objects -
+  `argocd_cluster_api_resource_objects`
+  - Count of Cluster Events -
+  `argocd_cluster_events_total`
+  - Count of API Resources -
+  `argocd_cluster_api_resources`
+- Repo Server Stats
+  - Count of Git Ls-Remote Requests -
+  `argocd_git_request_total`
+  - Count of Git Fetch Requests -
+  `argocd_git_request_total`
