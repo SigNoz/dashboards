@@ -1,7 +1,9 @@
 
-> :warning: **Migration Notice**: These dashboards are currently being updated for compatibility with non-normalized metrics. If your system still uses normalized metrics, please use the legacy dashboards available in the [legacy branch](https://github.com/SigNoz/dashboards/tree/legacy-underscore-metrics).
+> [!WARNING]
+> **Migration Notice**: These dashboards are currently being updated for compatibility with non-normalized metrics. If your system still uses normalized metrics, please use the legacy dashboards available in the [legacy branch](https://github.com/SigNoz/dashboards/tree/legacy-underscore-metrics).
 
-> :note: **Migration Notice**: If you're using SigNoz cloud, your account has already been migrated to use non-normalized metrics.
+> [!NOTE]
+> **Migration Notice**: If you're using SigNoz cloud, your account has already been migrated to use non-normalized metrics.
 
 # SigNoz Dashboards
 
