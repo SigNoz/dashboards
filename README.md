@@ -1,3 +1,8 @@
+
+> :warning: **Migration Notice**: These dashboards are currently being updated for compatibility with non-normalized metrics. If your system still uses normalized metrics, please use the legacy dashboards available in the [legacy branch](https://github.com/SigNoz/dashboards/tree/legacy-underscore-metrics).
+
+> :note: **Migration Notice**: If you're using SigNoz cloud, your account has already been migrated to use non-normalized metrics.
+
 # SigNoz Dashboards
 
 Welcome to the **SigNoz Dashboards** repository! This repository hosts a collection of pre-built SigNoz dashboard templates in JSON format, designed to monitor popular services like MySQL, MongoDB, APM, JVM, and more. These dashboards allow you to quickly set up visualizations for your application's metrics and performance.
