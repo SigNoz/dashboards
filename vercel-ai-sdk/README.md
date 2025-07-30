@@ -36,18 +36,18 @@ The percentage of all reqeusts in the given time frame that have a latency >= 10
 
 **Number of Requests Given Time Frame**
 A time-series chart showing the number of requests over time, helping to understand request patterns and traffic trends.
-<img width="690" height="369" alt="requests-over-time" src="https://github.com/user-attachments/assets/626e0e8d-dc46-4897-8b31-6fab8e7c7a49" />
+![Requests Over Time Screenshot](./requests-over-time.png)
 
-**Model Provider Distribution**
+**LLM Provider Distribution**
 A pie chart showing the distribution of model providers used in your Vercel AI applications (e.g., OpenAI, Anthropic).
-<img width="690" height="370" alt="provider_distribution" src="https://github.com/user-attachments/assets/39f146a1-45ce-4d5d-9939-afbb66a2a009" />
+![Provider Distribution Screenshot](./provider_distribution.png)
 
 **LLM Model Distribution** 
 A pie chart showing the distribution of specific models used (e.g., gpt-4o-nano, gpt-4o-mini).
-<img width="690" height="369" alt="model-distribution" src="https://github.com/user-attachments/assets/12a176b7-2461-45b8-8381-e84c33cd147f" />
+![Model Distribution Screenshot](./model_distribution.png)
 
 **Services and Languages Using Vercel AI SDK** 
 A table providing an overview of the various services and their respective programming languages that utilize the Vercel AI SDK.
-<img width="690" height="370" alt="services-languages-dashboard" src="https://github.com/user-attachments/assets/8122c42c-a763-4bc7-9ced-196a1131e4c3" />
+![Services and Languages Screenshot](./services-languages-table.png)
 
 
