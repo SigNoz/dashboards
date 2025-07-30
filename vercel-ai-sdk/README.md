@@ -44,7 +44,7 @@ A pie chart showing the distribution of model providers used in your Vercel AI a
 
 **LLM Model Distribution** 
 A pie chart showing the distribution of specific models used (e.g., gpt-4o-nano, gpt-4o-mini).
-![Model Distribution Screenshot](./model_distribution.png)
+![Model Distribution Screenshot](./model-distribution.png)
 
 **Services and Languages Using Vercel AI SDK** 
 A table providing an overview of the various services and their respective programming languages that utilize the Vercel AI SDK.
