@@ -1,9 +1,11 @@
-
-> [!WARNING]
-> **Migration Notice**: These dashboards are currently being updated for compatibility with non-normalized metrics. If your system still uses normalized metrics, please use the legacy dashboards available in the [legacy branch](https://github.com/SigNoz/dashboards/tree/legacy-underscore-metrics).
-
-> [!NOTE]
-> **Migration Notice**: If you're using SigNoz cloud, your account has already been migrated to use non-normalized metrics.
+> [!Note]
+> **Dashboard Migration Status**: Due to the migration of metric names and attributes, the following dashboards may not work properly and are currently being updated:
+> - Temporal
+> - KEDA
+> - Jenkins
+> - Hadoop
+>
+> We are actively working on updating these dashboards to be compatible with the new metric structure.
 
 # SigNoz Dashboards
 
@@ -98,12 +100,3 @@ Your contributions will help the SigNoz community grow and make monitoring easie
 This repository is licensed under the Apache 2.0 License. By contributing to this repository, you agree that your contributions will also be licensed under the same.
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
-
-> [!Note]
-> **Dashboard Migration Status**: Due to the migration of metric names and attributes, the following dashboards may not work properly and are currently being updated:
-> - Temporal
-> - KEDA
-> - Jenkins
-> - Hadoop
->
-> We are actively working on updating these dashboards to be compatible with the new metric structure.

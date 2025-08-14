@@ -1,5 +1,10 @@
 # Hadoop Dashboard - OTLP
 
+> [!Note]
+> **Dashboard Migration Status**: Due to the migration of metric names and attributes, the dashboards may not work properly and are currently being updated:
+> We are actively working on updating these dashboards to be compatible with the new metric structure.
+
+
 ## Data Ingestion
 
 ### Integrate Hadoop with OpenTelemetry Collector

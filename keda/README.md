@@ -1,10 +1,16 @@
 # KEDA Dashboard - OTLP
 
+> [!Note]
+> **Dashboard Migration Status**: Due to the migration of metric names and attributes, the dashboards may not work properly and are currently being updated:
+> We are actively working on updating these dashboards to be compatible with the new metric structure.
+
+
 ## Data Ingestion
 
 ### Integrate KEDA with OpenTelemetry Collector
 
 Follow the instructions on the official KEDA website's [page](https://keda.sh/docs/2.15/integrations/opentelemetry/) about integrating OpenTelemetry with KEDA.
+
 
 ## Dashboard panels
 
