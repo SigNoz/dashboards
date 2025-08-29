@@ -16,7 +16,8 @@ This comprehensive dashboard provides deep visibility into Claude Code usage pat
 ### Total Token Usage (Input & Output)
 
 Tokens are the currency of AI coding assistants. By splitting input tokens (developer prompts) and output tokens (Claude’s responses), this panel shows exactly how much work Claude is doing. Over time, you can see whether usage is ramping up, stable, or dropping off—and keep an eye on efficiency.
-![claude-io-token-usg](https://github.com/user-attachments/assets/0c0a140f-4a3d-4e82-a02e-363fb617e34a)
+<img src="https://github.com/user-attachments/assets/0c0a140f-4a3d-4e82-a02e-363fb617e34a" width="500">
+
 
 
 
