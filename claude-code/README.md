@@ -4,11 +4,6 @@
 
 This comprehensive dashboard provides deep visibility into Claude Code usage patterns and performance metrics. It tracks everything from token consumption and costs to user adoption and tool effectiveness—giving teams the data they need to optimize their AI-assisted development workflows.
 
- Control what gets sent to SigNoz using these guides:
-- Metrics: https://signoz.io/docs/userguide/drop-metrics/
-- Logs: https://signoz.io/docs/logs-management/guides/drop-logs/
-- Traces: https://signoz.io/docs/traces-management/guides/drop-spans/
-
 ## Dashboard panels
 
 ### Sections
