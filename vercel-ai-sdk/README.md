@@ -33,3 +33,21 @@ A line chart of the p99 latency in milliseconds of all LLM requests over the giv
 **Requests with Response time from LLM >= 1000ms**
 The percentage of all reqeusts in the given time frame that have a latency >= 1000 milliseconds. The value will turn orange if >= 5% and red if >= 10%.
 ![Tokens per Second Screenshot](./requests_latency.png)
+
+**Number of Requests Given Time Frame**
+A time-series chart showing the number of requests over time, helping to understand request patterns and traffic trends.
+![Requests Over Time Screenshot](./requests-over-time.png)
+
+**LLM Provider Distribution**
+A pie chart showing the distribution of model providers used in your Vercel AI applications (e.g., OpenAI, Anthropic).
+![Provider Distribution Screenshot](./provider_distribution.png)
+
+**LLM Model Distribution** 
+A pie chart showing the distribution of specific models used (e.g., gpt-4o-nano, gpt-4o-mini).
+![Model Distribution Screenshot](./model-distribution.png)
+
+**Services and Languages Using Vercel AI SDK** 
+A table providing an overview of the various services and their respective programming languages that utilize the Vercel AI SDK.
+![Services and Languages Screenshot](./services-languages-table.png)
+
+
