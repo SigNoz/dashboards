@@ -52,6 +52,13 @@ How fast does Gemini respond under load? This panel measures the 95th percentile
 
 <img width="708" height="281" alt="gemini-latency" src="https://github.com/user-attachments/assets/3c909491-7dfd-4a0d-8fcb-2b88cc8ff58d" />
 
+#### HTTP Request Duration (Over Time)
+
+This panel displays a time series line chart of the average HTTP request that is being made via the LLM calls over time. This gives you insight on the network speed for the actual outbound http request to the Google API network. 
+
+<img width="598" height="176" alt="Screenshot 2025-09-09 at 12 00 27 PM" src="https://github.com/user-attachments/assets/ef061331-0b4b-4e25-a50b-fe0c8a771045" />
+
+
 
 #### Services and Languages Using Gemini
 
@@ -66,6 +73,7 @@ Gemini powers a variety of applications across different services and programmin
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
 <img width="708" height="252" alt="gemini-errors" src="https://github.com/user-attachments/assets/e9a4c0c1-71f2-4cd5-b565-2a6c93afa975" />
+
 
 
 
