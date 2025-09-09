@@ -29,7 +29,8 @@ Not every request makes it through successfully. This panel tracks the percentag
 
 Anthropic offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="466" height="277" alt="gemini-model-distr" src="https://github.com/user-attachments/assets/d1f90ae7-93e7-484f-88d8-d55a77d8d00e" />
+<img width="351" height="291" alt="anthropic-model-distr" src="https://github.com/user-attachments/assets/b08a33ad-8fdd-4c87-b0b8-f943381c0a94" />
+
 
 
 #### Token Usage Over Time
@@ -52,12 +53,18 @@ How fast does Anthropic respond under load? This panel measures the 95th percent
 
 <img width="708" height="281" alt="gemini-latency" src="https://github.com/user-attachments/assets/3c909491-7dfd-4a0d-8fcb-2b88cc8ff58d" />
 
+#### HTTP Request Duration (Over Time)
+
+This panel displays a time series line chart of the average HTTP request that is being made via the LLM calls over time. This gives you insight on the network speed for the actual outbound http request to the Google API network. 
+
+<img width="598" height="176" alt="Screenshot 2025-09-09 at 12 00 27 PM" src="https://github.com/user-attachments/assets/ef061331-0b4b-4e25-a50b-fe0c8a771045" />
 
 #### Services and Languages Using Anthropic
 
 Anthropic powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="708" height="138" alt="gemini-services" src="https://github.com/user-attachments/assets/7ef5f513-3581-4966-b1a0-e37b25f801a7" />
+<img width="713" height="162" alt="anthropic-services-langs" src="https://github.com/user-attachments/assets/ecf818df-f496-44bc-9a4b-5baf704e5f39" />
+
 
 
 
@@ -65,7 +72,7 @@ Anthropic powers a variety of applications across different services and program
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="708" height="252" alt="gemini-errors" src="https://github.com/user-attachments/assets/e9a4c0c1-71f2-4cd5-b565-2a6c93afa975" />
+<img width="707" height="205" alt="anthropic-errors" src="https://github.com/user-attachments/assets/a66ce9cc-ba0a-47e0-a805-3f941783147f" />
 
 
 
