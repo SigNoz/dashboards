@@ -66,14 +66,17 @@ Deepseek powers a variety of applications across different services and programm
 <img width="713" height="162" alt="Deepseek-services-langs" src="https://github.com/user-attachments/assets/ecf818df-f496-44bc-9a4b-5baf704e5f39" />
 
 
-
-
 #### Error Records
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
 <img width="707" height="205" alt="Deepseek-errors" src="https://github.com/user-attachments/assets/a66ce9cc-ba0a-47e0-a805-3f941783147f" />
 
+#### API Requests
+
+This panel lists all Deepseek-related API requests captured from log attributes. Teams can use this for deep troubleshooting, auditing usage patterns, and correlating issues with specific request flows. Clicking on a row links back to the corresponding log entry for full traceability.
+
+<img width="701" height="251" alt="Screenshot 2025-09-14 at 10 30 06 AM" src="https://github.com/user-attachments/assets/6844be0d-e3be-4986-a9ca-de2ef8d8665b" />
 
 
 
