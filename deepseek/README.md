@@ -29,7 +29,7 @@ Not every request makes it through successfully. This panel tracks the percentag
 
 Deepseek offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="351" height="291" alt="Deepseek-model-distr" src="https://github.com/user-attachments/assets/b08a33ad-8fdd-4c87-b0b8-f943381c0a94" />
+<img width="357" height="292" alt="Screenshot 2025-09-14 at 10 27 40 AM" src="https://github.com/user-attachments/assets/f7dea5a3-cb27-4f47-bdf3-296ab62911fa" />
 
 
 
