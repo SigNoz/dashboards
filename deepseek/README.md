@@ -63,14 +63,15 @@ This panel displays a time series line chart of the average HTTP request that is
 
 Deepseek powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="713" height="162" alt="Deepseek-services-langs" src="https://github.com/user-attachments/assets/ecf818df-f496-44bc-9a4b-5baf704e5f39" />
+<img width="701" height="114" alt="Screenshot 2025-09-14 at 10 34 23 AM" src="https://github.com/user-attachments/assets/8662107f-4844-4733-a219-818744848624" />
 
 
 #### Error Records
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="707" height="205" alt="Deepseek-errors" src="https://github.com/user-attachments/assets/a66ce9cc-ba0a-47e0-a805-3f941783147f" />
+<img width="820" height="309" alt="Screenshot 2025-09-14 at 10 34 44 AM" src="https://github.com/user-attachments/assets/df93ded3-70c0-468c-9988-1c7753b9b3b7" />
+
 
 #### API Requests
 
