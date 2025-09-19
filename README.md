@@ -28,35 +28,7 @@ SigNoz is an open-source observability platform that helps you monitor and analy
 Each dashboard is built for specific services and data sources like OpenTelemetry (OTLP) and Prometheus. Users can import and modify these dashboards or create new ones based on their needs.
 
 ## Available Dashboards
-
-Below is a list of available dashboard templates in this repository:
-
-- [**Hostmetrics Dashboard**](https://github.com/SigNoz/dashboards/tree/main/hostmetrics): Monitors general host metrics, including CPU, memory, and disk usage.
-- [**Kubernetes Infra Dashboard**](https://github.com/SigNoz/dashboards/tree/main/k8s-infra-metrics): Visualizes metrics related to Kubernetes infrastructure.
-- [**Key Operations Dashboard**](https://github.com/SigNoz/dashboards/tree/main/key-operations): Tracks key operations within an application, focusing on performance and reliability.
-- [**Apache Web Server Dashboard**](https://github.com/SigNoz/dashboards/tree/main/apache-web-server): Monitors Apache web server metrics like request rates and active connections.
-- [**APM Dashboard**](https://github.com/SigNoz/dashboards/tree/main/apm): Visualizes application performance metrics, including latency, throughput, and error rates.
-- [**Docker Container Metrics Dashboard**](https://github.com/SigNoz/dashboards/tree/main/container-metrics): Tracks metrics related to Docker containers, such as CPU and memory usage.
-- [**CouchDB Dashboard**](https://github.com/SigNoz/dashboards/tree/main/couchdb): Monitors CouchDB-specific metrics, such as document read/write rates.
-- [**ECS Infrastructure Metrics Dashboard**](https://github.com/SigNoz/dashboards/tree/main/ecs-infra-metrics): Visualizes metrics for Amazon ECS infrastructure.
-- [**Flask Monitoring Dashboard**](https://github.com/SigNoz/dashboards/tree/main/flask-monitoring): Monitors performance metrics for Flask applications.
-- [**HAProxy Dashboard**](https://github.com/SigNoz/dashboards/tree/main/haproxy): Monitors HAProxy metrics such as request rates and active sessions.
-- [**Jenkins Dashboard**](https://github.com/SigNoz/dashboards/tree/main/jenkins): Tracks Jenkins metrics, including job success rates and queue times.
-- [**JMX Dashboard**](https://github.com/SigNoz/dashboards/tree/main/jmx): Monitors Java Management Extensions (JMX) metrics.
-- [**JVM Dashboard**](https://github.com/SigNoz/dashboards/tree/main/jvm): Tracks JVM metrics, including heap usage, garbage collection, and thread counts.
-- [**Memcached Dashboard**](https://github.com/SigNoz/dashboards/tree/main/memcached): Visualizes Memcached-specific metrics, such as cache hit/miss rates.
-- [**MongoDB Dashboard**](https://github.com/SigNoz/dashboards/tree/main/mongodb): Monitors MongoDB operations, memory usage, and performance metrics.
-- [**MySQL Dashboard**](https://github.com/SigNoz/dashboards/tree/main/mysql): Tracks MySQL metrics, including queries per second and connection errors.
-- [**Nginx Dashboard**](https://github.com/SigNoz/dashboards/tree/main/nginx): Monitors Nginx web server metrics, including request rates and active connections.
-- [**Nomad Dashboard**](https://github.com/SigNoz/dashboards/tree/main/nomad): Visualizes metrics for HashiCorp Nomad.
-- [**PostgreSQL Dashboard**](https://github.com/SigNoz/dashboards/tree/main/postgresql): Monitors PostgreSQL performance metrics.
-- [**RabbitMQ Dashboard**](https://github.com/SigNoz/dashboards/tree/main/rabbitmq): Tracks RabbitMQ metrics like queue sizes and message throughput.
-- [**Temporal.io Dashboard**](https://github.com/SigNoz/dashboards/tree/main/temporal.io): Monitors Temporal.io workflow metrics.
-- [**LLM Observability Dashboard**](https://github.com/SigNoz/dashboards/tree/main/llm-observability): Visualizes metrics for monitoring large language models.
-- [**SigNoz Ingestion Analysis**](https://github.com/SigNoz/dashboards/tree/main/signoz-ingestion-analysis): Visualizes the volume the metrics, traces and logs ingested into SigNoz. Useful for cost optimization.
-- [**KEDA Dashboard**](https://github.com/SigNoz/dashboards/tree/main/keda): Monitors metrics for KEDA, a Kubernetes-based event-driven autoscaling component.
-
-More services will be added in the future!
+Checkout list of all dashboards [here](https://signoz.io/docs/dashboards/dashboard-templates/overview/#available-dashboard-templates)
 
 ## Request New Dashboard Template
 
