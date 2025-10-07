@@ -2,7 +2,7 @@
 
 ## Details
 
-This dashboard offers a clear view into Deepseek API usage and performance. It highlights key metrics such as token consumption, model distribution, error rates, request volumes, and latency trends. Teams can also track which services and languages are leveraging the Deepseek API, along with detailed records of errors, to better understand adoption patterns and optimize reliability and efficiency.
+This dashboard offers a clear view into Crew AI and performance. It highlights key metrics such as token consumption, model distribution, error rates, request volumes, and latency trends. Teams can also track which services and languages are leveraging the Crew AI, along with detailed records of errors, to better understand adoption patterns and optimize reliability and efficiency.
 
 
 ## Dashboard panels
