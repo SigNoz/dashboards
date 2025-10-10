@@ -27,15 +27,13 @@ Not every request makes it through successfully. This panel tracks the percentag
 
 Mastra offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="357" height="292" alt="Screenshot 2025-09-14 at 10 27 40 AM" src="https://github.com/user-attachments/assets/f7dea5a3-cb27-4f47-bdf3-296ab62911fa" />
-
+<img width="350" height="233" alt="Screenshot 2025-10-10 at 11 08 59 AM" src="https://github.com/user-attachments/assets/762c7282-61d0-4445-bed0-ca8c8b227a08" />
 
 #### Token Usage Over Time
 
 Instead of a static snapshot, this time series shows token consumption trends. Are developers ramping up during peak cycles? Is there a steady baseline of activity? This view makes it easy to spot both healthy adoption curves and unusual spikes.
 
 <img width="683" height="313" alt="gemini-token-usage" src="https://github.com/user-attachments/assets/b316a274-89f5-4452-b2e0-ea81a187a382" />
-
 
 #### Requests Over Time
 
@@ -55,7 +53,22 @@ How fast does Mastra respond under load? This panel measures the 95th percentile
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="820" height="309" alt="Screenshot 2025-09-14 at 10 34 44 AM" src="https://github.com/user-attachments/assets/df93ded3-70c0-468c-9988-1c7753b9b3b7" />
+<img width="829" height="187" alt="Screenshot 2025-10-10 at 11 11 30 AM" src="https://github.com/user-attachments/assets/af45eddd-d8b5-4214-be36-68ba023fe086" />
+
+#### Agents
+
+This table shows a list of agents deployed using Mastra along with how many times each agent was called.
+
+<img width="712" height="129" alt="Screenshot 2025-10-10 at 11 12 26 AM" src="https://github.com/user-attachments/assets/c914ef8b-e6fb-4d45-bb5f-824dc8014f85" />
+
+#### Tools
+
+This table shows the list of tools executed by agents/workflows in Mastra, along with how many times each tool was executed. 
+
+<img width="703" height="96" alt="Screenshot 2025-10-10 at 11 13 23 AM" src="https://github.com/user-attachments/assets/d5b425d2-cdd7-4ac6-827a-737af7422539" />
+
+
+
 
 
 
