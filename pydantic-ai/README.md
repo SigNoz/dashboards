@@ -27,7 +27,7 @@ Not every request makes it through successfully. This panel tracks the percentag
 
 Pydantic AI offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="357" height="292" alt="Screenshot 2025-09-14 at 10 27 40 AM" src="https://github.com/user-attachments/assets/f7dea5a3-cb27-4f47-bdf3-296ab62911fa" />
+<img width="322" height="266" alt="Screenshot 2025-10-16 at 12 20 27 PM" src="https://github.com/user-attachments/assets/af09af43-d88c-4a0c-b8b8-0c2a4a4ce90d" />
 
 
 #### Token Usage Over Time
@@ -67,7 +67,7 @@ Pydantic AI powers a variety of applications across different services and progr
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="695" height="252" alt="pydantic_api_reqs" src="https://github.com/user-attachments/assets/63633f99-0e45-4e3d-9d53-2932d47295b0" />
+<img width="815" height="138" alt="pydantic-errs" src="https://github.com/user-attachments/assets/7faf9d6b-1938-4974-aebe-2b91d86079c1" />
 
 
 #### API Requests
