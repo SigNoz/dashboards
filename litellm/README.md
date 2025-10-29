@@ -15,23 +15,17 @@ Tokens are the foundation of LiteLLM’s SDK. By splitting input tokens (user pr
 
 <img width="470" height="151" alt="gemini-io-token-count" src="https://github.com/user-attachments/assets/1f13435e-e926-4c70-9e13-804f10f6fc48" />
 
-
-
 #### Total Error Rate
 
 Not every request makes it through successfully. This panel tracks the percentage of LiteLLM SDK calls that return errors. It’s a quick way to identify reliability issues and ensure your applications maintain a smooth, dependable experience.
 
 <img width="233" height="151" alt="gemini-error-rate" src="https://github.com/user-attachments/assets/3648b04d-3370-41e0-8083-0f3fc93b54ce" />
 
-
-
 #### Model Distribution
 
 LiteLLM offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="351" height="291" alt="anthropic-model-distr" src="https://github.com/user-attachments/assets/b08a33ad-8fdd-4c87-b0b8-f943381c0a94" />
-
-
+<img width="368" height="282" alt="Screenshot 2025-10-29 at 10 35 16 AM" src="https://github.com/user-attachments/assets/445bfdc6-154e-4544-a390-0d7a28a1d723" />
 
 #### Token Usage Over Time
 
@@ -63,17 +57,19 @@ This panel displays a time series line chart of the average HTTP request that is
 
 LiteLLM powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="713" height="162" alt="anthropic-services-langs" src="https://github.com/user-attachments/assets/ecf818df-f496-44bc-9a4b-5baf704e5f39" />
+<img width="692" height="124" alt="Screenshot 2025-10-29 at 10 36 32 AM" src="https://github.com/user-attachments/assets/dc1dc28e-5dbe-4a61-80b1-9e9675d5b863" />
 
 
 #### Error Records
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="707" height="205" alt="anthropic-errors" src="https://github.com/user-attachments/assets/a66ce9cc-ba0a-47e0-a805-3f941783147f" />
+<img width="816" height="310" alt="Screenshot 2025-10-29 at 10 37 09 AM" src="https://github.com/user-attachments/assets/0c7e6b58-63e5-420d-bf26-28f67d5b70c4" />
 
 #### Logs
 This panel shows all logs emitted by the LiteLLM SDK service.
+
+<img width="708" height="172" alt="Screenshot 2025-10-29 at 10 37 40 AM" src="https://github.com/user-attachments/assets/fd312be1-16a2-42fa-a87a-1f5724e36520" />
 
 
 # LiteLLM Proxy Dashboard
