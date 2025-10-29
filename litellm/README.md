@@ -71,6 +71,7 @@ This panel shows all logs emitted by the LiteLLM SDK service.
 
 <img width="708" height="172" alt="Screenshot 2025-10-29 at 10 37 40 AM" src="https://github.com/user-attachments/assets/fd312be1-16a2-42fa-a87a-1f5724e36520" />
 
+---
 
 # LiteLLM Proxy Dashboard
 
