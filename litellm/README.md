@@ -78,7 +78,6 @@ This panel shows all logs emitted by the LiteLLM SDK service.
 
 This dashboard offers a clear view into LiteLLM Proxy usage and performance. It highlights key metrics such as token consumption, model distribution, error rates, request volumes, and latency trends. Teams can also track which services and languages are leveraging the LiteLLM Proxy server, along with detailed records of errors, to better understand adoption patterns and optimize reliability and efficiency.
 
-
 ## Dashboard panels
 
 ### Sections
@@ -90,7 +89,6 @@ Tokens are the foundation of LiteLLM's Proxy Server. By splitting input tokens (
 <img width="470" height="151" alt="gemini-io-token-count" src="https://github.com/user-attachments/assets/1f13435e-e926-4c70-9e13-804f10f6fc48" />
 
 
-
 #### Total Error Rate
 
 Not every request makes it through successfully. This panel tracks the percentage of LiteLLM Proxy calls that return errors. It’s a quick way to identify reliability issues and ensure your applications maintain a smooth, dependable experience.
@@ -98,13 +96,11 @@ Not every request makes it through successfully. This panel tracks the percentag
 <img width="233" height="151" alt="gemini-error-rate" src="https://github.com/user-attachments/assets/3648b04d-3370-41e0-8083-0f3fc93b54ce" />
 
 
-
 #### Model Distribution
 
 LiteLLM offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="351" height="291" alt="anthropic-model-distr" src="https://github.com/user-attachments/assets/b08a33ad-8fdd-4c87-b0b8-f943381c0a94" />
-
+<img width="319" height="279" alt="Screenshot 2025-10-29 at 10 40 44 AM" src="https://github.com/user-attachments/assets/7dcdbdb1-1f32-406b-8c44-38260824584d" />
 
 
 #### Token Usage Over Time
@@ -113,13 +109,11 @@ Instead of a static snapshot, this time series shows token consumption trends. A
 
 <img width="683" height="313" alt="gemini-token-usage" src="https://github.com/user-attachments/assets/b316a274-89f5-4452-b2e0-ea81a187a382" />
 
-
 #### Requests Over Time
 
 Every API call matters. This chart captures the volume of requests sent to LiteLLM over time, letting you see demand patterns, identify high-traffic windows, and plan infrastructure or cost controls accordingly.
 
 <img width="708" height="281" alt="gemini-requests" src="https://github.com/user-attachments/assets/4f060da9-3297-447c-89b8-730f28e39a47" />
-
 
 #### Latency (P95 Over Time)
 
@@ -127,28 +121,27 @@ How fast does LiteLLM respond under load? This panel measures the 95th percentil
 
 <img width="708" height="281" alt="gemini-latency" src="https://github.com/user-attachments/assets/3c909491-7dfd-4a0d-8fcb-2b88cc8ff58d" />
 
-#### HTTP Request Duration (Over Time)
-
-This panel displays a time series line chart of the average HTTP request that is being made via the LLM calls over time. This gives you insight on the network speed for the actual outbound http request to the Google API network. 
-
-<img width="598" height="176" alt="Screenshot 2025-09-09 at 12 00 27 PM" src="https://github.com/user-attachments/assets/ef061331-0b4b-4e25-a50b-fe0c8a771045" />
 
 #### Services and Languages Using LiteLLM Proxy
 
 LiteLLM powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="713" height="162" alt="anthropic-services-langs" src="https://github.com/user-attachments/assets/ecf818df-f496-44bc-9a4b-5baf704e5f39" />
+<img width="696" height="132" alt="Screenshot 2025-10-29 at 10 40 15 AM" src="https://github.com/user-attachments/assets/522053c5-adbd-4484-b03b-00e83e4591fb" />
 
 
 #### Error Records
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="707" height="205" alt="anthropic-errors" src="https://github.com/user-attachments/assets/a66ce9cc-ba0a-47e0-a805-3f941783147f" />
+<img width="698" height="308" alt="Screenshot 2025-10-29 at 10 39 38 AM" src="https://github.com/user-attachments/assets/30be7cac-49d1-47c1-8b84-329098731b9d" />
+
 
 #### Model Specific Information
 
 This table keeps track of all the models called using your LiteLLM Proxy server, including model names, number of calls, latency per model(average), and total tokens used per model. 
+
+<img width="708" height="207" alt="Screenshot 2025-10-29 at 10 39 14 AM" src="https://github.com/user-attachments/assets/a50344a6-78cd-42bc-a6b3-f93ac18c8673" />
+
 
 
 
