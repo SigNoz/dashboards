@@ -13,15 +13,13 @@ This dashboard offers a clear view into Autogen usage and performance. It highli
 
 Not every request makes it through successfully. This panel tracks the percentage of Autogen calls that return errors. It’s a quick way to identify reliability issues and ensure your applications maintain a smooth, dependable experience.
 
-<img width="233" height="151" alt="gemini-error-rate" src="https://github.com/user-attachments/assets/3648b04d-3370-41e0-8083-0f3fc93b54ce" />
-
+<img width="350" height="211" alt="Screenshot 2025-11-06 at 1 23 22 PM" src="https://github.com/user-attachments/assets/5519d275-deff-45ae-9330-875dd887a9cd" />
 
 #### Model Distribution
 
 Autogen offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
 <img width="352" height="287" alt="Screenshot 2025-11-06 at 1 22 15 PM" src="https://github.com/user-attachments/assets/5db019d4-a015-44fd-ae75-2b5c248e22db" />
-
 
 #### Requests Over Time
 
