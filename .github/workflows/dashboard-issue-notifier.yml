@@ -65,6 +65,13 @@ jobs:
             exit 1
           fi
 
+          if [ -z "${{ vars.ISSUE_ASSIGNEE }}" ]; then
+            echo "❌ Error: ISSUE_ASSIGNEE variable must be set"
+            echo "Please configure this in your repository settings:"
+            echo "Settings → Secrets and variables → Actions → Variables"
+            exit 1
+          fi
+
           echo "✅ Configuration validated"
           echo "Target repository: ${{ vars.TARGET_REPO_OWNER }}/${{ vars.TARGET_REPO_NAME }}"
 
@@ -159,7 +166,7 @@ jobs:
             }
 
       - name: Delete previous bot comments
-        if: always() && steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true'
         uses: actions/github-script@v8
         with:
           script: |
