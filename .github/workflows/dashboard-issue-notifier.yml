@@ -1,0 +1,210 @@
+name: Create Dashboard Issue in signoz.io
+
+on:
+  pull_request:
+    paths:
+      - "**/*.json"
+
+permissions:
+  contents: read
+
+jobs:
+  create-dashboard-issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Get changed dashboard JSON files
+        id: changed-files
+        run: |
+          # Get the list of added JSON files in this PR
+          ADDED_FILES=$(git diff --name-only --diff-filter=A origin/${{ github.base_ref }}...${{ github.sha }} | grep '\.json$' || true)
+
+          if [ -z "$ADDED_FILES" ]; then
+            echo "No JSON files added"
+            echo "added_files=" >> $GITHUB_OUTPUT
+            echo "any_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Added JSON files found:"
+            echo "$ADDED_FILES"
+
+            # Convert to space-separated list for later use
+            ADDED_FILES_SPACE=$(echo "$ADDED_FILES" | tr '\n' ' ' | sed 's/ $//')
+            echo "added_files=$ADDED_FILES_SPACE" >> $GITHUB_OUTPUT
+            echo "any_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: List added dashboard files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "Added dashboard JSON files:"
+          echo "${{ steps.changed-files.outputs.added_files }}"
+
+      - name: Validate configuration
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          if [ -z "${{ vars.TARGET_REPO_OWNER }}" ] || [ -z "${{ vars.TARGET_REPO_NAME }}" ]; then
+            echo "❌ Error: TARGET_REPO_OWNER and TARGET_REPO_NAME variables must be set"
+            echo "Please configure these in your repository settings:"
+            echo "Settings → Secrets and variables → Actions → Variables"
+            echo ""
+            echo "Required variables:"
+            echo "- TARGET_REPO_OWNER: SigNoz"
+            echo "- TARGET_REPO_NAME: signoz.io"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.CROSS_REPO_TOKEN }}" ]; then
+            echo "❌ Error: CROSS_REPO_TOKEN secret must be set"
+            echo "Please create a Personal Access Token and add it as a secret:"
+            echo "Settings → Secrets and variables → Actions → Secrets"
+            exit 1
+          fi
+
+          if [ -z "${{ vars.ISSUE_ASSIGNEE }}" ]; then
+            echo "❌ Error: ISSUE_ASSIGNEE variable must be set"
+            echo "Please configure this in your repository settings:"
+            echo "Settings → Secrets and variables → Actions → Variables"
+            exit 1
+          fi
+
+          echo "✅ Configuration validated"
+          echo "Target repository: ${{ vars.TARGET_REPO_OWNER }}/${{ vars.TARGET_REPO_NAME }}"
+
+      - name: Find existing issue in signoz.io
+        id: find-issue
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          # Search for existing issue in signoz.io
+          ISSUE_NUMBER=$(gh issue list \
+            --repo ${{ vars.TARGET_REPO_OWNER }}/${{ vars.TARGET_REPO_NAME }} \
+            --search "Dashboard Changes in PR #${{ github.event.pull_request.number }} in:title" \
+            --json number \
+            --jq '.[0].number // empty')
+
+          echo "existing-issue=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+
+          if [ -n "$ISSUE_NUMBER" ]; then
+            echo "Found existing issue #$ISSUE_NUMBER in signoz.io"
+          else
+            echo "No existing issue found in signoz.io"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+
+      - name: Generate issue content
+        id: issue-content
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          # Create issue body
+          {
+            echo "# 📊 New Dashboard Changes"
+            echo ""
+            echo "**Source Repository:** ${{ github.repository }}"
+            echo "**Pull Request:** [#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }})"
+            echo "**Branch:** \`${{ github.head_ref }}\`"
+            echo "**Author:** @${{ github.event.pull_request.user.login }}"
+            echo ""
+            echo "## Dashboard JSON Files Added:"
+            echo ""
+            
+            # Process each added file
+            for file in ${{ steps.changed-files.outputs.added_files }}; do
+              file_url="https://github.com/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/${file}"
+              echo "- [\`${file}\`](${file_url})"
+            done
+            
+            echo ""
+            echo "## Next Steps"
+            echo ""
+            echo "- [ ] Review dashboard configuration"
+            echo "- [ ] Test dashboard functionality"
+            echo "- [ ] Update documentation if needed"
+            echo ""
+            echo "---"
+            echo "*This issue was automatically created by the [Dashboard workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*"
+          } > issue_content.md
+
+          cat issue_content.md
+
+      - name: Create or update issue in signoz.io
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.CROSS_REPO_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const issueBody = fs.readFileSync('issue_content.md', 'utf8');
+            const existingIssue = '${{ steps.find-issue.outputs.existing-issue }}';
+            const targetOwner = '${{ vars.TARGET_REPO_OWNER }}';
+            const targetRepo = '${{ vars.TARGET_REPO_NAME }}';
+
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.update({
+                owner: targetOwner,
+                repo: targetRepo,
+                issue_number: parseInt(existingIssue),
+                body: issueBody
+              });
+              console.log(`Updated issue #${existingIssue} in ${targetOwner}/${targetRepo}`);
+            } else {
+              // Create new issue
+              const issue = await github.rest.issues.create({
+                owner: targetOwner,
+                repo: targetRepo,
+                title: `Dashboard Changes in PR #${{ github.event.pull_request.number }} from ${{ github.repository }}`,
+                body: issueBody,
+                labels: ['dashboard', 'automated-issue'],
+                assignees: ['${{ vars.ISSUE_ASSIGNEE }}']
+              });
+              console.log(`Created issue #${issue.data.number} in ${targetOwner}/${targetRepo}`);
+            }
+
+      - name: Delete previous bot comments
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            for (const comment of comments.data) {
+              if (comment.user.type === 'Bot' && comment.body.includes('Dashboard files added in this PR')) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id
+                });
+              }
+            }
+
+      - name: Comment on PR
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const files = '${{ steps.changed-files.outputs.added_files }}'.split(' ');
+
+            let comment = `## 📊 Dashboard files added in this PR\n\n`;
+
+            for (const file of files) {
+              const fileUrl = `https://github.com/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/${file}`;
+              comment += `- [\`${file}\`](${fileUrl})\n`;
+            }
+
+            comment += `\n✅ An issue has been created in [\`SigNoz/signoz.io\`](https://github.com/SigNoz/signoz.io/issues) to track these dashboard changes.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
