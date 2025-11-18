@@ -50,7 +50,8 @@ This panel displays a time series line chart of the average HTTP request that is
 
 Semantic Kernel powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="692" height="124" alt="Screenshot 2025-10-29 at 10 36 32 AM" src="https://github.com/user-attachments/assets/dc1dc28e-5dbe-4a61-80b1-9e9675d5b863" />
+<img width="700" height="116" alt="Screenshot 2025-11-18 at 10 45 30 AM" src="https://github.com/user-attachments/assets/64f1fee1-9c0f-47ce-9c53-d252ef3a23f7" />
+
 
 
 #### Error Records
@@ -64,14 +65,16 @@ This table logs all recorded errors and when clicking on an individual record, y
 
 This panel lists all Semantic Kernel-related logs. Teams can use this for deep troubleshooting, auditing usage patterns, and correlating issues with specific request flows. Clicking on a row links back to the corresponding log entry for full traceability.
 
-<img width="822" height="318" alt="Screenshot 2025-11-06 at 1 20 33 PM" src="https://github.com/user-attachments/assets/49a86de7-1722-4ead-91c1-a787d0ae5841" />
+<img width="700" height="422" alt="Screenshot 2025-11-18 at 10 45 06 AM" src="https://github.com/user-attachments/assets/8e8959e2-c7e4-492e-98db-0221fb602a56" />
+
 
 
 #### Tools
 
 This panel lists all tools called within the Semantic Kernel execution. Each entry contains the tool name along with number of requests made to that tool and the average latency. 
 
-<img width="821" height="153" alt="Screenshot 2025-11-06 at 1 19 49 PM" src="https://github.com/user-attachments/assets/515c67fa-7366-421b-9f51-3ed70003612f" />
+<img width="702" height="217" alt="Screenshot 2025-11-18 at 10 44 05 AM" src="https://github.com/user-attachments/assets/f98004b5-375f-4e17-a3cc-1f792bf36073" />
+
 
 
 
