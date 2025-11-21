@@ -63,46 +63,54 @@ Each dashboard should be accompanied by a README file that provides essential in
 
 ### README Structure
 
+**Note:**
+If the dashboard is published on the [SigNoz website](https://signoz.io/docs/dashboards/dashboard-templates/overview), the README should only contain:
+
+* The **Title**, and
+* A **link to the dashboard’s detail page** on signoz.io
+
+**Example:**
+`https://signoz.io/docs/dashboards/dashboard-templates/pydantic-ai-dashboard/`
+
 Your README file should include the following sections:
 
 1. **Title**
 
-   - The title should include the name of the dashboard and the data source.
-   - Example: `# MySQL Dashboard - OTLP`
+* The title should include the name of the dashboard and the data source.
+* Example: `# MySQL Dashboard - OTLP`
 
 2. **Metrics Ingestion**
 
-   - Explain how to ingest metrics for the dashboard.
-   - Provide configuration snippets (e.g., `otel-config.yaml`).
-   - Include instructions for setting up receivers and pipelines.
+* Explain how to ingest metrics for the dashboard.
+* Provide configuration snippets (e.g., `otel-config.yaml`).
+* Include instructions for setting up receivers and pipelines.
 
 3. **Variables**
 
-   - List and describe any variables used in the dashboard.
-   - Example:
+* List and describe any variables used in the dashboard.
+* Example:
 
-     ```markdown
-     ## Variables
-
-     - `{{deployment_environment}}`: Deployment environment
-     - `{{mysql_instance_endpoint}}`: MySQL instance endpoint
-     ```
+```markdown
+## Variables
+- `{{deployment_environment}}`: Deployment environment
+- `{{mysql_instance_endpoint}}`: MySQL instance endpoint
+```
 
 4. **Dashboard Panels**
 
-   - Describe each section and panel in the dashboard.
-   - Mention the metrics used for each panel.
-   - Include screenshots stored in the `assets/` directory.
+* Describe each section and panel in the dashboard.
+* Mention the metrics used for each panel.
+* Include screenshots stored in the `assets/` directory.
 
 5. **Screenshots**
 
-   - Add relevant screenshots to illustrate the dashboard sections.
-   - Reference the images in the README using Markdown syntax.
-   - Example:
+* Add relevant screenshots to illustrate the dashboard sections.
+* Reference the images in the README using Markdown syntax.
+* Example:
 
-     ```markdown
-     ![Resources Screenshot 1](assets/resources_1.png)
-     ```
+```markdown
+![Resources Screenshot 1](assets/resources_1.png)
+```
 
 ### Example README
 
