@@ -1,6 +1,11 @@
 # MySQL Dashboard - OTLP
 
+## Dashboard Page  
+https://signoz.io/docs/dashboards/dashboard-templates/mysql/
+
 ## Data Ingestion
+
+Ingestion documenation - https://signoz.io/docs/metrics-management/mysql-metrics/
 
 ### With OTLP MySQL Receiver
 
