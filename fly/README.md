@@ -4,18 +4,17 @@ This directory contains dashboards for monitoring Fly.io applications using Prom
 
 ## Dashboards
 
-- **fly-cpu-mem-prometheus-v1.json**: Focused dashboard for CPU and memory usage, aggregated by app, using Fly federated Prometheus metrics.
+- **fly-prometheus-v1.json**: Dashboard for CPU, memory usage, data transfer, and TCP aggregated by app, using Fly federated Prometheus metrics.
 
 ## Dashboard Panels
 
-### fly-cpu-mem-prometheus-v1.json
+### fly-prometheus-v1.json
 
 Key panels include:
 
 - **CPU Utilisation**: Percentage of total CPU time by app.
 - **CPU User/System**: Breakdown of user and system CPU time.
 - **Memory Used (bytes/percent)**: Memory usage in bytes and as a percentage.
-- **Memory Cached**: Amount of memory used for caching.
 
 ## Usage
 
@@ -45,6 +44,15 @@ receivers:
           authorization:
             type: FlyV1
             credentials_file: /etc/otel/secret/fly_federate_token
+
+processors:
+  transform/fly_metrics:
+    error_mode: ignore
+    metric_statements:
+      - context: datapoint
+        statements:
+          - 'convert_gauge_to_sum("cumulative", true) where IsMatch(metric.name, "^fly_.*_count$") or metric.name == "fly_instance_cpu" or metric.name == "fly_instance_net_sent_bytes" or metric.name == "fly_instance_net_recv_bytes"'
+
 ```
 
 ## References
