@@ -44,15 +44,6 @@ receivers:
           authorization:
             type: FlyV1
             credentials_file: /etc/otel/secret/fly_federate_token
-
-processors:
-  transform/fly_metrics:
-    error_mode: ignore
-    metric_statements:
-      - context: datapoint
-        statements:
-          - 'convert_gauge_to_sum("cumulative", true) where IsMatch(metric.name, "^fly_.*_count$") or metric.name == "fly_instance_cpu" or metric.name == "fly_instance_net_sent_bytes" or metric.name == "fly_instance_net_recv_bytes"'
-
 ```
 
 ## References
