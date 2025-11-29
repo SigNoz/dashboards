@@ -27,11 +27,11 @@ LiveKit voice agents support multiple model variants, each optimized for differe
 
 <img width="351" height="437" alt="Screenshot 2025-11-18 at 10 42 43 AM" src="https://github.com/user-attachments/assets/6019b109-2fd3-4d65-92cb-a404337f7e82" />
 
-#### Requests Over Time
+#### Conversations Over Time
 
-Every API call matters. This chart captures the volume of requests sent to LiveKit over time, letting you see demand patterns, identify high-traffic windows, and plan infrastructure or cost controls accordingly.
+This chart captures the volume of conversations with LiveKit voice agents over time, letting you see demand patterns, identify high-traffic windows, and plan infrastructure or cost controls accordingly.
 
-<img width="708" height="281" alt="gemini-requests" src="https://github.com/user-attachments/assets/4f060da9-3297-447c-89b8-730f28e39a47" />
+<img width="570" height="213" alt="Screenshot 2025-11-28 at 6 11 24 PM" src="https://github.com/user-attachments/assets/c3f0f34c-2d58-4f4d-bf37-30653cb207ed" />
 
 
 #### Latency (P95 Over Time)
@@ -71,14 +71,24 @@ This panel lists all LiveKit-related logs. Teams can use this for deep troublesh
 
 This metric tracks how many conversations end before reaching a minimum number of turns, helping identify potential issues with user engagement or early drop-offs. A high count may indicate problems with the voice agent's initial responses or user experience that cause premature conversation termination.
 
+<img width="359" height="123" alt="Screenshot 2025-11-28 at 6 08 36 PM" src="https://github.com/user-attachments/assets/b329feba-675f-4a5b-817a-cb6aacc34686" />
+
 #### Average Number of Turns Per Conversation
 
 This panel displays the average number of back-and-forth exchanges in each conversation. It provides insight into conversation depth and user engagement—higher averages typically indicate more complex interactions, while lower averages might suggest quick transactions or potential friction points.
+
+<img width="349" height="132" alt="Screenshot 2025-11-28 at 6 09 30 PM" src="https://github.com/user-attachments/assets/a329bbe2-cafe-410f-8934-412d0f79b23a" />
+
 
 #### List of Conversations Below Set Threshold Turns (Trace ID)
 
 This table provides a detailed list of specific conversations that ended before meeting the turn threshold, along with their trace IDs. Teams can click through to individual traces to investigate why these conversations were shorter than expected and identify patterns or issues requiring attention.
 
+<img width="465" height="208" alt="Screenshot 2025-11-28 at 6 10 31 PM" src="https://github.com/user-attachments/assets/dc6f8ab4-e46a-4aa8-8b06-76b1e9fa9049" />
+
+
 #### Average Latency of the TTS Over Time for the Voice Agent
 
 Text-to-speech (TTS) latency directly impacts the conversational experience. This panel tracks the average TTS response time over time, helping you monitor voice synthesis performance, detect degradation, and ensure the voice agent maintains natural, responsive interactions.
+
+<img width="571" height="274" alt="Screenshot 2025-11-28 at 6 09 58 PM" src="https://github.com/user-attachments/assets/93958337-94d6-42d8-bfe6-e91c9ebfa87e" />
