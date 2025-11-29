@@ -67,12 +67,18 @@ This panel lists all LiveKit-related logs. Teams can use this for deep troublesh
 
 <img width="696" height="417" alt="Screenshot 2025-11-25 at 12 35 49 PM" src="https://github.com/user-attachments/assets/cf0e44a1-a3bf-4b26-ab26-36610533332c" />
 
+#### Number of Conversations Below Set Threshold Turns
 
+This metric tracks how many conversations end before reaching a minimum number of turns, helping identify potential issues with user engagement or early drop-offs. A high count may indicate problems with the voice agent's initial responses or user experience that cause premature conversation termination.
 
+#### Average Number of Turns Per Conversation
 
+This panel displays the average number of back-and-forth exchanges in each conversation. It provides insight into conversation depth and user engagement—higher averages typically indicate more complex interactions, while lower averages might suggest quick transactions or potential friction points.
 
+#### List of Conversations Below Set Threshold Turns (Trace ID)
 
+This table provides a detailed list of specific conversations that ended before meeting the turn threshold, along with their trace IDs. Teams can click through to individual traces to investigate why these conversations were shorter than expected and identify patterns or issues requiring attention.
 
+#### Average Latency of the TTS Over Time for the Voice Agent
 
-
-
+Text-to-speech (TTS) latency directly impacts the conversational experience. This panel tracks the average TTS response time over time, helping you monitor voice synthesis performance, detect degradation, and ensure the voice agent maintains natural, responsive interactions.
