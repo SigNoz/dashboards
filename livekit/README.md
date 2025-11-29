@@ -50,7 +50,7 @@ This panel displays a time series line chart of the average HTTP request that is
 
 LiveKit powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="696" height="115" alt="Screenshot 2025-11-25 at 12 36 14 PM" src="https://github.com/user-attachments/assets/b7c2ead8-9b72-4ae0-a2e6-dc2504074fa7" />
+<img width="699" height="150" alt="Screenshot 2025-11-28 at 6 12 19 PM" src="https://github.com/user-attachments/assets/2aaa65a9-f7d1-4ef2-8d7e-b406d5a16763" />
 
 
 
