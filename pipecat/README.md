@@ -101,13 +101,13 @@ This table provides a detailed list of specific conversations that ended before 
 
 
 
-#### Average Latency of the TTS Over Time for the Voice Agent
+#### Average Latency of the TTS (Over Time)
 
 Text-to-speech (TTS) latency directly impacts the conversational experience. This panel tracks the average TTS response time over time, helping you monitor voice synthesis performance, detect degradation, and ensure the voice agent maintains natural, responsive interactions.
 
 <img width="571" height="274" alt="Screenshot 2025-11-28 at 6 09 58 PM" src="https://github.com/user-attachments/assets/93958337-94d6-42d8-bfe6-e91c9ebfa87e" />
 
-#### Average Latency of the STT Over Time for the Voice Agent
+#### Average Latency of the STT (Over Time)
 
 Speech-to-text (STT) latency directly impacts the conversational experience. This panel tracks the average STT response time over time, helping you monitor voice synthesis performance, detect degradation, and ensure the voice agent maintains natural, responsive interactions.
 
