@@ -31,9 +31,15 @@ Pipecat voice agents support multiple model variants, each optimized for differe
 
 Speech-to-text (STT) models convert user voice input into text that the voice agent can process. This panel shows the distribution of STT models being used across your Pipecat applications, helping you understand which speech recognition providers are most popular and track the adoption of different STT services for various use cases.
 
+<img width="347" height="286" alt="Screenshot 2025-12-02 at 10 24 40 AM" src="https://github.com/user-attachments/assets/8167373d-022b-4604-9512-b12d56c690df" />
+
+
 #### TTS Model Distribution
 
 Text-to-speech (TTS) models transform the agent's text responses into natural-sounding voice output. This panel displays which TTS models and voices are being utilized most frequently, enabling you to monitor voice synthesis preferences, evaluate the adoption of different voice providers, and optimize for quality and cost considerations.
+
+<img width="347" height="286" alt="Screenshot 2025-12-02 at 10 24 56 AM" src="https://github.com/user-attachments/assets/806fd363-0e05-452f-b280-cc1169e0ce2e" />
+
 
 #### Conversations Over Time
 
@@ -42,11 +48,11 @@ This chart captures the volume of conversations with Pipecat voice agents over t
 <img width="570" height="213" alt="Screenshot 2025-11-28 at 6 11 24 PM" src="https://github.com/user-attachments/assets/c3f0f34c-2d58-4f4d-bf37-30653cb207ed" />
 
 
-#### Average Turn Latency(Over Time)
+#### Agent Turn Latency(Over Time)
 
-This panel tracks the average time it takes to complete a full conversation turn (user input → agent response) over time. Monitoring turn latency helps identify performance bottlenecks in the voice agent pipeline, detect degradation trends, and ensure smooth, responsive conversational experiences.
+This panel tracks the average time it takes the agent to complete its turn turn over time. Monitoring turn latency helps identify performance bottlenecks in the voice agent pipeline, detect degradation trends, and ensure smooth, responsive conversational experiences.
 
-<img width="708" height="281" alt="gemini-latency" src="https://github.com/user-attachments/assets/3c909491-7dfd-4a0d-8fcb-2b88cc8ff58d" />
+<img width="572" height="230" alt="Screenshot 2025-12-02 at 10 25 25 AM" src="https://github.com/user-attachments/assets/5a81ade5-e40e-4929-bd6d-5da555eaaa04" />
 
 #### HTTP Request Duration (Over Time)
 
@@ -58,9 +64,7 @@ This panel displays a time series line chart of the average HTTP request that is
 
 Pipecat powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="699" height="150" alt="Screenshot 2025-11-28 at 6 12 19 PM" src="https://github.com/user-attachments/assets/2aaa65a9-f7d1-4ef2-8d7e-b406d5a16763" />
-
-
+<img width="700" height="118" alt="Screenshot 2025-12-02 at 10 26 24 AM" src="https://github.com/user-attachments/assets/18266764-e089-4402-bfb0-a4242063a7fb" />
 
 #### Error Records
 
@@ -73,9 +77,10 @@ This table logs all recorded errors and when clicking on an individual record, y
 
 This panel lists all Pipecat related logs. Teams can use this for deep troubleshooting, auditing usage patterns, and correlating issues with specific request flows. Clicking on a row links back to the corresponding log entry for full traceability.
 
-<img width="696" height="417" alt="Screenshot 2025-11-25 at 12 35 49 PM" src="https://github.com/user-attachments/assets/cf0e44a1-a3bf-4b26-ab26-36610533332c" />
+<img width="700" height="166" alt="Screenshot 2025-12-02 at 10 27 32 AM" src="https://github.com/user-attachments/assets/f86cebab-ab59-4863-88ad-66518c5a635f" />
 
-#### Number of Conversations Below Set Threshold Turns
+
+#### Number of Conversations Below Set Turn Threshold
 
 This metric tracks how many conversations end before reaching a minimum number of turns, helping identify potential issues with user engagement or early drop-offs. A high count may indicate problems with the voice agent's initial responses or user experience that cause premature conversation termination.
 
@@ -88,11 +93,12 @@ This panel displays the average number of back-and-forth exchanges in each conve
 <img width="349" height="132" alt="Screenshot 2025-11-28 at 6 09 30 PM" src="https://github.com/user-attachments/assets/a329bbe2-cafe-410f-8934-412d0f79b23a" />
 
 
-#### List of Conversations Below Set Threshold Turns (Trace ID)
+#### List of Conversations Below Set Turn Threshold (Trace ID)
 
 This table provides a detailed list of specific conversations that ended before meeting the turn threshold, along with their trace IDs. Teams can click through to individual traces to investigate why these conversations were shorter than expected and identify patterns or issues requiring attention.
 
-<img width="465" height="208" alt="Screenshot 2025-11-28 at 6 10 31 PM" src="https://github.com/user-attachments/assets/dc6f8ab4-e46a-4aa8-8b06-76b1e9fa9049" />
+<img width="459" height="225" alt="Screenshot 2025-12-02 at 10 28 31 AM" src="https://github.com/user-attachments/assets/893a8d9c-f460-4dd3-a373-f10e2af08fac" />
+
 
 
 #### Average Latency of the TTS Over Time for the Voice Agent
@@ -104,3 +110,6 @@ Text-to-speech (TTS) latency directly impacts the conversational experience. Thi
 #### Average Latency of the STT Over Time for the Voice Agent
 
 Speech-to-text (STT) latency directly impacts the conversational experience. This panel tracks the average STT response time over time, helping you monitor voice synthesis performance, detect degradation, and ensure the voice agent maintains natural, responsive interactions.
+
+<img width="575" height="267" alt="Screenshot 2025-12-02 at 10 29 08 AM" src="https://github.com/user-attachments/assets/e3fc1e62-9961-448a-bd51-fe73787a3101" />
+
