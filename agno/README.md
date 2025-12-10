@@ -31,6 +31,9 @@ Agno offers multiple model variants, each optimized for different tasks. This pa
 
 This panel shows the distribution of various agents being used within Agno, helping you understand which agents are most active and how adoption is spread across different agent types in your implementation.
 
+<img width="461" height="382" alt="Screenshot 2025-12-10 at 10 41 58 AM" src="https://github.com/user-attachments/assets/c5c6128f-d53d-4caa-9fd6-a45ae7ec4c0c" />
+
+
 #### Requests Over Time
 
 Every API call matters. This chart captures the volume of requests sent to Agno over time, letting you see demand patterns, identify high-traffic windows, and plan infrastructure or cost controls accordingly.
@@ -54,7 +57,8 @@ This panel displays a time series line chart of the average HTTP request that is
 
 Agno powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="700" height="116" alt="Screenshot 2025-11-18 at 10 45 30 AM" src="https://github.com/user-attachments/assets/64f1fee1-9c0f-47ce-9c53-d252ef3a23f7" />
+<img width="686" height="122" alt="Screenshot 2025-12-10 at 10 41 32 AM" src="https://github.com/user-attachments/assets/5bcd4c4c-2394-4e47-ab5b-50ca8e2b0711" />
+
 
 
 
@@ -69,14 +73,16 @@ This table logs all recorded errors and when clicking on an individual record, y
 
 This panel lists all Agno-related logs. Teams can use this for deep troubleshooting, auditing usage patterns, and correlating issues with specific request flows. Clicking on a row links back to the corresponding log entry for full traceability.
 
-<img width="700" height="422" alt="Screenshot 2025-11-18 at 10 45 06 AM" src="https://github.com/user-attachments/assets/8e8959e2-c7e4-492e-98db-0221fb602a56" />
+<img width="686" height="334" alt="Screenshot 2025-12-10 at 10 41 07 AM" src="https://github.com/user-attachments/assets/4266d88a-53bc-4f5d-9b7a-c6b2ca3e82e2" />
 
 
 #### Agents
 
 This panel lists all agents called within the Agno execution. Each entry contains the agent name along with number of requests made to that tool and the average latency for the duration of the agent.
 
-<img width="702" height="217" alt="Screenshot 2025-11-18 at 10 44 05 AM" src="https://github.com/user-attachments/assets/f98004b5-375f-4e17-a3cc-1f792bf36073" />
+<img width="690" height="158" alt="Screenshot 2025-12-10 at 10 40 23 AM" src="https://github.com/user-attachments/assets/cf2b6b4d-5af7-4ddd-8179-69a938504290" />
+
+
 
 
 
