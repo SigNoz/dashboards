@@ -4,6 +4,7 @@
 
 This dashboard offers a clear view into Pipecat usage and performance. It highlights key metrics such as token consumption, model distribution, error rates, request volumes, and latency trends. Teams can also track which services and languages are leveraging Pipecat along with detailed records of errors, to better understand adoption patterns and optimize reliability and efficiency.
 
+To start sending Pipecat telemetry to SigNoz, follow the [Pipecat monitoring guide](https://signoz.io/docs/pipecat-monitoring/).
 
 ## Dashboard panels
 
