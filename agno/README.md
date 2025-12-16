@@ -4,6 +4,7 @@
 
 This dashboard offers a clear view into Agno usage and performance. It highlights key metrics such as token consumption, model distribution, error rates, request volumes, and latency trends. Teams can also track which services and languages are leveraging Agno along with detailed records of errors, to better understand adoption patterns and optimize reliability and efficiency.
 
+To start sending Agno telemetry to SigNoz, follow the [Agno monitoring guide](https://signoz.io/docs/agno-monitoring/).
 
 ## Dashboard panels
 
