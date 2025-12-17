@@ -20,19 +20,19 @@ Tokens are the foundation of Inkeep. By splitting input tokens (user prompts) an
 
 Not every request makes it through successfully. This panel tracks the percentage of Inkeep calls that return errors. It’s a quick way to identify reliability issues and ensure your applications maintain a smooth, dependable experience.
 
-<img width="350" height="211" alt="Screenshot 2025-11-06 at 1 23 22 PM" src="https://github.com/user-attachments/assets/5519d275-deff-45ae-9330-875dd887a9cd" />
+<img width="348" height="158" alt="Screenshot 2025-12-17 at 1 53 52 PM" src="https://github.com/user-attachments/assets/c5f95168-0621-4165-871f-e1498c49af83" />
 
 #### Model Distribution
 
 Inkeep offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often—helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="351" height="437" alt="Screenshot 2025-11-18 at 10 42 43 AM" src="https://github.com/user-attachments/assets/6019b109-2fd3-4d65-92cb-a404337f7e82" />
+<img width="348" height="375" alt="Screenshot 2025-12-17 at 1 54 26 PM" src="https://github.com/user-attachments/assets/4438b990-b99d-4cd3-87ab-55363c9b0ca9" />
 
 #### Agent Distribution
 
 This panel shows the distribution of various agents being used within Inkeep, helping you understand which agents are most active and how adoption is spread across different agent types in your implementation.
 
-<img width="461" height="382" alt="Screenshot 2025-12-10 at 10 41 58 AM" src="https://github.com/user-attachments/assets/c5c6128f-d53d-4caa-9fd6-a45ae7ec4c0c" />
+<img width="348" height="375" alt="Screenshot 2025-12-17 at 1 54 56 PM" src="https://github.com/user-attachments/assets/2d385b05-13af-40e2-8908-770436994725" />
 
 
 #### Requests Over Time
@@ -53,21 +53,15 @@ How fast does Inkeep respond under load? This panel measures the 95th percentile
 
 This table logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="584" height="206" alt="Screenshot 2025-11-06 at 1 20 55 PM" src="https://github.com/user-attachments/assets/0ac8dd8c-fecb-44ed-af6d-a98253fd6e58" />
-
-
-#### Logs
-
-This panel lists all related logs. Teams can use this for deep troubleshooting, auditing usage patterns, and correlating issues with specific request flows. Additionally, custom logs can be added to your application which will show up here. Clicking on a row links back to the corresponding log entry for full traceability.
-
-<img width="686" height="334" alt="Screenshot 2025-12-10 at 10 41 07 AM" src="https://github.com/user-attachments/assets/4266d88a-53bc-4f5d-9b7a-c6b2ca3e82e2" />
+<img width="701" height="365" alt="Screenshot 2025-12-17 at 1 56 15 PM" src="https://github.com/user-attachments/assets/9c8ef8da-c570-41b7-9016-55c6f4272b0f" />
 
 
 #### Agents
 
 This panel lists all agents called within the Inkeep execution. Each entry contains the agent name along with number of requests made to that tool and the average latency for the duration of the agent.
 
-<img width="690" height="158" alt="Screenshot 2025-12-10 at 10 40 23 AM" src="https://github.com/user-attachments/assets/cf2b6b4d-5af7-4ddd-8179-69a938504290" />
+<img width="580" height="220" alt="Screenshot 2025-12-17 at 1 55 28 PM" src="https://github.com/user-attachments/assets/129ed7b1-e213-41e1-8e7f-5a0fe3051759" />
+
 
 
 
