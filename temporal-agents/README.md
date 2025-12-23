@@ -12,7 +12,8 @@ To start sending Temporal telemetry to SigNoz, follow the [Temporal monitoring g
 
 #### LLM
 
-<img width="1435" height="745" alt="Screenshot 2025-12-23 at 2 28 42 PM" src="https://github.com/user-attachments/assets/3a4d2b37-5ce1-4c5a-a819-5edd448fe8ac" />
+<img width="1071" height="745" alt="Screenshot 2025-12-23 at 2 29 51 PM" src="https://github.com/user-attachments/assets/d7da8d32-ca49-4ffe-826a-340513b5a91c" />
+
 
 ##### Total Token Usage (Input & Output)
 
@@ -69,7 +70,8 @@ This panel lists all Temporal-related logs. Teams can use this for deep troubles
 
 #### Agents
 
-<img width="1413" height="691" alt="Screenshot 2025-12-23 at 2 26 10 PM" src="https://github.com/user-attachments/assets/18978e8f-4ebb-4e17-b8f9-9cfff6cfabef" />
+<img width="1066" height="691" alt="Screenshot 2025-12-23 at 2 30 43 PM" src="https://github.com/user-attachments/assets/59dcbd1d-21c9-4130-8cc1-25e366e38250" />
+
 
 ##### Agent Distribution
 
