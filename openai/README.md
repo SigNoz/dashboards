@@ -68,8 +68,7 @@ This chart tracks how effectively your cache is being utilized over time.
 
 How fast does OpenAI respond under load? This panel measures the 95th percentile duration of requests over time, surfacing potential slowdowns, spikes, or regressions. By keeping an eye on responsiveness, teams can ensure a consistent developer and user experience.
 
-<img width="652" height="264" alt="Screenshot 2026-01-05 at 10 48 30 AM" src="https://github.com/user-attachments/assets/e2e6d6e6-1e7f-4a67-a7eb-4582a9d57fc6" />
-
+<img width="661" height="267" alt="Screenshot 2026-01-05 at 10 51 00 AM" src="https://github.com/user-attachments/assets/47d02f82-ac9d-49a2-ae41-545d152c44e9" />
 
 
 #### Services and Languages Using OpenAI
