@@ -20,25 +20,29 @@ Tokens are the foundation of OpenAI. By splitting input tokens (user prompts) an
 
 This line shows the total tokenm usage over time per service. 
 
-<img width="678" height="270" alt="Screenshot 2025-12-30 at 10 53 11 AM" src="https://github.com/user-attachments/assets/d8692f2d-73cd-48eb-9a10-a9cf4f409395" />
+<img width="704" height="277" alt="Screenshot 2026-01-05 at 10 46 44 AM" src="https://github.com/user-attachments/assets/749d4c10-f804-45cc-87f0-c3c493ec56f5" />
+
 
 #### Total Error Rate
 
 Not every request makes it through successfully. This panel tracks the percentage of OpenAI calls that return errors. It’s a quick way to identify reliability issues and ensure your applications maintain a smooth, dependable experience.
 
-<img width="350" height="211" alt="Screenshot 2025-11-06 at 1 23 22 PM" src="https://github.com/user-attachments/assets/5519d275-deff-45ae-9330-875dd887a9cd" />
+<img width="341" height="148" alt="Screenshot 2026-01-05 at 10 47 05 AM" src="https://github.com/user-attachments/assets/b79b00b1-d889-4dd2-8a72-79ea96e23d18" />
+
 
 #### Model Distribution
 
 OpenAI offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="335" height="370" alt="Screenshot 2025-12-30 at 10 51 35 AM" src="https://github.com/user-attachments/assets/584eeed9-7d5e-4e1c-956d-7da6bd7556a5" />
+<img width="340" height="381" alt="Screenshot 2026-01-05 at 10 47 30 AM" src="https://github.com/user-attachments/assets/86fbdaa1-790c-4602-ad15-98488ce35940" />
+
 
 #### Token Distribution By Model
 
 This breakdown reveals how token usage is spread across different model variants, helping you identify which models drive the most consumption and optimize your workload distribution for cost and performance.
 
-<img width="335" height="377" alt="Screenshot 2025-12-30 at 10 51 57 AM" src="https://github.com/user-attachments/assets/870e90a8-3fa9-43d9-863f-246addfcf8b4" />
+<img width="349" height="393" alt="Screenshot 2026-01-05 at 10 49 52 AM" src="https://github.com/user-attachments/assets/78d6a56d-3fd2-43d5-928f-77d9e117cda1" />
+
 
 
 #### Cache Utilization Rate
@@ -57,14 +61,14 @@ This chart tracks how effectively your cache is being utilized over time.
 
  This chart captures the volume of requests sent to OpenAI over time, letting you see demand patterns, identify high-traffic windows, and plan infrastructure or cost controls accordingly.
 
-<img width="678" height="270" alt="Screenshot 2025-12-30 at 10 53 50 AM" src="https://github.com/user-attachments/assets/6fca0b3a-32bc-446d-9c2c-80c8a5d8da4a" />
+<img width="652" height="264" alt="Screenshot 2026-01-05 at 10 48 48 AM" src="https://github.com/user-attachments/assets/46167713-6c96-4489-929f-54ea3e15ada4" />
 
 
 #### Request Duration (P95 Over Time)
 
 How fast does OpenAI respond under load? This panel measures the 95th percentile duration of requests over time, surfacing potential slowdowns, spikes, or regressions. By keeping an eye on responsiveness, teams can ensure a consistent developer and user experience.
 
-<img width="678" height="270" alt="Screenshot 2025-12-30 at 10 54 10 AM" src="https://github.com/user-attachments/assets/4cd92d52-6c97-4109-9f3e-07500cd84e5a" />
+<img width="652" height="264" alt="Screenshot 2026-01-05 at 10 48 30 AM" src="https://github.com/user-attachments/assets/e2e6d6e6-1e7f-4a67-a7eb-4582a9d57fc6" />
 
 
 
@@ -72,7 +76,8 @@ How fast does OpenAI respond under load? This panel measures the 95th percentile
 
 OpenAI powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
-<img width="678" height="199" alt="Screenshot 2025-12-30 at 10 54 26 AM" src="https://github.com/user-attachments/assets/7ee926d9-5a82-40b2-9275-41f84d720025" />
+<img width="685" height="156" alt="Screenshot 2026-01-05 at 10 49 11 AM" src="https://github.com/user-attachments/assets/7cd9e430-9135-4dcb-abac-9a397e7bb9de" />
+
 
 
 #### Logs and Error Records
