@@ -20,7 +20,7 @@ Tokens are the foundation of Google ADK. By splitting input tokens (user prompts
 
 This line shows the total tokenm usage over time per service. 
 
-<img width="704" height="277" alt="Screenshot 2026-01-05 at 10 46 44 AM" src="https://github.com/user-attachments/assets/749d4c10-f804-45cc-87f0-c3c493ec56f5" />
+<img width="463" height="143" alt="Screenshot 2026-01-16 at 9 14 07 AM" src="https://github.com/user-attachments/assets/cc1b6c15-cf7d-4d0a-a74a-b430a2dd810e" />
 
 
 #### Total Error Rate
@@ -34,36 +34,42 @@ Not every request makes it through successfully. This panel tracks the percentag
 
 Google ADK offers multiple model variants, each optimized for different tasks. This panel reveals which models are being called most often helping you track preferences, measure adoption of newer releases, and align usage with performance or cost goals.
 
-<img width="340" height="381" alt="Screenshot 2026-01-05 at 10 47 30 AM" src="https://github.com/user-attachments/assets/86fbdaa1-790c-4602-ad15-98488ce35940" />
+<img width="226" height="199" alt="Screenshot 2026-01-16 at 9 14 27 AM" src="https://github.com/user-attachments/assets/8497aa77-051b-4de0-bf57-cd640e980c51" />
 
 
 #### Token Distribution By Model
 
 This breakdown reveals how token usage is spread across different model variants, helping you identify which models drive the most consumption and optimize your workload distribution for cost and performance.
 
-<img width="349" height="393" alt="Screenshot 2026-01-05 at 10 49 52 AM" src="https://github.com/user-attachments/assets/78d6a56d-3fd2-43d5-928f-77d9e117cda1" />
+<img width="226" height="199" alt="Screenshot 2026-01-16 at 9 14 40 AM" src="https://github.com/user-attachments/assets/f497356b-8b5d-4a2c-8ee2-2e86b8d3103e" />
+
 
 #### Agent Call Distribution
 
 This pie chart shows the distribution of total calls made by agent, to highlight which agents are being used the most by users. 
+
+<img width="226" height="199" alt="Screenshot 2026-01-16 at 9 14 55 AM" src="https://github.com/user-attachments/assets/d13a41a1-84b8-4345-9b06-9f84b8573200" />
 
 
 #### Number of Requests Over Time
 
  This chart captures the volume of requests sent to Google ADK over time, letting you see demand patterns, identify high-traffic windows, and plan infrastructure or cost controls accordingly.
 
+<img width="461" height="142" alt="Screenshot 2026-01-16 at 9 15 10 AM" src="https://github.com/user-attachments/assets/d4ec46de-79c6-4034-8e22-5e8aaf2be418" />
 
 
 #### Request Duration (P95 Over Time)
 
 How fast does Google ADK respond under load? This panel measures the 95th percentile duration of requests over time, surfacing potential slowdowns, spikes, or regressions. By keeping an eye on responsiveness, teams can ensure a consistent developer and user experience.
 
+<img width="461" height="142" alt="Screenshot 2026-01-16 at 9 15 37 AM" src="https://github.com/user-attachments/assets/627462b9-6622-4dba-8a53-efef91c1de5a" />
 
 
 #### Services and Languages Using Google ADK
 
 Google ADK powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
 
+<img width="461" height="112" alt="Screenshot 2026-01-16 at 9 15 50 AM" src="https://github.com/user-attachments/assets/2289b42f-86d6-48da-a809-683e8c814e23" />
 
 
 #### Logs and Error Records
