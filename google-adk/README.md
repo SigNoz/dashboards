@@ -14,7 +14,8 @@ To start sending Google ADK telemetry to SigNoz, follow the [Google ADK monitori
 
 Tokens are the foundation of Google ADK. By splitting input tokens (user prompts) and output tokens (model responses), this panel shows exactly how much work the system is doing. Over time, you can monitor efficiency, spot growth in adoption, and balance consumption across workloads.
 
-<img width="470" height="151" alt="gemini-io-token-count" src="https://github.com/user-attachments/assets/1f13435e-e926-4c70-9e13-804f10f6fc48" />
+<img width="469" height="111" alt="Screenshot 2026-01-16 at 9 17 39 AM" src="https://github.com/user-attachments/assets/9c89ff96-e2d2-4ee2-8fa2-2b3e0482d9da" />
+
 
 #### Total Token Usage (Over Time)
 
