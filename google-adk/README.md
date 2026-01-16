@@ -62,7 +62,8 @@ This pie chart shows the distribution of total calls made by agent, to highlight
 
 How fast does Google ADK respond under load? This panel measures the 95th percentile duration of requests over time, surfacing potential slowdowns, spikes, or regressions. By keeping an eye on responsiveness, teams can ensure a consistent developer and user experience.
 
-<img width="461" height="142" alt="Screenshot 2026-01-16 at 9 15 37 AM" src="https://github.com/user-attachments/assets/627462b9-6622-4dba-8a53-efef91c1de5a" />
+<img width="461" height="127" alt="Screenshot 2026-01-16 at 9 16 55 AM" src="https://github.com/user-attachments/assets/eede0641-ef3e-420f-a96a-4a4e1e5e4a66" />
+
 
 
 #### Services and Languages Using Google ADK
