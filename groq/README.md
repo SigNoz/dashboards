@@ -14,7 +14,8 @@ To start sending Groq telemetry to SigNoz, follow the [Groq monitoring guide](ht
 
 Tokens are the foundation of Groq. By splitting input tokens (user prompts) and output tokens (model responses), this panel shows exactly how much work the system is doing. Over time, you can monitor efficiency, spot growth in adoption, and balance consumption across workloads.
 
-<img width="470" height="151" alt="gemini-io-token-count" src="https://github.com/user-attachments/assets/1f13435e-e926-4c70-9e13-804f10f6fc48" />
+<img width="692" height="224" alt="Screenshot 2026-01-20 at 10 47 39 AM" src="https://github.com/user-attachments/assets/c46df55f-51a4-42ac-82d6-1a58937a4bcf" />
+
 
 #### Total Token Usage (Over Time)
 
@@ -71,12 +72,11 @@ Groq powers a variety of applications across different services and programming 
 <img width="501" height="140" alt="Screenshot 2026-01-20 at 10 45 36 AM" src="https://github.com/user-attachments/assets/4f168b7a-5e0a-4912-9900-632169811e43" />
 
 
-
 #### Logs and Error Records
 
 The Logs panel lists all Groq service related logs. Teams can use this for deep troubleshooting, auditing usage patterns, and correlating issues with specific request flows. Clicking on a row links back to the corresponding log entry for full traceability. This Errors panel logs all recorded errors and when clicking on an individual record, you are sent to the trace where the error originated.
 
-<img width="501" height="182" alt="Screenshot 2026-01-20 at 10 45 56 AM" src="https://github.com/user-attachments/assets/0342a689-c397-4b49-87b3-fcefad4717f1" />
+<img width="696" height="254" alt="Screenshot 2026-01-20 at 10 47 09 AM" src="https://github.com/user-attachments/assets/217e2227-0ce1-472b-a630-9cff02d74548" />
 
 <img width="696" height="419" alt="Screenshot 2026-01-20 at 10 46 18 AM" src="https://github.com/user-attachments/assets/c87837e4-1f27-4514-bb98-2d47a01bb3f8" />
 
