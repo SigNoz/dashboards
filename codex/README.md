@@ -31,7 +31,7 @@ This measures the percentage of total tokens that were cached. It’s a quick he
 
 ### Sessions and Model Calls
 
-This panel tracks how many conversations and model calls are happening. Covnersations show how often developers are turning to Codex, while model calls capture depth of interaction. Together, they reveal adoption and engagement.
+This panel tracks how many conversations and model calls are happening. Conversations show how often developers are turning to Codex, while model calls capture depth of interaction. Together, they reveal adoption and engagement.
 
 
 <img width="460" height="101" alt="Screenshot 2026-01-23 at 9 03 17 AM" src="https://github.com/user-attachments/assets/05066450-ad90-4b3a-a3f9-9cc2cdf994bc" />
@@ -77,7 +77,7 @@ OpenAI Codex is flexible, but developers use it differently depending on environ
 
 ### Requests per User
 
-Usage isn’t always evenly distributed. This table breaks down requests by user, making it clear who’s leaning on Codex heavily and who’s barely touching it. Perfect for identifying champions, training needs, or power users.
+Usage isn’t always evenly distributed. This chart breaks down requests by user, making it clear who’s leaning on Codex heavily and who’s barely touching it. Perfect for identifying champions, training needs, or power users.
 
 <img width="329" height="322" alt="user-distr-codex" src="https://github.com/user-attachments/assets/9f720080-75ee-46f2-81d0-09d295acae3f" />
 
