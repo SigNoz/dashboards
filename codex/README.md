@@ -79,7 +79,7 @@ OpenAI Codex is flexible, but developers use it differently depending on environ
 
 Usage isn’t always evenly distributed. This table breaks down requests by user, making it clear who’s leaning on Codex heavily and who’s barely touching it. Perfect for identifying champions, training needs, or power users.
 
-<img width="344" height="322" alt="Screenshot 2026-01-23 at 9 05 51 AM" src="https://github.com/user-attachments/assets/b247155b-5df8-48a2-ad2f-89eba62f2ead" />
+<img width="329" height="322" alt="user-distr-codex" src="https://github.com/user-attachments/assets/9f720080-75ee-46f2-81d0-09d295acae3f" />
 
 
 ### Model Distribution
