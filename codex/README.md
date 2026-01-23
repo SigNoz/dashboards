@@ -41,6 +41,9 @@ This panel tracks how many conversations and model calls are happening. Covnersa
 
 How long do Codex-assisted commands actually take? This chart tracks the 95th percentile duration, helping you catch slowdowns, spikes, or performance regressions. Developers want Codex to be fast—this view keeps latency in check.
 
+<img width="700" height="322" alt="Screenshot 2026-01-23 at 9 09 16 AM" src="https://github.com/user-attachments/assets/4bb03789-e6f2-4ed6-8669-ccfe7d10ae39" />
+
+
 
 ### Token Usage Over Time
 
