@@ -2,7 +2,9 @@
 
 ## Details
 
-This comprehensive dashboard provides deep visibility into OpenAI Codex usage patterns and performance metrics. It tracks everything from token consumption and costs to user adoption and tool effectiveness—giving teams the data they need to optimize their AI-assisted development workflows.
+This comprehensive dashboard provides deep visibility into OpenAI Codex usage patterns and performance metrics. It tracks everything from token consumption and costs to user adoption and tool effectiveness, giving teams the data they need to optimize their AI-assisted development workflows.
+
+To start sending OpenAI Codex telemetry to SigNoz, follow the [Codex monitoring guide](https://signoz.io/docs/codex-monitoring/).
 
 ## Dashboard panels
 
