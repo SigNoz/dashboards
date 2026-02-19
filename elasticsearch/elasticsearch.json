@@ -1,0 +1,815 @@
+{
+  "description": "Monitor Elasticsearch cluster health, performance metrics, and resource utilization",
+  "layout": [
+    {
+      "h": 3,
+      "i": "cluster-health-status",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "docs-count",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 3,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "search-rate",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 6,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "cpu-percent",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 9,
+      "y": 0
+    },
+    {
+      "h": 6,
+      "i": "jvm-memory",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 3
+    },
+    {
+      "h": 6,
+      "i": "cpu-usage-graph",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 3
+    },
+    {
+      "h": 6,
+      "i": "search-query-total",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 9
+    },
+    {
+      "h": 6,
+      "i": "network-transport",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 9
+    }
+  ],
+  "name": "",
+  "panelMap": {},
+  "tags": [],
+  "title": "Elasticsearch Monitoring Dashboard",
+  "uploadedGrafana": false,
+  "variables": {
+    "elasticsearch-cluster": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Elasticsearch cluster name",
+      "id": "elasticsearch-cluster",
+      "modificationUUID": "es-cluster-var-uuid",
+      "multiSelect": false,
+      "name": "cluster",
+      "order": 0,
+      "queryValue": "SELECT JSONExtractString(labels, 'cluster') as cluster\nFROM signoz_metrics.time_series_v4_1day\nWHERE metric_name = 'elasticsearch_cluster_health_status'\nGROUP BY cluster",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "version": "v4",
+  "widgets": [
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Elasticsearch cluster health status (0=green, 1=yellow, 2=red)",
+      "fillSpans": false,
+      "id": "cluster-health-status",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_cluster_health_status--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_cluster_health_status",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "Cluster Health",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "max",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "cluster-health-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [
+        {
+          "thresholdFormat": "Background",
+          "thresholdOperator": "<=",
+          "thresholdTableOptions": {
+            "columnName": "",
+            "op": ""
+          },
+          "thresholdUnit": "none",
+          "thresholdValue": 0,
+          "thresholdColor": "#00a652"
+        },
+        {
+          "thresholdFormat": "Background",
+          "thresholdOperator": "<=",
+          "thresholdTableOptions": {
+            "columnName": "",
+            "op": ""
+          },
+          "thresholdUnit": "none",
+          "thresholdValue": 1,
+          "thresholdColor": "#f59f00"
+        },
+        {
+          "thresholdFormat": "Background",
+          "thresholdOperator": ">",
+          "thresholdTableOptions": {
+            "columnName": "",
+            "op": ""
+          },
+          "thresholdUnit": "none",
+          "thresholdValue": 1,
+          "thresholdColor": "#c92a2a"
+        }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Cluster Health Status",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Total number of documents across all indices",
+      "fillSpans": false,
+      "id": "docs-count",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_indices_docs_count--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_indices_docs_count",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "Total Documents",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "docs-count-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Total Documents",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Current search query rate",
+      "fillSpans": false,
+      "id": "search-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_indices_search_query_total--float64--Counter--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_indices_search_query_total",
+                "type": "Counter"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "Search Rate",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "search-rate-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Search Query Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Current OS CPU utilization percentage",
+      "fillSpans": false,
+      "id": "cpu-percent",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_os_cpu_percent--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_os_cpu_percent",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "CPU %",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "cpu-percent-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 100,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [
+        {
+          "thresholdFormat": "Background",
+          "thresholdOperator": "<=",
+          "thresholdTableOptions": {
+            "columnName": "",
+            "op": ""
+          },
+          "thresholdUnit": "none",
+          "thresholdValue": 70,
+          "thresholdColor": "#00a652"
+        },
+        {
+          "thresholdFormat": "Background",
+          "thresholdOperator": "<=",
+          "thresholdTableOptions": {
+            "columnName": "",
+            "op": ""
+          },
+          "thresholdUnit": "none",
+          "thresholdValue": 85,
+          "thresholdColor": "#f59f00"
+        },
+        {
+          "thresholdFormat": "Background",
+          "thresholdOperator": ">",
+          "thresholdTableOptions": {
+            "columnName": "",
+            "op": ""
+          },
+          "thresholdUnit": "none",
+          "thresholdValue": 85,
+          "thresholdColor": "#c92a2a"
+        }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "CPU Usage",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "JVM memory usage by memory pool",
+      "fillSpans": false,
+      "id": "jvm-memory",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_jvm_memory_used_bytes--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_jvm_memory_used_bytes",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "area--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "area",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{area}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "jvm-memory-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "JVM Memory Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "OS CPU usage percentage over time",
+      "fillSpans": false,
+      "id": "cpu-usage-graph",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_os_cpu_percent--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_os_cpu_percent",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "node--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "node",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{node}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "cpu-usage-graph-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 100,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "CPU Usage by Node",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Total search queries executed over time",
+      "fillSpans": false,
+      "id": "search-query-total",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_indices_search_query_total--float64--Counter--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_indices_search_query_total",
+                "type": "Counter"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "node--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "node",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{node}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "search-query-total-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Search Query Rate by Node",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Network transport bytes received over time",
+      "fillSpans": false,
+      "id": "network-transport",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "elasticsearch_transport_rx_size_in_bytes--float64--Counter--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "elasticsearch_transport_rx_size_in_bytes",
+                "type": "Counter"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "node--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "node",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{node}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "network-transport-query",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Network Transport RX Rate",
+      "yAxisUnit": "Bps"
+    }
+  ]
+}
