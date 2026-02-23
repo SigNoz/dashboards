@@ -50,69 +50,68 @@
     }
   ],
   "panelMap": {},
-  "tags": [
-    "pvc",
-    "pod",
-    "volume",
-    "k8s"
-  ],
+  "tags": ["pvc", "pod", "volume", "k8s"],
   "title": "Kubernetes PVC Metrics",
   "uploadedGrafana": false,
   "variables": {
     "6492b479-9cce-41af-bd28-8cde5c24f513": {
       "allSelected": false,
       "customValue": "",
+      "defaultValue": "",
       "description": "The k8s cluster name",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "All telemetry",
       "id": "6492b479-9cce-41af-bd28-8cde5c24f513",
       "key": "6492b479-9cce-41af-bd28-8cde5c24f513",
-      "modificationUUID": "75c4b76b-ce1c-40cc-80d1-efd0d5a15afe",
+      "modificationUUID": "26021067-8ed2-4e86-bf1f-d051f96e1bd7",
       "multiSelect": false,
       "name": "k8s.cluster.name",
       "order": 0,
       "queryValue": "SELECT JSONExtractString(labels, 'k8s.cluster.name') AS `k8s.cluster.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE `metric_name` = 'k8s.node.cpu.time' GROUP BY `k8s.cluster.name`",
-      "selectedValue": "default",
-      "showALLOption": false,
+      "showALLOption": true,
       "sort": "DISABLED",
       "textboxValue": "",
-      "type": "QUERY"
+      "type": "DYNAMIC"
     },
     "6a787b99-95f6-4d96-b667-eb74a65446ef": {
       "allSelected": true,
       "customValue": "",
+      "defaultValue": "",
       "description": "The k8s node name.",
+      "dynamicVariablesAttribute": "k8s.node.name",
+      "dynamicVariablesSource": "All telemetry",
       "id": "6a787b99-95f6-4d96-b667-eb74a65446ef",
       "key": "6a787b99-95f6-4d96-b667-eb74a65446ef",
-      "modificationUUID": "5c32f543-c768-43c9-9de5-1acb1a4c6d3c",
+      "modificationUUID": "541e1a3a-7fe3-4817-8dcf-6a4204a0d7ca",
       "multiSelect": true,
       "name": "k8s.node.name",
       "order": 1,
       "queryValue": "SELECT JSONExtractString(labels, 'k8s.node.name') AS `k8s.node.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE `metric_name` = 'k8s.node.cpu.time' AND JSONExtractString(labels, 'k8s.cluster.name') = $k8s.cluster.name GROUP BY `k8s.node.name`",
-      "selectedValue": [
-        "default"
-      ],
       "showALLOption": true,
       "sort": "ASC",
       "textboxValue": "",
-      "type": "QUERY"
+      "type": "DYNAMIC"
     },
     "9a32bb87-d8b4-498f-88cf-65dfd25cd579": {
       "allSelected": false,
       "customValue": "",
+      "defaultValue": "",
       "description": "The k8s namespace name",
+      "dynamicVariablesAttribute": "k8s.namespace.name",
+      "dynamicVariablesSource": "All telemetry",
       "id": "9a32bb87-d8b4-498f-88cf-65dfd25cd579",
-      "modificationUUID": "9c2f7f0f-67be-4963-b86c-ece5e645b0af",
+      "modificationUUID": "5b6767bb-4204-44ca-a062-bd44e4568e5e",
       "multiSelect": false,
       "name": "k8s.namespace.name",
       "order": 2,
       "queryValue": "SELECT JSONExtractString(labels, 'k8s.namespace.name') AS `k8s.namespace.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE `metric_name` = 'k8s.pod.cpu.time' AND JSONExtractString(labels, 'k8s.cluster.name') = $k8s.cluster.name AND JSONExtractString(labels, 'k8s.node.name') IN $k8s.node.name GROUP BY `k8s.namespace.name`",
-      "selectedValue": "default",
-      "showALLOption": false,
+      "showALLOption": true,
       "sort": "DISABLED",
       "textboxValue": "",
-      "type": "QUERY"
+      "type": "DYNAMIC"
     }
   },
-  "version": "v4",
+  "version": "v5",
   "widgets": [
     {
       "bucketCount": 30,
@@ -130,73 +129,63 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.volume.available--float64--Gauge--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "k8s.volume.available",
-                "type": "Gauge"
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.volume.available",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.volume.type = 'persistentVolumeClaim')"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "6077fbc2",
+                    "id": "a04acb3d-dbf9-42b0-a3a8-6c0a71904ff3",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
+                    },
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
+                  },
+                  {
+                    "id": "a36bea5a-dd3c-4199-a6af-9e4d2aef99eb",
+                    "key": {
+                      "id": "k8s.node.name",
+                      "key": "k8s.node.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.node.name"]
+                  },
+                  {
+                    "id": "199f6fe3-0cad-419e-b217-d6b65a48cf7f",
+                    "key": {
+                      "id": "k8s.namespace.name",
+                      "key": "k8s.namespace.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.namespace.name"]
+                  },
+                  {
+                    "id": "eb1d70e6-d829-4927-8c21-b7172c1536b9",
+                    "key": {
+                      "id": "k8s.volume.type",
+                      "key": "k8s.volume.type",
+                      "type": ""
                     },
                     "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
-                  },
-                  {
-                    "id": "6077fbc2",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.node.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.node.name}}"
-                    ]
-                  },
-                  {
-                    "id": "6077fbc2",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.namespace.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.namespace.name}}"
-                    ]
-                  },
-                  {
-                    "id": "217757e9",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.volume.type--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.volume.type",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "persistentVolumeClaim"
-                    ]
+                    "value": "persistentVolumeClaim"
                   }
                 ],
                 "op": "AND"
@@ -218,35 +207,22 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
         },
         "clickhouse_sql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "id": "1f0f6b32-2d31-473c-9d09-8ff5ec235e55",
         "promql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "queryType": "builder"
       },
@@ -276,73 +252,63 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.volume.capacity--float64--Gauge--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "k8s.volume.capacity",
-                "type": "Gauge"
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.volume.capacity",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.volume.type = 'persistentVolumeClaim')"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "6077fbc2",
+                    "id": "a04acb3d-dbf9-42b0-a3a8-6c0a71904ff3",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
+                    },
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
+                  },
+                  {
+                    "id": "25695ee0-34cb-48ce-9363-dc16298086c0",
+                    "key": {
+                      "id": "k8s.node.name",
+                      "key": "k8s.node.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.node.name"]
+                  },
+                  {
+                    "id": "29062c4b-be1d-4958-be00-dc191c89ed42",
+                    "key": {
+                      "id": "k8s.namespace.name",
+                      "key": "k8s.namespace.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.namespace.name"]
+                  },
+                  {
+                    "id": "f2cf1990-2c13-4399-8f39-8145833673b3",
+                    "key": {
+                      "id": "k8s.volume.type",
+                      "key": "k8s.volume.type",
+                      "type": ""
                     },
                     "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
-                  },
-                  {
-                    "id": "6077fbc2",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.node.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.node.name}}"
-                    ]
-                  },
-                  {
-                    "id": "0cdebb88",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.namespace.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.namespace.name}}"
-                    ]
-                  },
-                  {
-                    "id": "e0e880ce",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.volume.type--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.volume.type",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "persistentVolumeClaim"
-                    ]
+                    "value": "persistentVolumeClaim"
                   }
                 ],
                 "op": "AND"
@@ -364,35 +330,22 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
         },
         "clickhouse_sql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "id": "2b9730b5-864c-47da-b2f6-b8991b52814b",
         "promql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "queryType": "builder"
       },
@@ -417,72 +370,63 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.volume.inodes--float64----true",
-                "isColumn": true,
-                "key": "k8s.volume.inodes",
-                "type": ""
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.volume.inodes",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.volume.type = 'persistentVolumeClaim')"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "6077fbc2",
+                    "id": "a04acb3d-dbf9-42b0-a3a8-6c0a71904ff3",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
+                    },
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
+                  },
+                  {
+                    "id": "694635c3-4222-4ffc-b09e-3c1b88b5b7fd",
+                    "key": {
+                      "id": "k8s.node.name",
+                      "key": "k8s.node.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.node.name"]
+                  },
+                  {
+                    "id": "eaeb2d85-084a-4f6a-a825-6c66ab53a6aa",
+                    "key": {
+                      "id": "k8s.namespace.name",
+                      "key": "k8s.namespace.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.namespace.name"]
+                  },
+                  {
+                    "id": "ce6a08f2-f9cb-4265-9591-b6404e50e1ef",
+                    "key": {
+                      "id": "k8s.volume.type",
+                      "key": "k8s.volume.type",
+                      "type": ""
                     },
                     "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
-                  },
-                  {
-                    "id": "6077fbc2",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.node.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.node.name}}"
-                    ]
-                  },
-                  {
-                    "id": "5a604bad",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.namespace.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.namespace.name}}"
-                    ]
-                  },
-                  {
-                    "id": "24b074f3",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.volume.type--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.volume.type",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "persistentVolumeClaim"
-                    ]
+                    "value": "persistentVolumeClaim"
                   }
                 ],
                 "op": "AND"
@@ -503,35 +447,22 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
         },
         "clickhouse_sql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "id": "fe9f67bd-b820-48f1-8676-e7505fa28834",
         "promql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "queryType": "builder"
       },
@@ -550,72 +481,63 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.volume.inodes.free--float64----true",
-                "isColumn": true,
-                "key": "k8s.volume.inodes.free",
-                "type": ""
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.volume.inodes.free",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.volume.type = 'persistentVolumeClaim')"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "6077fbc2",
+                    "id": "a04acb3d-dbf9-42b0-a3a8-6c0a71904ff3",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
+                    },
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
+                  },
+                  {
+                    "id": "726e162c-abe7-4e95-8c75-5fa719bd0938",
+                    "key": {
+                      "id": "k8s.node.name",
+                      "key": "k8s.node.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.node.name"]
+                  },
+                  {
+                    "id": "e0e4aa0d-0d1e-4ad9-a394-beb2564a67e4",
+                    "key": {
+                      "id": "k8s.namespace.name",
+                      "key": "k8s.namespace.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.namespace.name"]
+                  },
+                  {
+                    "id": "238a5b8b-a336-4ebb-afca-854834006152",
+                    "key": {
+                      "id": "k8s.volume.type",
+                      "key": "k8s.volume.type",
+                      "type": ""
                     },
                     "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
-                  },
-                  {
-                    "id": "6077fbc2",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.node.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.node.name}}"
-                    ]
-                  },
-                  {
-                    "id": "8f01b14d",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.namespace.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.namespace.name}}"
-                    ]
-                  },
-                  {
-                    "id": "a72c99da",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.volume.type--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.volume.type",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "persistentVolumeClaim"
-                    ]
+                    "value": "persistentVolumeClaim"
                   }
                 ],
                 "op": "AND"
@@ -636,35 +558,22 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
         },
         "clickhouse_sql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "id": "5662eaa7-159f-4007-b35d-08983d5c8602",
         "promql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "queryType": "builder"
       },
@@ -683,72 +592,63 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.volume.inodes.used--float64----true",
-                "isColumn": true,
-                "key": "k8s.volume.inodes.used",
-                "type": ""
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.volume.inodes.used",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.volume.type = 'persistentVolumeClaim')"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "6077fbc2",
+                    "id": "a04acb3d-dbf9-42b0-a3a8-6c0a71904ff3",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
+                    },
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
+                  },
+                  {
+                    "id": "803da941-e5b4-4cbd-8fe1-5daa61f086e4",
+                    "key": {
+                      "id": "k8s.node.name",
+                      "key": "k8s.node.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.node.name"]
+                  },
+                  {
+                    "id": "06911ab8-91ff-475f-81e8-da4af6b9a104",
+                    "key": {
+                      "id": "k8s.namespace.name",
+                      "key": "k8s.namespace.name",
+                      "type": ""
+                    },
+                    "op": "in",
+                    "value": ["$k8s.namespace.name"]
+                  },
+                  {
+                    "id": "c9960640-e4c7-4fa8-b52b-2100044306b1",
+                    "key": {
+                      "id": "k8s.volume.type",
+                      "key": "k8s.volume.type",
+                      "type": ""
                     },
                     "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
-                  },
-                  {
-                    "id": "6077fbc2",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.node.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.node.name}}"
-                    ]
-                  },
-                  {
-                    "id": "46393c61",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.namespace.name",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "{{.k8s.namespace.name}}"
-                    ]
-                  },
-                  {
-                    "id": "450ee3cb",
-                    "key": {
-                      "dataType": "string",
-                      "id": "k8s.volume.type--string--tag--false",
-                      "isColumn": false,
-                      "key": "k8s.volume.type",
-                      "type": "tag"
-                    },
-                    "op": "in",
-                    "value": [
-                      "persistentVolumeClaim"
-                    ]
+                    "value": "persistentVolumeClaim"
                   }
                 ],
                 "op": "AND"
@@ -769,35 +669,22 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
         },
         "clickhouse_sql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "id": "4db01126-3a7f-4b27-8c91-fd822ac453e8",
         "promql": [
-          {
-            "disabled": false,
-            "legend": "",
-            "name": "A",
-            "query": ""
-          }
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
         ],
         "queryType": "builder"
       },
@@ -805,5 +692,6 @@
       "title": "Volume inodes used",
       "yAxisUnit": "short"
     }
-  ]
+  ],
+  "uuid": "019bfead-6911-759d-9a3c-625f8b51f84f"
 }
