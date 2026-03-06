@@ -70,6 +70,9 @@ Every API call matters. This chart captures the volume of requests sent to Claud
 
 How fast does Claude Agent SDK respond under load? This panel measures the 95th percentile duration of requests over time, surfacing potential slowdowns, spikes, or regressions. By keeping an eye on responsiveness, teams can ensure a consistent developer and user experience.
 
+<img width="531" height="200" alt="Screenshot 2026-03-06 at 11 22 01 AM" src="https://github.com/user-attachments/assets/343238ab-710b-488b-83ec-adf02249be18" />
+
+
 #### Services and Languages Using Claude Agent SDK
 
 Claude Agent SDK powers a variety of applications across different services and programming languages. This breakdown shows where the API is being adopted—making it easier to understand usage patterns across your stack and identify opportunities for optimization.
