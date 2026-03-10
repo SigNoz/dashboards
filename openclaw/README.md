@@ -41,7 +41,7 @@ Displays the ratio between input tokens and output tokens over time, revealing h
 
 Breaks down cache reads, cache writes, input tokens, and output tokens for each model to show detailed consumption patterns across token types.
 
-<img width="507" height="241" alt="Screenshot 2026-03-10 at 12 02 46 PM" src="https://github.com/user-attachments/assets/8ca59c9b-1b3c-4956-aa07-6de5dc111d3e" />
+<img width="508" height="240" alt="Screenshot 2026-03-10 at 12 06 46 PM" src="https://github.com/user-attachments/assets/2d1f4392-38ad-4e1d-8dfb-3dfa03519e16" />
 
 
 #### Request Model Distribution
