@@ -1,0 +1,22 @@
+{
+  "uuid": "kong-gateway-monitoring",
+  "title": "Kong Gateway Monitoring",
+  "tags": ["kong", "gateway", "infrastructure"],
+  "description": "Comprehensive monitoring for Kong Gateway using Prometheus metrics.",
+  "variables": [
+    { "name": "cluster", "query": "label_values(kong_http_status, cluster)", "type": "query" },
+    { "name": "namespace", "query": "label_values(kong_http_status{cluster=\"$cluster\"}, namespace)", "type": "query" },
+    { "name": "service", "query": "label_values(kong_http_status{cluster=\"$cluster\", namespace=\"$namespace\"}, service)", "type": "query" }
+  ],
+  "panels": [
+    { "title": "Total Requests", "type": "stat", "targets": [{ "query": "sum(rate(kong_http_status{service=\"$service\"}[5m]))", "legendFormat": "Req/s" }] },
+    { "title": "Active Connections", "type": "stat", "targets": [{ "query": "sum(kong_datastore_reachable{service=\"$service\"})", "legendFormat": "Active" }] },
+    { "title": "Gateway Uptime", "type": "stat", "unit": "s", "targets": [{ "query": "time() - process_start_time_seconds{service=\"$service\"}", "legendFormat": "Uptime" }] },
+    { "title": "HTTP Status Codes", "type": "timeseries", "targets": [{ "query": "sum(rate(kong_http_status{service=\"$service\"}[5m])) by (code)", "legendFormat": "{{code}}" }] },
+    { "title": "Request Latency P99", "type": "timeseries", "unit": "ms", "targets": [{ "query": "histogram_quantile(0.99, sum(rate(kong_latency_ms_bucket{service=\"$service\", type=\"request\"}[5m])) by (le))", "legendFormat": "P99" }] },
+    { "title": "Total Errors", "type": "stat", "targets": [{ "query": "sum(rate(kong_http_status{service=\"$service\", code=~\"[45]..\"}[5m]))", "legendFormat": "Errors" }] },
+    { "title": "Incoming Traffic", "type": "timeseries", "unit": "bytes", "targets": [{ "query": "sum(rate(kong_bandwidth{service=\"$service\", direction=\"ingress\"}[5m]))", "legendFormat": "Ingress" }] },
+    { "title": "CPU Usage", "type": "timeseries", "unit": "percentunit", "targets": [{ "query": "sum(rate(container_cpu_usage_seconds_total{container=\"kong\", service=\"$service\"}[5m]))", "legendFormat": "CPU" }] }
+  ],
+  "layout": []
+}
