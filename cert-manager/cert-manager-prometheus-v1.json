@@ -1,0 +1,1234 @@
+{
+  "description": "Comprehensive cert-manager monitoring dashboard with certificate status, expiry tracking, ACME client metrics, controller sync metrics, and issuer health. Metrics sourced from cert-manager Prometheus endpoint.",
+  "id": "cert-manager-overview",
+  "layout": [
+    { "h": 1, "i": "row-certificate-overview", "moved": false, "static": false, "w": 12, "x": 0, "y": 0 },
+    { "h": 5, "i": "certificate-ready-status", "moved": false, "static": false, "w": 6, "x": 0, "y": 1 },
+    { "h": 5, "i": "certificate-not-ready", "moved": false, "static": false, "w": 6, "x": 6, "y": 1 },
+    { "h": 5, "i": "certificate-expiry-time", "moved": false, "static": false, "w": 6, "x": 0, "y": 6 },
+    { "h": 5, "i": "certificate-renewal-time", "moved": false, "static": false, "w": 6, "x": 6, "y": 6 },
+    { "h": 1, "i": "row-issuer-health", "moved": false, "static": false, "w": 12, "x": 0, "y": 11 },
+    { "h": 5, "i": "issuer-ready-status", "moved": false, "static": false, "w": 6, "x": 0, "y": 12 },
+    { "h": 5, "i": "clusterissuer-ready-status", "moved": false, "static": false, "w": 6, "x": 6, "y": 12 },
+    { "h": 1, "i": "row-acme-metrics", "moved": false, "static": false, "w": 12, "x": 0, "y": 17 },
+    { "h": 5, "i": "acme-request-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 18 },
+    { "h": 5, "i": "acme-request-duration", "moved": false, "static": false, "w": 6, "x": 6, "y": 18 },
+    { "h": 5, "i": "acme-requests-by-status", "moved": false, "static": false, "w": 12, "x": 0, "y": 23 },
+    { "h": 1, "i": "row-controller-metrics", "moved": false, "static": false, "w": 12, "x": 0, "y": 28 },
+    { "h": 5, "i": "controller-sync-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 29 },
+    { "h": 5, "i": "controller-sync-error-rate", "moved": false, "static": false, "w": 6, "x": 6, "y": 29 },
+    { "h": 1, "i": "row-challenge-metrics", "moved": false, "static": false, "w": 12, "x": 0, "y": 34 },
+    { "h": 5, "i": "challenge-status", "moved": false, "static": false, "w": 12, "x": 0, "y": 35 }
+  ],
+  "name": "cert-manager-overview",
+  "tags": ["cert-manager", "kubernetes", "tls", "prometheus"],
+  "title": "cert-manager Monitoring - Prometheus",
+  "variables": {
+    "b1c2d3e4-f5a6-7890-bcde-fa1234567001": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Deployment environment",
+      "modificationUUID": "v001",
+      "multiSelect": false,
+      "name": "deployment.environment",
+      "order": 0,
+      "queryValue": "SELECT JSONExtractString(labels, 'deployment.environment') AS `deployment.environment`\nFROM signoz_metrics.distributed_time_series_v4_1day\nWHERE metric_name = 'certmanager_certificate_ready_status'\nGROUP BY `deployment.environment`",
+      "selectedValue": "",
+      "showALLOption": false,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "b1c2d3e4-f5a6-7890-bcde-fa1234567002": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Kubernetes namespace",
+      "modificationUUID": "v002",
+      "multiSelect": true,
+      "name": "namespace",
+      "order": 1,
+      "queryValue": "SELECT JSONExtractString(labels, 'namespace') AS `namespace`\nFROM signoz_metrics.distributed_time_series_v4_1day\nWHERE metric_name = 'certmanager_certificate_ready_status'\nGROUP BY `namespace`",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "widgets": [
+    {
+      "description": "",
+      "id": "row-certificate-overview",
+      "panelTypes": "row",
+      "title": "Certificate Overview"
+    },
+    {
+      "description": "Number of certificates in Ready=True state per namespace",
+      "fillSpans": false,
+      "id": "certificate-ready-status",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_certificate_ready_status--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_certificate_ready_status",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3a01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f3a01002",
+                    "key": {
+                      "dataType": "string",
+                      "id": "namespace--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f3a01003",
+                    "key": {
+                      "dataType": "string",
+                      "id": "condition--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "True"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "namespace--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "namespace",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Ready ({{namespace}})",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-cert-ready",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "Certificates Ready (True)",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Number of certificates NOT in Ready state (condition=False or Unknown)",
+      "fillSpans": false,
+      "id": "certificate-not-ready",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_certificate_ready_status--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_certificate_ready_status",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3b01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f3b01002",
+                    "key": {
+                      "dataType": "string",
+                      "id": "namespace--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f3b01003",
+                    "key": {
+                      "dataType": "string",
+                      "id": "condition--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "!=",
+                    "value": "True"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "name",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "namespace--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "namespace",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "condition--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "condition",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{name}} ({{namespace}}) — {{condition}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-cert-not-ready",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "Certificates Not Ready",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Certificate expiry timestamps (NotAfter) — lower values indicate certificates expiring sooner",
+      "fillSpans": false,
+      "id": "certificate-expiry-time",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_certificate_expiration_timestamp_seconds--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_certificate_expiration_timestamp_seconds",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3c01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f3c01002",
+                    "key": {
+                      "dataType": "string",
+                      "id": "namespace--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "name",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "namespace--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "namespace",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{name}} ({{namespace}})",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "min",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-cert-expiry",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "Certificate Expiry Timestamp",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "Timestamp at which each certificate should be renewed",
+      "fillSpans": false,
+      "id": "certificate-renewal-time",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_certificate_renewal_timestamp_seconds--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_certificate_renewal_timestamp_seconds",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3d01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f3d01002",
+                    "key": {
+                      "dataType": "string",
+                      "id": "namespace--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "name",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "namespace--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "namespace",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{name}} ({{namespace}})",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "min",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-cert-renewal",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "Certificate Renewal Timestamp",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "",
+      "id": "row-issuer-health",
+      "panelTypes": "row",
+      "title": "Issuer Health"
+    },
+    {
+      "description": "Ready status of namespaced Issuers (1=matching condition, 0=not matching)",
+      "fillSpans": false,
+      "id": "issuer-ready-status",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_issuer_ready_status--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_issuer_ready_status",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3e01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f3e01002",
+                    "key": {
+                      "dataType": "string",
+                      "id": "namespace--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f3e01003",
+                    "key": {
+                      "dataType": "string",
+                      "id": "condition--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "True"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "name",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "namespace--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "namespace",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{name}} ({{namespace}})",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-issuer-ready",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "Issuer Ready Status",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Ready status of ClusterIssuers (cluster-scoped, no namespace)",
+      "fillSpans": false,
+      "id": "clusterissuer-ready-status",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_clusterissuer_ready_status--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_clusterissuer_ready_status",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3f01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f3f01002",
+                    "key": {
+                      "dataType": "string",
+                      "id": "condition--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "True"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "name",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-clusterissuer-ready",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "ClusterIssuer Ready Status",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "",
+      "id": "row-acme-metrics",
+      "panelTypes": "row",
+      "title": "ACME Client Metrics"
+    },
+    {
+      "description": "Rate of outbound ACME HTTP requests per second",
+      "fillSpans": false,
+      "id": "acme-request-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_http_acme_client_request_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_http_acme_client_request_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3g01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "method--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "method",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "host--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "host",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{method}} {{host}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-acme-rate",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "ACME Request Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Average latency of outbound ACME HTTP requests",
+      "fillSpans": false,
+      "id": "acme-request-duration",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_http_acme_client_request_duration_seconds_sum--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_http_acme_client_request_duration_seconds_sum",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3h01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "host--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "host",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{host}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_http_acme_client_request_duration_seconds_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_http_acme_client_request_duration_seconds_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3h02001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "host--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "host",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{host}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": [
+            {
+              "disabled": false,
+              "expression": "A/B",
+              "legend": "Avg Duration ({{host}})",
+              "queryName": "F1"
+            }
+          ]
+        },
+        "clickhouse_sql": [],
+        "id": "q-acme-duration",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "ACME Average Request Duration",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "ACME HTTP requests grouped by HTTP status code",
+      "fillSpans": false,
+      "id": "acme-requests-by-status",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_http_acme_client_request_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_http_acme_client_request_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3i01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "status--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "status",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "action--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "action",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{status}} / {{action}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-acme-by-status",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "ACME Requests by Status & Action",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "row-controller-metrics",
+      "panelTypes": "row",
+      "title": "Controller Metrics"
+    },
+    {
+      "description": "Rate of sync() calls per controller",
+      "fillSpans": false,
+      "id": "controller-sync-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_controller_sync_call_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_controller_sync_call_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3j01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "controller--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "controller",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{controller}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-controller-sync-rate",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "Controller Sync Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Rate of errors during controller sync() calls",
+      "fillSpans": false,
+      "id": "controller-sync-error-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_controller_sync_error_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_controller_sync_error_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3k01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "controller--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "controller",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{controller}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-controller-sync-error",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "Controller Sync Error Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "row-challenge-metrics",
+      "panelTypes": "row",
+      "title": "ACME Challenge Metrics"
+    },
+    {
+      "description": "Status of ACME certificate challenges (ready, valid, errored, pending, etc.)",
+      "fillSpans": false,
+      "id": "challenge-status",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "certmanager_certificate_challenge_status--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "certmanager_certificate_challenge_status",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f3l01001",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f3l01002",
+                    "key": {
+                      "dataType": "string",
+                      "id": "namespace--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "status--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "status",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{status}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-challenge-status",
+        "promql": [],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "title": "ACME Challenge Status",
+      "yAxisUnit": "none"
+    }
+  ]
+}
