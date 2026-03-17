@@ -1,5 +1,9 @@
 # Elasticsearch Dashboard - OTLP
 
+## Dashboard Preview
+
+![Dashboard Overview](assets/dashboard-overview.png)
+
 ## Metrics Ingestion
 
 This dashboard uses metrics from the [OpenTelemetry Elasticsearch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/elasticsearchreceiver).
