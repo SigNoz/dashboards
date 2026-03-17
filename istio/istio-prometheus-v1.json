@@ -90,13 +90,14 @@
       "type": "QUERY",
       "multiSelect": true,
       "showALLOption": true,
-      "sort": "DISABLED",
+      "sort": "ASC",
       "textboxValue": "",
-      "selectedValue": ".*",
+      "selectedValue": "ALL",
       "allSelected": true,
       "customValue": "",
       "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'destination_service_namespace') FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'istio_requests_total'",
-      "modificationUUID": "14578bad-58a8-4bd0-aca6-698e70ff1c1a"
+      "modificationUUID": "14578bad-58a8-4bd0-aca6-698e70ff1c1a",
+      "order": 0
     },
     "de113011-d367-4770-92c4-4e14c9e973c8": {
       "id": "de113011-d367-4770-92c4-4e14c9e973c8",
@@ -105,13 +106,14 @@
       "type": "QUERY",
       "multiSelect": true,
       "showALLOption": true,
-      "sort": "DISABLED",
+      "sort": "ASC",
       "textboxValue": "",
-      "selectedValue": ".*",
+      "selectedValue": "ALL",
       "allSelected": true,
       "customValue": "",
       "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'deployment_environment') FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'istio_requests_total'",
-      "modificationUUID": "2472ee53-3789-4b00-8f8a-f3d46812ef68"
+      "modificationUUID": "2472ee53-3789-4b00-8f8a-f3d46812ef68",
+      "order": 1
     },
     "d7c5095a-209f-4700-8357-ddf7c262e350": {
       "id": "d7c5095a-209f-4700-8357-ddf7c262e350",
@@ -120,13 +122,14 @@
       "type": "QUERY",
       "multiSelect": true,
       "showALLOption": true,
-      "sort": "DISABLED",
+      "sort": "ASC",
       "textboxValue": "",
-      "selectedValue": ".*",
+      "selectedValue": "ALL",
       "allSelected": true,
       "customValue": "",
       "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'k8s_cluster_name') FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'istio_requests_total'",
-      "modificationUUID": "0af59478-0df0-4d41-a2d9-7f2685534cf3"
+      "modificationUUID": "0af59478-0df0-4d41-a2d9-7f2685534cf3",
+      "order": 2
     }
   },
   "widgets": [
@@ -185,7 +188,7 @@
             "disabled": false,
             "legend": "{{destination_service_name}}",
             "name": "A",
-            "query": "sum(rate(istio_requests_total{destination_service_namespace=~\"{{.namespace}}\"}[5m])) by (destination_service_name)"
+            "query": "sum(rate(istio_requests_total{destination_service_namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (destination_service_name)"
           }
         ],
         "clickhouse_sql": [
@@ -253,7 +256,7 @@
             "disabled": false,
             "legend": "Success Rate %",
             "name": "A",
-            "query": "sum(rate(istio_requests_total{destination_service_namespace=~\"{{.namespace}}\",response_code!~\"5.*\"}[5m])) / sum(rate(istio_requests_total{destination_service_namespace=~\"{{.namespace}}\"}[5m])) * 100"
+            "query": "sum(rate(istio_requests_total{destination_service_namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\",response_code!~\"5.*\"}[5m])) / sum(rate(istio_requests_total{destination_service_namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) * 100"
           }
         ],
         "clickhouse_sql": [
@@ -321,7 +324,7 @@
             "disabled": false,
             "legend": "{{destination_service_name}}",
             "name": "A",
-            "query": "histogram_quantile(0.5, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_namespace=~\"{{.namespace}}\"}[5m])) by (le, destination_service_name))"
+            "query": "histogram_quantile(0.5, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (le, destination_service_name))"
           }
         ],
         "clickhouse_sql": [
@@ -389,7 +392,7 @@
             "disabled": false,
             "legend": "{{destination_service_name}}",
             "name": "A",
-            "query": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_namespace=~\"{{.namespace}}\"}[5m])) by (le, destination_service_name))"
+            "query": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (le, destination_service_name))"
           }
         ],
         "clickhouse_sql": [
@@ -457,7 +460,7 @@
             "disabled": false,
             "legend": "{{destination_service_name}}",
             "name": "A",
-            "query": "sum(rate(istio_tcp_connections_opened_total{destination_service_namespace=~\"{{.namespace}}\"}[5m])) by (destination_service_name)"
+            "query": "sum(rate(istio_tcp_connections_opened_total{destination_service_namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (destination_service_name)"
           }
         ],
         "clickhouse_sql": [
@@ -525,7 +528,7 @@
             "disabled": false,
             "legend": "{{destination_service_name}}",
             "name": "A",
-            "query": "sum(rate(istio_tcp_connections_closed_total{destination_service_namespace=~\"{{.namespace}}\"}[5m])) by (destination_service_name)"
+            "query": "sum(rate(istio_tcp_connections_closed_total{destination_service_namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (destination_service_name)"
           }
         ],
         "clickhouse_sql": [
@@ -593,7 +596,7 @@
             "disabled": false,
             "legend": "{{type}}",
             "name": "A",
-            "query": "sum(rate(pilot_xds_pushes[5m])) by (type)"
+            "query": "sum(rate(pilot_xds_pushes{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (type)"
           }
         ],
         "clickhouse_sql": [
@@ -661,7 +664,7 @@
             "disabled": false,
             "legend": "P99 Convergence",
             "name": "A",
-            "query": "histogram_quantile(0.99, sum(rate(pilot_proxy_convergence_time_bucket[5m])) by (le))"
+            "query": "histogram_quantile(0.99, sum(rate(pilot_proxy_convergence_time_bucket{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (le))"
           }
         ],
         "clickhouse_sql": [
@@ -729,7 +732,7 @@
             "disabled": false,
             "legend": "{{pod}}",
             "name": "A",
-            "query": "sum(rate(container_cpu_usage_seconds_total{container=\"istio-proxy\", namespace=~\"{{.namespace}}\"}[5m])) by (pod)"
+            "query": "sum(rate(container_cpu_usage_seconds_total{container=\"istio-proxy\", namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (pod)"
           }
         ],
         "clickhouse_sql": [
@@ -797,7 +800,7 @@
             "disabled": false,
             "legend": "{{pod}}",
             "name": "A",
-            "query": "sum(container_memory_working_set_bytes{container=\"istio-proxy\", namespace=~\"{{.namespace}}\"}) by (pod)"
+            "query": "sum(container_memory_working_set_bytes{container=\"istio-proxy\", namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}) by (pod)"
           }
         ],
         "clickhouse_sql": [
