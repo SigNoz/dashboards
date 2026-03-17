@@ -264,7 +264,7 @@
             "disabled": false,
             "legend": "Total Certificates",
             "name": "A",
-            "query": "sum(certmanager_certificate_ready_status{namespace=~\"{{.namespace}}\"})"
+            "query": "sum(certmanager_certificate_ready_status{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\", issuer_name=~\"{{.issuer}}\"})"
           }
         ],
         "clickhouse_sql": [
@@ -332,7 +332,7 @@
             "disabled": false,
             "legend": "Active Certificates",
             "name": "A",
-            "query": "count(certmanager_certificate_ready_status{condition=\"True\", namespace=~\"{{.namespace}}\"})"
+            "query": "count(certmanager_certificate_ready_status{condition=\"True\", namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\", issuer_name=~\"{{.issuer}}\"})"
           }
         ],
         "clickhouse_sql": [
@@ -400,7 +400,7 @@
             "disabled": false,
             "legend": "Certificate Requests",
             "name": "A",
-            "query": "sum(certmanager_controller_sync_call_count{namespace=~\"{{.namespace}}\"})"
+            "query": "sum(certmanager_controller_sync_call_count{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"})"
           }
         ],
         "clickhouse_sql": [
@@ -468,7 +468,7 @@
             "disabled": false,
             "legend": "{{issuer_name}} ({{issuer_kind}})",
             "name": "A",
-            "query": "sum(certmanager_certificate_ready_status{namespace=~\"{{.namespace}}\"}) by (issuer_name, issuer_kind)"
+            "query": "sum(certmanager_certificate_ready_status{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}) by (issuer_name, issuer_kind)"
           }
         ],
         "clickhouse_sql": [
@@ -604,7 +604,7 @@
             "disabled": false,
             "legend": "{{status}}",
             "name": "A",
-            "query": "sum(rate(certmanager_http_acme_client_request_count{namespace=~\"{{.namespace}}\"}[5m])) by (status)"
+            "query": "sum(rate(certmanager_http_acme_client_request_count{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (status)"
           }
         ],
         "clickhouse_sql": [
@@ -678,7 +678,7 @@
             "disabled": false,
             "legend": "Expiring Within 7 Days",
             "name": "A",
-            "query": "count(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"{{.namespace}}\"} - time() < 7*24*3600)"
+            "query": "count(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\", issuer_name=~\"{{.issuer}}\"} - time() < 7*24*3600)"
           }
         ],
         "clickhouse_sql": [
@@ -746,7 +746,7 @@
             "disabled": false,
             "legend": "{{name}}",
             "name": "A",
-            "query": "(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"{{.namespace}}\"} - time()) / 3600 / 24"
+            "query": "(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\", issuer_name=~\"{{.issuer}}\"} - time()) / 3600 / 24"
           }
         ],
         "clickhouse_sql": [
@@ -814,7 +814,7 @@
             "disabled": false,
             "legend": "p99 Renewal Duration",
             "name": "A",
-            "query": "certmanager_certificate_renewal_timestamp_seconds{namespace=~\"{{.namespace}}\"} - time()"
+            "query": "certmanager_certificate_renewal_timestamp_seconds{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\", issuer_name=~\"{{.issuer}}\"} - time()"
           }
         ],
         "clickhouse_sql": [
@@ -882,7 +882,7 @@
             "disabled": false,
             "legend": "{{controller}}",
             "name": "A",
-            "query": "sum(rate(certmanager_controller_sync_error_count{namespace=~\"{{.namespace}}\"}[5m])) by (controller)"
+            "query": "sum(rate(certmanager_controller_sync_error_count{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (controller)"
           }
         ],
         "clickhouse_sql": [
@@ -950,7 +950,7 @@
             "disabled": false,
             "legend": "ACME Errors",
             "name": "A",
-            "query": "sum(rate(certmanager_http_acme_client_request_count{status=~\"4..|5..\"}[5m]))"
+            "query": "sum(rate(certmanager_http_acme_client_request_count{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\", status=~\"4..|5..\"}[5m]))"
           }
         ],
         "clickhouse_sql": [
@@ -1018,7 +1018,7 @@
             "disabled": false,
             "legend": "{{pod}}",
             "name": "A",
-            "query": "sum(rate(container_cpu_usage_seconds_total{container=\"cert-manager\", namespace=~\"{{.namespace}}\"}[5m])) by (pod)"
+            "query": "sum(rate(container_cpu_usage_seconds_total{container=\"cert-manager\", namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (pod)"
           }
         ],
         "clickhouse_sql": [
@@ -1086,7 +1086,7 @@
             "disabled": false,
             "legend": "{{pod}}",
             "name": "A",
-            "query": "sum(container_memory_working_set_bytes{container=\"cert-manager\", namespace=~\"{{.namespace}}\"}) by (pod)"
+            "query": "sum(container_memory_working_set_bytes{container=\"cert-manager\", namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}) by (pod)"
           }
         ],
         "clickhouse_sql": [
@@ -1154,7 +1154,7 @@
             "disabled": false,
             "legend": "{{pod}}",
             "name": "A",
-            "query": "sum(kube_pod_container_status_restarts_total{container=\"cert-manager\", namespace=~\"{{.namespace}}\"}) by (pod)"
+            "query": "sum(kube_pod_container_status_restarts_total{container=\"cert-manager\", namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}) by (pod)"
           }
         ],
         "clickhouse_sql": [
@@ -1222,7 +1222,7 @@
             "disabled": false,
             "legend": "{{method}} {{code}}",
             "name": "A",
-            "query": "sum(rate(rest_client_requests_total{namespace=~\"{{.namespace}}\"}[5m])) by (method, code)"
+            "query": "sum(rate(rest_client_requests_total{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}[5m])) by (method, code)"
           }
         ],
         "clickhouse_sql": [
@@ -1290,7 +1290,7 @@
             "disabled": false,
             "legend": "{{name}}",
             "name": "A",
-            "query": "sum(workqueue_depth{namespace=~\"{{.namespace}}\"}) by (name)"
+            "query": "sum(workqueue_depth{namespace=~\"{{.namespace}}\", deployment_environment=~\"{{.deployment_environment}}\", k8s_cluster_name=~\"{{.cluster}}\"}) by (name)"
           }
         ],
         "clickhouse_sql": [
