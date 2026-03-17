@@ -12,6 +12,13 @@ receivers:
     endpoint: http://localhost:9200
     collection_interval: 30s
 
+processors:
+  resource/env:
+    attributes:
+    - key: deployment.environment
+      value: staging
+      action: upsert
+
 exporters:
   otlp:
     endpoint: "<signoz-otel-collector-endpoint>:4317"
@@ -22,6 +29,7 @@ service:
   pipelines:
     metrics:
       receivers: [elasticsearch]
+      processors: [resource/env]
       exporters: [otlp]
 ```
 
@@ -43,10 +51,10 @@ service:
 - **Node Disk Available** - Disk space available to the JVM (`elasticsearch.node.fs.disk.available`)
 
 ### Section: Cluster Health Metrics
-- **Cluster Health Status** - Overall cluster health by status (green/yellow/red) (`elasticsearch.cluster.health`)
-- **Cluster Active Shards** - Number of active shards (`elasticsearch.cluster.shards` filtered by state=active)
+- **Cluster Health Status** - Overall cluster health by health_status (green/yellow/red) (`elasticsearch.cluster.health`)
+- **Cluster Active Shards** - Number of active shards (`elasticsearch.cluster.shards` filtered by shard_state=active)
 - **Cluster Pending Tasks** - Pending cluster-level changes (`elasticsearch.cluster.pending_tasks`)
-- **Cluster Unassigned Shards** - Unassigned shards (`elasticsearch.cluster.shards` filtered by state=unassigned)
+- **Cluster Unassigned Shards** - Unassigned shards (`elasticsearch.cluster.shards` filtered by shard_state=unassigned)
 
 ### Section: Index Metrics
 - **Index Document Count** - Total documents across indices (`elasticsearch.index.documents`)
@@ -55,10 +63,10 @@ service:
 - **Index Search Query Time** - Time spent on search queries (`elasticsearch.index.operations.time` filtered by operation=query)
 
 ### Section: Query and Request Metrics
-- **Search Request Rate** - Rate of search operations per node (`elasticsearch.node.operations.completed` filtered by operation=search)
-- **Query Latency** - Time spent on search operations per node (`elasticsearch.node.operations.time` filtered by operation=search)
+- **Search Request Rate** - Rate of query operations per node (`elasticsearch.node.operations.completed` filtered by operation=query)
+- **Query Latency** - Time spent on query operations per node (`elasticsearch.node.operations.time` filtered by operation=query)
 
 ### Section: Cache Metrics
 - **Cache Evictions** - Rate of cache evictions per node (`elasticsearch.node.cache.evictions`)
-- **Cache Hit Count** - Query cache hits per node (`elasticsearch.node.cache.count` filtered by type=hit)
-- **Cache Miss Count** - Query cache misses per node (`elasticsearch.node.cache.count` filtered by type=miss)
+- **Cache Hit Count** - Query cache hits per node (`elasticsearch.node.cache.count` filtered by query_cache_count_type=hit)
+- **Cache Miss Count** - Query cache misses per node (`elasticsearch.node.cache.count` filtered by query_cache_count_type=miss)
