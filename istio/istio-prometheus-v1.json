@@ -1,0 +1,2541 @@
+{
+  "description": "Comprehensive Istio service mesh monitoring dashboard using Prometheus metrics. Covers request traffic, latency, errors, resource usage, control plane health, data plane metrics, and mTLS security status.",
+  "id": "istio-prometheus-overview",
+  "layout": [
+    { "h": 1, "i": "row-general-overview", "moved": false, "static": false, "w": 12, "x": 0, "y": 0 },
+    { "h": 5, "i": "request-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 1 },
+    { "h": 5, "i": "avg-latency", "moved": false, "static": false, "w": 6, "x": 6, "y": 1 },
+    { "h": 5, "i": "error-rate-5xx", "moved": false, "static": false, "w": 6, "x": 0, "y": 6 },
+    { "h": 5, "i": "requests-by-protocol", "moved": false, "static": false, "w": 6, "x": 6, "y": 6 },
+    { "h": 1, "i": "row-traffic-management", "moved": false, "static": false, "w": 12, "x": 0, "y": 11 },
+    { "h": 5, "i": "request-distribution-service", "moved": false, "static": false, "w": 6, "x": 0, "y": 12 },
+    { "h": 5, "i": "request-distribution-version", "moved": false, "static": false, "w": 6, "x": 6, "y": 12 },
+    { "h": 5, "i": "tcp-connections-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 17 },
+    { "h": 5, "i": "tcp-traffic-volume", "moved": false, "static": false, "w": 6, "x": 6, "y": 17 },
+    { "h": 1, "i": "row-performance-metrics", "moved": false, "static": false, "w": 12, "x": 0, "y": 22 },
+    { "h": 5, "i": "latency-by-service", "moved": false, "static": false, "w": 6, "x": 0, "y": 23 },
+    { "h": 5, "i": "request-size-rate", "moved": false, "static": false, "w": 6, "x": 6, "y": 23 },
+    { "h": 5, "i": "response-size-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 28 },
+    { "h": 5, "i": "service-throughput", "moved": false, "static": false, "w": 6, "x": 6, "y": 28 },
+    { "h": 1, "i": "row-error-metrics", "moved": false, "static": false, "w": 12, "x": 0, "y": 33 },
+    { "h": 5, "i": "http-4xx-by-service", "moved": false, "static": false, "w": 6, "x": 0, "y": 34 },
+    { "h": 5, "i": "http-5xx-by-service", "moved": false, "static": false, "w": 6, "x": 6, "y": 34 },
+    { "h": 5, "i": "grpc-error-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 39 },
+    { "h": 5, "i": "failed-requests-by-service", "moved": false, "static": false, "w": 12, "x": 0, "y": 44 },
+    { "h": 1, "i": "row-resource-usage", "moved": false, "static": false, "w": 12, "x": 0, "y": 49 },
+    { "h": 5, "i": "control-plane-cpu", "moved": false, "static": false, "w": 6, "x": 0, "y": 50 },
+    { "h": 5, "i": "control-plane-memory", "moved": false, "static": false, "w": 6, "x": 6, "y": 50 },
+    { "h": 5, "i": "proxy-cpu", "moved": false, "static": false, "w": 6, "x": 0, "y": 55 },
+    { "h": 5, "i": "proxy-memory", "moved": false, "static": false, "w": 6, "x": 6, "y": 55 },
+    { "h": 1, "i": "row-control-plane", "moved": false, "static": false, "w": 12, "x": 0, "y": 60 },
+    { "h": 5, "i": "xds-push-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 61 },
+    { "h": 5, "i": "connected-proxies", "moved": false, "static": false, "w": 6, "x": 6, "y": 61 },
+    { "h": 5, "i": "config-rejections", "moved": false, "static": false, "w": 6, "x": 0, "y": 66 },
+    { "h": 5, "i": "cert-issuance-rate", "moved": false, "static": false, "w": 6, "x": 6, "y": 66 },
+    { "h": 1, "i": "row-data-plane", "moved": false, "static": false, "w": 12, "x": 0, "y": 71 },
+    { "h": 5, "i": "inbound-request-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 72 },
+    { "h": 5, "i": "outbound-request-rate", "moved": false, "static": false, "w": 6, "x": 6, "y": 72 },
+    { "h": 5, "i": "tcp-bytes-sent", "moved": false, "static": false, "w": 6, "x": 0, "y": 77 },
+    { "h": 5, "i": "tcp-bytes-received", "moved": false, "static": false, "w": 6, "x": 6, "y": 77 },
+    { "h": 1, "i": "row-security-metrics", "moved": false, "static": false, "w": 12, "x": 0, "y": 82 },
+    { "h": 5, "i": "mtls-traffic-rate", "moved": false, "static": false, "w": 6, "x": 0, "y": 83 },
+    { "h": 5, "i": "non-mtls-traffic", "moved": false, "static": false, "w": 6, "x": 6, "y": 83 },
+    { "h": 5, "i": "root-cert-expiry", "moved": false, "static": false, "w": 6, "x": 0, "y": 88 },
+    { "h": 5, "i": "sidecar-injection-failures", "moved": false, "static": false, "w": 6, "x": 6, "y": 88 }
+  ],
+  "name": "istio-prometheus-overview",
+  "tags": ["istio", "service-mesh", "envoy", "prometheus", "kubernetes"],
+  "title": "Istio Service Mesh Monitoring - Prometheus",
+  "variables": {
+    "a1b2c3d4-0001-4000-a000-000000000001": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Deployment environment",
+      "modificationUUID": "v001",
+      "multiSelect": false,
+      "name": "deployment.environment",
+      "order": 0,
+      "queryValue": "SELECT JSONExtractString(labels, 'deployment.environment') AS `deployment.environment`\nFROM signoz_metrics.distributed_time_series_v4_1day\nWHERE metric_name = 'istio_requests_total'\nGROUP BY `deployment.environment`",
+      "selectedValue": "",
+      "showALLOption": false,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "a1b2c3d4-0001-4000-a000-000000000002": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Kubernetes namespace",
+      "modificationUUID": "v002",
+      "multiSelect": true,
+      "name": "namespace",
+      "order": 1,
+      "queryValue": "SELECT JSONExtractString(labels, 'destination_workload_namespace') AS `namespace`\nFROM signoz_metrics.distributed_time_series_v4_1day\nWHERE metric_name = 'istio_requests_total'\nGROUP BY `namespace`",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "a1b2c3d4-0001-4000-a000-000000000003": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Destination service name",
+      "modificationUUID": "v003",
+      "multiSelect": true,
+      "name": "service.name",
+      "order": 2,
+      "queryValue": "SELECT JSONExtractString(labels, 'destination_service_name') AS `service.name`\nFROM signoz_metrics.distributed_time_series_v4_1day\nWHERE metric_name = 'istio_requests_total'\nGROUP BY `service.name`",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "a1b2c3d4-0001-4000-a000-000000000004": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Cluster name",
+      "modificationUUID": "v004",
+      "multiSelect": false,
+      "name": "cluster",
+      "order": 3,
+      "queryValue": "SELECT JSONExtractString(labels, 'destination_cluster') AS `cluster`\nFROM signoz_metrics.distributed_time_series_v4_1day\nWHERE metric_name = 'istio_requests_total'\nGROUP BY `cluster`",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "widgets": [
+    {
+      "description": "",
+      "id": "row-general-overview",
+      "panelTypes": "row",
+      "title": "General Overview"
+    },
+    {
+      "description": "Rate of incoming HTTP/gRPC requests across all services",
+      "fillSpans": false,
+      "id": "request-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f001",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f002",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_workload_namespace}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-request-rate",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Average request latency across all services (duration_sum / duration_count)",
+      "fillSpans": false,
+      "id": "avg-latency",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_request_duration_milliseconds_sum--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_request_duration_milliseconds_sum",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f003",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f004",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "duration_sum",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_request_duration_milliseconds_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_request_duration_milliseconds_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f005",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f006",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "duration_count",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": [
+            {
+              "disabled": false,
+              "expression": "A/B",
+              "legend": "Avg Latency",
+              "queryName": "F1"
+            }
+          ]
+        },
+        "clickhouse_sql": [],
+        "id": "q-avg-latency",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Average Request Latency",
+      "yAxisUnit": "ms"
+    },
+    {
+      "description": "Rate of 5xx server errors across services",
+      "fillSpans": false,
+      "id": "error-rate-5xx",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f007",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f008",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f009",
+                    "key": { "dataType": "string", "id": "response_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "response_code", "type": "tag" },
+                    "op": "regex",
+                    "value": "5.*"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "5xx — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-error-rate-5xx",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Error Rate (5xx)",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Request volume broken down by protocol (HTTP, gRPC, TCP)",
+      "fillSpans": false,
+      "id": "requests-by-protocol",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f010",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f011",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "request_protocol--string--tag--false", "isColumn": false, "isJSON": false, "key": "request_protocol", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{request_protocol}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-requests-by-protocol",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Volume by Protocol",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "row-traffic-management",
+      "panelTypes": "row",
+      "title": "Traffic Management"
+    },
+    {
+      "description": "Request distribution across destination services",
+      "fillSpans": false,
+      "id": "request-distribution-service",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f012",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f013",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-request-dist-svc",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Distribution by Service",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Request distribution by destination version for canary/blue-green analysis",
+      "fillSpans": false,
+      "id": "request-distribution-version",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f014",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f015",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" },
+                { "dataType": "string", "id": "destination_version--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_version", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}} / {{destination_version}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-request-dist-version",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Distribution by Version",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Rate of TCP connections opened and closed",
+      "fillSpans": false,
+      "id": "tcp-connections-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_tcp_connections_opened_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_tcp_connections_opened_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f016",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f017",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Opened",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_tcp_connections_closed_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_tcp_connections_closed_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f018",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f019",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Closed",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-tcp-connections",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Connection Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "TCP bytes sent and received across the mesh",
+      "fillSpans": false,
+      "id": "tcp-traffic-volume",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_tcp_sent_bytes_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_tcp_sent_bytes_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f020",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f021",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Sent",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_tcp_received_bytes_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_tcp_received_bytes_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f022",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f023",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Received",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-tcp-traffic",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Traffic Volume",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "",
+      "id": "row-performance-metrics",
+      "panelTypes": "row",
+      "title": "Performance Metrics"
+    },
+    {
+      "description": "Average request latency per destination service (duration_sum / duration_count)",
+      "fillSpans": false,
+      "id": "latency-by-service",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_request_duration_milliseconds_sum--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_request_duration_milliseconds_sum",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f024",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f025",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "sum — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_request_duration_milliseconds_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_request_duration_milliseconds_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f026",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f027",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "count — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": [
+            {
+              "disabled": false,
+              "expression": "A/B",
+              "legend": "Avg Latency — {{destination_service_name}}",
+              "queryName": "F1"
+            }
+          ]
+        },
+        "clickhouse_sql": [],
+        "id": "q-latency-by-service",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Average Latency by Service",
+      "yAxisUnit": "ms"
+    },
+    {
+      "description": "Rate of incoming request body sizes",
+      "fillSpans": false,
+      "id": "request-size-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_request_bytes_sum--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_request_bytes_sum",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f028",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f029",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-request-size",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Size Rate",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "Rate of outgoing response body sizes",
+      "fillSpans": false,
+      "id": "response-size-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_response_bytes_sum--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_response_bytes_sum",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f030",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f031",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-response-size",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Response Size Rate",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "Request throughput per destination service",
+      "fillSpans": false,
+      "id": "service-throughput",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f032",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f033",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" },
+                { "dataType": "string", "id": "response_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "response_code", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}} — {{response_code}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-service-throughput",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Service Throughput by Status Code",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "row-error-metrics",
+      "panelTypes": "row",
+      "title": "Error Metrics"
+    },
+    {
+      "description": "Rate of HTTP 4xx client errors by destination service",
+      "fillSpans": false,
+      "id": "http-4xx-by-service",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f034",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f035",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f036",
+                    "key": { "dataType": "string", "id": "response_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "response_code", "type": "tag" },
+                    "op": "regex",
+                    "value": "4.*"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "4xx — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-http-4xx",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "HTTP 4xx Rate by Service",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Rate of HTTP 5xx server errors by destination service",
+      "fillSpans": false,
+      "id": "http-5xx-by-service",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f037",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f038",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f039",
+                    "key": { "dataType": "string", "id": "response_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "response_code", "type": "tag" },
+                    "op": "regex",
+                    "value": "5.*"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "5xx — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-http-5xx",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "HTTP 5xx Rate by Service",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Rate of gRPC errors (non-OK status codes)",
+      "fillSpans": false,
+      "id": "grpc-error-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f040",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f041",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f042",
+                    "key": { "dataType": "string", "id": "request_protocol--string--tag--false", "isColumn": false, "isJSON": false, "key": "request_protocol", "type": "tag" },
+                    "op": "=",
+                    "value": "grpc"
+                  },
+                  {
+                    "id": "f043",
+                    "key": { "dataType": "string", "id": "grpc_response_status--string--tag--false", "isColumn": false, "isJSON": false, "key": "grpc_response_status", "type": "tag" },
+                    "op": "!=",
+                    "value": "0"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" },
+                { "dataType": "string", "id": "grpc_response_status--string--tag--false", "isColumn": false, "isJSON": false, "key": "grpc_response_status", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "gRPC {{grpc_response_status}} — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-grpc-errors",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "gRPC Error Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "All failed requests (4xx + 5xx) grouped by service and response code",
+      "fillSpans": false,
+      "id": "failed-requests-by-service",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f044",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f045",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f046",
+                    "key": { "dataType": "string", "id": "response_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "response_code", "type": "tag" },
+                    "op": "regex",
+                    "value": "[45].*"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" },
+                { "dataType": "string", "id": "response_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "response_code", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{response_code}} — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-failed-requests",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Failed Requests by Service",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "row-resource-usage",
+      "panelTypes": "row",
+      "title": "Resource Usage"
+    },
+    {
+      "description": "CPU usage of istiod control plane pods",
+      "fillSpans": false,
+      "id": "control-plane-cpu",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "container_cpu_usage_seconds_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "container_cpu_usage_seconds_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f047",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f048",
+                    "key": { "dataType": "string", "id": "pod--string--tag--false", "isColumn": false, "isJSON": false, "key": "pod", "type": "tag" },
+                    "op": "regex",
+                    "value": "istiod.*"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "pod--string--tag--false", "isColumn": false, "isJSON": false, "key": "pod", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{pod}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-cp-cpu",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Control Plane CPU Usage",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Memory usage of istiod control plane pods",
+      "fillSpans": false,
+      "id": "control-plane-memory",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "container_memory_working_set_bytes--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "container_memory_working_set_bytes",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f049",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f050",
+                    "key": { "dataType": "string", "id": "pod--string--tag--false", "isColumn": false, "isJSON": false, "key": "pod", "type": "tag" },
+                    "op": "regex",
+                    "value": "istiod.*"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "pod--string--tag--false", "isColumn": false, "isJSON": false, "key": "pod", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{pod}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-cp-memory",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Control Plane Memory Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "CPU usage of istio-proxy sidecar containers",
+      "fillSpans": false,
+      "id": "proxy-cpu",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "container_cpu_usage_seconds_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "container_cpu_usage_seconds_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f051",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f052",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f053",
+                    "key": { "dataType": "string", "id": "container--string--tag--false", "isColumn": false, "isJSON": false, "key": "container", "type": "tag" },
+                    "op": "=",
+                    "value": "istio-proxy"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "pod--string--tag--false", "isColumn": false, "isJSON": false, "key": "pod", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{pod}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-proxy-cpu",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Proxy (istio-proxy) CPU Usage",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Memory usage of istio-proxy sidecar containers",
+      "fillSpans": false,
+      "id": "proxy-memory",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "container_memory_working_set_bytes--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "container_memory_working_set_bytes",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f054",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f055",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f056",
+                    "key": { "dataType": "string", "id": "container--string--tag--false", "isColumn": false, "isJSON": false, "key": "container", "type": "tag" },
+                    "op": "=",
+                    "value": "istio-proxy"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "pod--string--tag--false", "isColumn": false, "isJSON": false, "key": "pod", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{pod}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-proxy-memory",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Proxy (istio-proxy) Memory Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "",
+      "id": "row-control-plane",
+      "panelTypes": "row",
+      "title": "Control Plane Metrics"
+    },
+    {
+      "description": "Rate of xDS configuration pushes from istiod by type (CDS, EDS, LDS, RDS)",
+      "fillSpans": false,
+      "id": "xds-push-rate",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "pilot_xds_pushes--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "pilot_xds_pushes",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f057",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "type--string--tag--false", "isColumn": false, "isJSON": false, "key": "type", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{type}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-xds-push",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "xDS Push Rate by Type",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Number of Envoy proxies connected to istiod",
+      "fillSpans": false,
+      "id": "connected-proxies",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "pilot_xds--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "pilot_xds",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f058",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Connected Proxies",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-connected-proxies",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Connected Proxies (pilot_xds)",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Rate of proxy config rejections indicating misconfigurations",
+      "fillSpans": false,
+      "id": "config-rejections",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "pilot_total_xds_rejects--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "pilot_total_xds_rejects",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f059",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Config Rejections",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-config-rejections",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Config Rejections Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Rate of successful certificate issuance by Citadel (istiod CA)",
+      "fillSpans": false,
+      "id": "cert-issuance-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "citadel_server_success_cert_issuance_count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "citadel_server_success_cert_issuance_count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f060",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Certs Issued",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-cert-issuance",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Certificate Issuance Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "row-data-plane",
+      "panelTypes": "row",
+      "title": "Data Plane Metrics"
+    },
+    {
+      "description": "Inbound request rate as reported by destination (server-side) proxies",
+      "fillSpans": false,
+      "id": "inbound-request-rate",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f061",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f062",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f063",
+                    "key": { "dataType": "string", "id": "reporter--string--tag--false", "isColumn": false, "isJSON": false, "key": "reporter", "type": "tag" },
+                    "op": "=",
+                    "value": "destination"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-inbound-rate",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Inbound Request Rate (server-side)",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Outbound request rate as reported by source (client-side) proxies",
+      "fillSpans": false,
+      "id": "outbound-request-rate",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f064",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f065",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f066",
+                    "key": { "dataType": "string", "id": "reporter--string--tag--false", "isColumn": false, "isJSON": false, "key": "reporter", "type": "tag" },
+                    "op": "=",
+                    "value": "source"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "source_workload--string--tag--false", "isColumn": false, "isJSON": false, "key": "source_workload", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{source_workload}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-outbound-rate",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Outbound Request Rate (client-side)",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Rate of TCP bytes sent through Envoy proxies",
+      "fillSpans": false,
+      "id": "tcp-bytes-sent",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_tcp_sent_bytes_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_tcp_sent_bytes_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f067",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f068",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-tcp-sent",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Sent Rate",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "Rate of TCP bytes received through Envoy proxies",
+      "fillSpans": false,
+      "id": "tcp-bytes-received",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_tcp_received_bytes_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_tcp_received_bytes_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f069",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f070",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "{{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-tcp-received",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Received Rate",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "",
+      "id": "row-security-metrics",
+      "panelTypes": "row",
+      "title": "Security Metrics"
+    },
+    {
+      "description": "Rate of requests using mutual TLS encryption",
+      "fillSpans": false,
+      "id": "mtls-traffic-rate",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f071",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f072",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f073",
+                    "key": { "dataType": "string", "id": "connection_security_policy--string--tag--false", "isColumn": false, "isJSON": false, "key": "connection_security_policy", "type": "tag" },
+                    "op": "=",
+                    "value": "mutual_tls"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "mTLS — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-mtls-rate",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "mTLS Traffic Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Rate of requests NOT using mutual TLS (plaintext traffic)",
+      "fillSpans": false,
+      "id": "non-mtls-traffic",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "istio_requests_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "istio_requests_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f074",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "f075",
+                    "key": { "dataType": "string", "id": "destination_workload_namespace--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_workload_namespace", "type": "tag" },
+                    "op": "in",
+                    "value": ["{{.namespace}}"]
+                  },
+                  {
+                    "id": "f076",
+                    "key": { "dataType": "string", "id": "connection_security_policy--string--tag--false", "isColumn": false, "isJSON": false, "key": "connection_security_policy", "type": "tag" },
+                    "op": "!=",
+                    "value": "mutual_tls"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [
+                { "dataType": "string", "id": "destination_service_name--string--tag--false", "isColumn": false, "isJSON": false, "key": "destination_service_name", "type": "tag" }
+              ],
+              "having": [],
+              "legend": "plaintext — {{destination_service_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-non-mtls",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Non-mTLS (Plaintext) Traffic Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Root certificate expiry timestamp from Citadel CA",
+      "fillSpans": false,
+      "id": "root-cert-expiry",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "citadel_server_root_cert_expiry_timestamp--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "citadel_server_root_cert_expiry_timestamp",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "latest",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f077",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Root Cert Expiry (epoch)",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "min",
+              "stepInterval": 60,
+              "timeAggregation": "latest"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-root-cert-expiry",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Root Certificate Expiry Timestamp",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Rate of failed sidecar injection attempts",
+      "fillSpans": false,
+      "id": "sidecar-injection-failures",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "sidecar_injection_failure_total--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "sidecar_injection_failure_total",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "f078",
+                    "key": { "dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag" },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "having": [],
+              "legend": "Injection Failures",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "id": "q-injection-failures",
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Sidecar Injection Failures",
+      "yAxisUnit": "ops"
+    }
+  ]
+}
