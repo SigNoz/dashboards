@@ -1,0 +1,563 @@
+{
+  "description": "Cert-Manager monitoring dashboard for tracking certificate issuance, renewal, expiry, ACME challenges, and Kubernetes certificate resources.",
+  "tags": [
+    "cert-manager",
+    "kubernetes",
+    "ssl",
+    "tls"
+  ],
+  "title": "Cert-Manager",
+  "version": "v4",
+  "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBkPSJNMTIgMUwxIDZ2MTJsMTEgNSAxMS01VjZsLTExLTV6IiBmaWxsPSIjMzI5OEVGIi8+PHBhdGggZD0iTTEyIDE2bC01LTJ2LTRsNS0yIDUtMnY0bC01IDJ2NHoiIGZpbGw9IndoaXRlIi8+PC9zdmc+",
+  "uploadedGrafana": false,
+  "panelMap": {},
+  "widgets": [
+    {
+      "id": "efc4d9fa-d4e3-49d1-96a6-17a5e03d159e",
+      "title": "Total Certificates Issued",
+      "description": "Total number of certificates successfully issued by cert-manager",
+      "panelTypes": "stat",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "047d5bd2-9f2a-4bf5-85c0-68566abf8e05",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "",
+            "query": "count(certmanager_certificate_expiration_timestamp_seconds)",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "softMin": 0,
+      "softMax": 0
+    },
+    {
+      "id": "6b5b8c2c-989f-42a0-bc3b-1e04f30bbced",
+      "title": "Active Certificates",
+      "description": "Number of currently active (not expired) certificates",
+      "panelTypes": "stat",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "5f74d046-5381-4bd7-89b0-3a366efe9220",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "",
+            "query": "count(certmanager_certificate_expiration_timestamp_seconds > time())",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "softMin": 0,
+      "softMax": 0
+    },
+    {
+      "id": "6beee87d-56a5-4ae3-9a74-eaecf32db641",
+      "title": "Ready Certificates",
+      "description": "Number of certificates with Ready condition True",
+      "panelTypes": "stat",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "c7c16632-757a-422a-b754-d527bb525ddf",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "",
+            "query": "count(certmanager_certificate_ready_status{condition=\"True\"})",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "softMin": 0,
+      "softMax": 0
+    },
+    {
+      "id": "0ca1bd5b-17f3-431a-871c-2c0b84dab593",
+      "title": "Not Ready Certificates",
+      "description": "Number of certificates with Ready condition False",
+      "panelTypes": "stat",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "5fb8a845-ce4f-423e-a7a9-f15a6d0a0ec4",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "",
+            "query": "count(certmanager_certificate_ready_status{condition=\"False\"})",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "softMin": 0,
+      "softMax": 0
+    },
+    {
+      "id": "d468e517-57fa-42a4-8875-67b05ec09059",
+      "title": "Pending Certificate Requests",
+      "description": "Number of certificate requests currently pending",
+      "panelTypes": "stat",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "db27b56a-5949-443a-a6a1-22e10e4b905a",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "",
+            "query": "count(certmanager_certificaterequest_ready_status{condition=\"False\"} unless on(name,namespace) certmanager_certificaterequest_condition_ready{condition=\"True\"})",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "softMin": 0,
+      "softMax": 0
+    },
+    {
+      "id": "fda70137-9f04-4303-9106-aa1437b5097d",
+      "title": "Failed Certificate Requests",
+      "description": "Number of certificate requests that have failed",
+      "panelTypes": "stat",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "query": {
+        "id": "92426f4c-8c21-4e51-a701-6f7d094389b7",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "",
+            "query": "count(certmanager_certificaterequest_condition_ready{condition=\"False\"})",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "softMin": 0,
+      "softMax": 0
+    },
+    {
+      "id": "3b3d4637-8664-4751-96de-1d49d9976409",
+      "title": "Certificate Expiry",
+      "description": "Time until certificate expiration in days",
+      "panelTypes": "graph",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "mergeAllActiveQueries": false,
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "id": "fab042f1-dbca-40e8-86d0-385e6777b2c0",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "{{name}} - {{namespace}}",
+            "query": "(certmanager_certificate_expiration_timestamp_seconds - time()) / 86400",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "selectedLogFields": [
+        { "dataType": "string", "name": "body", "type": "" },
+        { "dataType": "string", "name": "timestamp", "type": "" }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "04019541-9ac8-4f7b-8995-8b87a56ef1b4",
+      "title": "Certificate Requests by Issuer",
+      "description": "Certificate requests processed by each issuer",
+      "panelTypes": "graph",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "mergeAllActiveQueries": false,
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "id": "70129f4d-df22-4a39-aa49-cccacbc4d975",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "{{issuer_name}} - {{issuer_kind}}",
+            "query": "sum by (issuer_name, issuer_kind) (certmanager_certificaterequest_ready_status)",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "selectedLogFields": [
+        { "dataType": "string", "name": "body", "type": "" },
+        { "dataType": "string", "name": "timestamp", "type": "" }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "e8607fa2-e3fe-458c-941e-9ee8dc30033c",
+      "title": "Certificate Signing Requests",
+      "description": "Certificate signing request status over time",
+      "panelTypes": "graph",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "mergeAllActiveQueries": false,
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "id": "ed32f7f0-6ee8-4863-899a-e5adb5a28536",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "{{name}} - {{namespace}}",
+            "query": "certmanager_certificaterequest_condition_ready",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "selectedLogFields": [
+        { "dataType": "string", "name": "body", "type": "" },
+        { "dataType": "string", "name": "timestamp", "type": "" }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "d9918626-95e5-4ff5-93b6-947e683e155d",
+      "title": "ACME Challenge Status",
+      "description": "ACME challenge authorization status",
+      "panelTypes": "graph",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "mergeAllActiveQueries": false,
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "id": "44fabdeb-5616-40b6-9424-8adf2b59970f",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "{{type}} - {{name}}",
+            "query": "certmanager_challenges_request_timestamp_seconds",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "legend": "Presented - {{type}} - {{name}}",
+            "query": "certmanager_challenges_presented_timestamp_seconds",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "selectedLogFields": [
+        { "dataType": "string", "name": "body", "type": "" },
+        { "dataType": "string", "name": "timestamp", "type": "" }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "fda70137-9f04-4303-9106-aa1437b5097",
+      "title": "ACME Challenge Error Rate",
+      "description": "Rate of failed ACME challenges",
+      "panelTypes": "graph",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "mergeAllActiveQueries": false,
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "id": "d9918626-95e5-4ff5-93b6-947e683e155a",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "{{type}} - {{name}}",
+            "query": "increase(certmanager_challenges_error_count[5m])",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "selectedLogFields": [
+        { "dataType": "string", "name": "body", "type": "" },
+        { "dataType": "string", "name": "timestamp", "type": "" }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "047d5bd2-9f2a-4bf5-85c0-68566abf8e06",
+      "title": "Certificates Issued per Issuer",
+      "description": "Number of certificates issued by each configured issuer",
+      "panelTypes": "graph",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "mergeAllActiveQueries": false,
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "id": "efc4d9fa-d4e3-49d1-96a6-17a5e03d159f",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "{{issuer_name}} - {{issuer_group}}",
+            "query": "sum by (issuer_name, issuer_group) (certmanager_certificate_ready_status{condition=\"True\"})",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "selectedLogFields": [
+        { "dataType": "string", "name": "body", "type": "" },
+        { "dataType": "string", "name": "timestamp", "type": "" }
+      ],
+      "selectedTracesFields": []
+    },
+    {
+      "id": "5f74d046-5381-4bd7-89b0-3a366efe9221",
+      "title": "Certificate Ready Status",
+      "description": "Ready vs Not Ready certificates over time",
+      "panelTypes": "graph",
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "timePreferance": "GLOBAL_TIME",
+      "isStacked": false,
+      "stackedBarChart": false,
+      "fillSpans": false,
+      "mergeAllActiveQueries": false,
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "id": "c7c16632-757a-422a-b754-d527bb525ddc",
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "legend": "Ready",
+            "query": "sum(certmanager_certificate_ready_status{condition=\"True\"})",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "legend": "Not Ready",
+            "query": "sum(certmanager_certificate_ready_status{condition=\"False\"})",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [],
+      "selectedLogFields": [
+        { "dataType": "string", "name": "body", "type": "" },
+        { "dataType": "string", "name": "timestamp", "type": "" }
+      ],
+      "selectedTracesFields": []
+    }
+  ],
+  "layout": [
+    {
+      "h": 3, "w": 2, "x": 0, "y": 0,
+      "i": "efc4d9fa-d4e3-49d1-96a6-17a5e03d159e",
+      "moved": false, "static": false
+    },
+    {
+      "h": 3, "w": 2, "x": 2, "y": 0,
+      "i": "6b5b8c2c-989f-42a0-bc3b-1e04f30bbced",
+      "moved": false, "static": false
+    },
+    {
+      "h": 3, "w": 2, "x": 4, "y": 0,
+      "i": "6beee87d-56a5-4ae3-9a74-eaecf32db641",
+      "moved": false, "static": false
+    },
+    {
+      "h": 3, "w": 2, "x": 6, "y": 0,
+      "i": "0ca1bd5b-17f3-431a-871c-2c0b84dab593",
+      "moved": false, "static": false
+    },
+    {
+      "h": 3, "w": 2, "x": 8, "y": 0,
+      "i": "d468e517-57fa-42a4-8875-67b05ec09059",
+      "moved": false, "static": false
+    },
+    {
+      "h": 3, "w": 2, "x": 10, "y": 0,
+      "i": "fda70137-9f04-4303-9106-aa1437b5097d",
+      "moved": false, "static": false
+    },
+    {
+      "h": 6, "w": 6, "x": 0, "y": 3,
+      "i": "3b3d4637-8664-4751-96de-1d49d9976409",
+      "moved": false, "static": false
+    },
+    {
+      "h": 6, "w": 6, "x": 6, "y": 3,
+      "i": "04019541-9ac8-4f7b-8995-8b87a56ef1b4",
+      "moved": false, "static": false
+    },
+    {
+      "h": 6, "w": 6, "x": 0, "y": 9,
+      "i": "e8607fa2-e3fe-458c-941e-9ee8dc30033c",
+      "moved": false, "static": false
+    },
+    {
+      "h": 6, "w": 6, "x": 6, "y": 9,
+      "i": "d9918626-95e5-4ff5-93b6-947e683e155d",
+      "moved": false, "static": false
+    },
+    {
+      "h": 6, "w": 6, "x": 0, "y": 15,
+      "i": "fda70137-9f04-4303-9106-aa1437b5097",
+      "moved": false, "static": false
+    },
+    {
+      "h": 6, "w": 6, "x": 6, "y": 15,
+      "i": "047d5bd2-9f2a-4bf5-85c0-68566abf8e06",
+      "moved": false, "static": false
+    },
+    {
+      "h": 6, "w": 6, "x": 0, "y": 21,
+      "i": "5f74d046-5381-4bd7-89b0-3a366efe9221",
+      "moved": false, "static": false
+    }
+  ]
+}
