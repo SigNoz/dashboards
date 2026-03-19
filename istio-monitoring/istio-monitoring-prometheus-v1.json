@@ -1,0 +1,501 @@
+{
+  "description": "Monitor Istio service mesh health, traffic, latency and errors",
+  "layout": [
+    {
+      "h": 6,
+      "i": "01de8fac-34e5-4f39-b5be-0b51750b97c8",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 6,
+      "i": "e219f0a7-5baf-499a-932a-52cadac56186",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 4,
+      "y": 0
+    },
+    {
+      "h": 6,
+      "i": "610c2c86-cc35-4f28-b60e-662fed3fab6d",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 8,
+      "y": 0
+    },
+    {
+      "h": 6,
+      "i": "e9704c13-e4c2-4acf-ac98-522b9e976cdc",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 0,
+      "y": 6
+    },
+    {
+      "h": 6,
+      "i": "44dc8bd1-4e6b-422a-9956-3e62747feb9c",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 4,
+      "y": 6
+    },
+    {
+      "h": 6,
+      "i": "e9d6d99f-48ad-4477-8cef-f102fdef71ef",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 8,
+      "y": 6
+    },
+    {
+      "h": 6,
+      "i": "4fd041c5-11d0-4109-9df9-0b42176b6beb",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 0,
+      "y": 12
+    },
+    {
+      "h": 6,
+      "i": "49188bd1-7a2e-4fa6-b294-476af585fda4",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 4,
+      "y": 12
+    },
+    {
+      "h": 6,
+      "i": "4855d7b1-83df-42ed-b26a-0ded6b4f91ee",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 8,
+      "y": 12
+    },
+    {
+      "h": 6,
+      "i": "e5f9070a-3c43-4ca1-97c9-b25126d1c312",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 0,
+      "y": 18
+    }
+  ],
+  "name": "",
+  "panelMap": {},
+  "tags": [],
+  "title": "Istio Monitoring",
+  "uploadedGrafana": false,
+  "variables": {
+    "af31c942-afae-4ab1-b23c-0b8a297b9898": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Kubernetes namespace",
+      "id": "af31c942-afae-4ab1-b23c-0b8a297b9898",
+      "modificationUUID": "5130c9e3-90b4-4430-91dc-09c1a9bda16e",
+      "multiSelect": false,
+      "name": "namespace",
+      "order": 0,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'namespace'))\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%istio%'\nAND (unix_milli >= $__unixMilliStart() AND unix_milli <= $__unixMilliEnd())",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "acb8bbc3-6001-493d-99f0-3d66335229b1": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Deployment environment",
+      "id": "acb8bbc3-6001-493d-99f0-3d66335229b1",
+      "modificationUUID": "20ac796c-9d9a-4d04-b949-392678d39eab",
+      "multiSelect": false,
+      "name": "deployment.environment",
+      "order": 1,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'deployment.environment')) as `deployment.environment`\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%istio%'\nAND (unix_milli >= $__unixMilliStart() AND unix_milli <= $__unixMilliEnd())",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "version": "v4",
+  "widgets": [
+    {
+      "description": "Total requests in the mesh",
+      "fillSpans": false,
+      "id": "01de8fac-34e5-4f39-b5be-0b51750b97c8",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "stat",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "b60418de-8bc8-4e66-9c13-8be523d3fe16",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Total Requests",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Request rate by source/destination",
+      "fillSpans": false,
+      "id": "e219f0a7-5baf-499a-932a-52cadac56186",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "b6f75dce-3387-49fb-9d0c-a1dda47cce02",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{source_workload}} -> {{destination_workload}}",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (source_workload, destination_workload)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "Average request latency",
+      "fillSpans": false,
+      "id": "610c2c86-cc35-4f28-b60e-662fed3fab6d",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "640d8c56-b3ae-4222-9953-dc3f523b71c6",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_workload}}",
+            "name": "A",
+            "query": "sum(rate(istio_request_duration_milliseconds_sum{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (destination_workload) / sum(rate(istio_request_duration_milliseconds_count{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (destination_workload)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Average Latency",
+      "yAxisUnit": "ms"
+    },
+    {
+      "description": "Error rate percentage",
+      "fillSpans": false,
+      "id": "e9704c13-e4c2-4acf-ac98-522b9e976cdc",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "1c4934c3-983c-41ff-bb28-87a887f4d071",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_workload}}",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\", response_code=~\"[45]..\"}[$__rate_interval])) by (destination_workload) / sum(rate(istio_requests_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (destination_workload) * 100"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Error Rate",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Request distribution across service versions",
+      "fillSpans": false,
+      "id": "44dc8bd1-4e6b-422a-9956-3e62747feb9c",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "2adf68fb-a54c-497b-a64a-410b859ea07a",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_workload}} (v{{destination_version}})",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (destination_workload, destination_version)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Distribution by Destination",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Circuit breaker events",
+      "fillSpans": false,
+      "id": "e9d6d99f-48ad-4477-8cef-f102fdef71ef",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "2cc6c9f2-dbd0-456b-b75c-d07d126d9832",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_workload}}",
+            "name": "A",
+            "query": "sum(istio_circuit_breakers_open{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}) by (destination_workload)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Circuit Breaker - Open Connections",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Upstream retry and timeout events",
+      "fillSpans": false,
+      "id": "4fd041c5-11d0-4109-9df9-0b42176b6beb",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "592a5dad-b6cb-4c09-94fd-979ebc48a243",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{source_workload}} -> {{destination_workload}}",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\", response_flags=~\"U[PD]X\"}[$__rate_interval])) by (source_workload, destination_workload)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Retry Attempts",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Latency percentiles",
+      "fillSpans": false,
+      "id": "49188bd1-7a2e-4fa6-b294-476af585fda4",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "020d2945-20a9-427d-83ce-530e25f00c6d",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "P50 - {{destination_workload}}",
+            "name": "A",
+            "query": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (le, destination_workload))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Duration P50/P90/P99",
+      "yAxisUnit": "ms"
+    },
+    {
+      "description": "TCP bytes sent",
+      "fillSpans": false,
+      "id": "4855d7b1-83df-42ed-b26a-0ded6b4f91ee",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "5987a493-0256-4381-9d31-2b1cc9096fa3",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{source_workload}} -> {{destination_workload}}",
+            "name": "A",
+            "query": "sum(rate(istio_tcp_sent_bytes_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (source_workload, destination_workload)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Sent",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "TCP bytes received",
+      "fillSpans": false,
+      "id": "e5f9070a-3c43-4ca1-97c9-b25126d1c312",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "e7b5dcb0-1b8a-4da8-867a-cd584ee79437",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{source_workload}} -> {{destination_workload}}",
+            "name": "A",
+            "query": "sum(rate(istio_tcp_received_bytes_total{deployment_environment=\"$deployment_environment\", namespace=\"$namespace\"}[$__rate_interval])) by (source_workload, destination_workload)"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Received",
+      "yAxisUnit": "bytes"
+    }
+  ]
+}
