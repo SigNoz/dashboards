@@ -52,57 +52,61 @@
     "05610c74-c8f3-495b-a7dc-8ec6e64f8bdb": {
       "allSelected": true,
       "customValue": "",
+      "defaultValue": "",
       "description": "The k8s node name.",
+      "dynamicVariablesAttribute": "k8s.node.name",
+      "dynamicVariablesSource": "All telemetry",
       "id": "05610c74-c8f3-495b-a7dc-8ec6e64f8bdb",
       "key": "05610c74-c8f3-495b-a7dc-8ec6e64f8bdb",
-      "modificationUUID": "3506211c-4fd4-4873-a01e-d1ef986fb9d5",
+      "modificationUUID": "29efe2e0-1208-45cd-83ad-92c00af8b794",
       "multiSelect": true,
       "name": "k8s.node.name",
       "order": 1,
       "queryValue": "SELECT JSONExtractString(labels, 'k8s.node.name') AS `k8s.node.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE `metric_name` = 'k8s.node.cpu.time' AND JSONExtractString(labels, 'k8s.cluster.name') = $k8s.cluster.name GROUP BY `k8s.node.name`",
-      "selectedValue": [
-        "default"
-      ],
       "showALLOption": true,
       "sort": "ASC",
       "textboxValue": "",
-      "type": "QUERY"
+      "type": "DYNAMIC"
     },
     "3c276fb0-b95b-42f8-b209-9953dd46d62c": {
       "allSelected": false,
       "customValue": "",
+      "defaultValue": "",
       "description": "The k8s namespace name",
+      "dynamicVariablesAttribute": "k8s.namespace.name",
+      "dynamicVariablesSource": "All telemetry",
       "id": "3c276fb0-b95b-42f8-b209-9953dd46d62c",
-      "modificationUUID": "0923a01a-7e96-406b-ba9e-1a8c3610e65b",
+      "modificationUUID": "328ee8f6-4a7f-4c4e-aad6-ed415ec5b030",
       "multiSelect": false,
       "name": "k8s.namespace.name",
       "order": 2,
       "queryValue": "SELECT JSONExtractString(labels, 'k8s.namespace.name') AS `k8s.namespace.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE `metric_name` = 'k8s.pod.cpu.time' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.node.name') IN $k8s.node.name GROUP BY `k8s.namespace.name`",
-      "selectedValue": "default",
-      "showALLOption": false,
+      "showALLOption": true,
       "sort": "ASC",
       "textboxValue": "",
-      "type": "QUERY"
+      "type": "DYNAMIC"
     },
     "4349d5be-eea6-41d2-9c8f-853ca85f018d": {
       "allSelected": false,
       "customValue": "",
+      "defaultValue": "",
       "description": "Name of the cluster",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "All telemetry",
       "id": "4349d5be-eea6-41d2-9c8f-853ca85f018d",
       "key": "4349d5be-eea6-41d2-9c8f-853ca85f018d",
-      "modificationUUID": "2173224d-ec4e-4ede-b177-e1bacb34c8ea",
+      "modificationUUID": "e8b478ea-75fd-4de4-9438-ebde87e5d1f9",
       "multiSelect": false,
       "name": "k8s.cluster.name",
       "order": 0,
       "queryValue": "SELECT JSONExtractString(labels, 'k8s.cluster.name') AS `k8s.cluster.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE `metric_name` = 'k8s.node.cpu.time' GROUP BY `k8s.cluster.name`",
-      "selectedValue": "default",
-      "showALLOption": false,
+      "showALLOption": true,
       "sort": "DISABLED",
       "textboxValue": "",
-      "type": "QUERY"
+      "type": "DYNAMIC"
     }
   },
-  "version": "v4",
+  "version": "v5",
   "widgets": [
     {
       "bucketCount": 30,
@@ -120,58 +124,56 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.pod.cpu.time--float64--Sum--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "k8s.pod.cpu.time",
-                "type": "Sum"
-              },
-              "aggregateOperator": "rate",
+              "aggregations": [
+                {
+                  "metricName": "k8s.pod.cpu.time",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name)"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "877385bf",
+                    "id": "ec521cea-fa7a-477b-8a18-5ab72e7889f6",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
                     },
-                    "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
                   },
                   {
-                    "id": "877385bf",
+                    "id": "d12daca9-fbe6-4015-a48b-fcafb0d306ff",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.node.name",
                       "key": "k8s.node.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.node.name}}"
+                      "$k8s.node.name"
                     ]
                   },
                   {
-                    "id": "61f9230d",
+                    "id": "25277932-b09b-43b3-8ee1-423ebfe21b1a",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.namespace.name",
                       "key": "k8s.namespace.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.namespace.name}}"
+                      "$k8s.namespace.name"
                     ]
                   }
                 ],
@@ -201,15 +203,14 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": {
+                "expression": ""
+              },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "rate"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
@@ -259,58 +260,56 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.pod.filesystem.available--float64--Gauge--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "k8s.pod.filesystem.available",
-                "type": "Gauge"
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.pod.filesystem.available",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": true,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name)"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "877385bf",
+                    "id": "ec521cea-fa7a-477b-8a18-5ab72e7889f6",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
                     },
-                    "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
                   },
                   {
-                    "id": "cfd49200",
+                    "id": "d31edcaa-0775-48d6-bf63-8ab5263a5be7",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.node.name",
                       "key": "k8s.node.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.node.name}}"
+                      "$k8s.node.name"
                     ]
                   },
                   {
-                    "id": "a9fb8a7e",
+                    "id": "b7b54c18-e00d-4f6f-82fd-6911d2435ccc",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.namespace.name",
                       "key": "k8s.namespace.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.namespace.name}}"
+                      "$k8s.namespace.name"
                     ]
                   }
                 ],
@@ -340,69 +339,66 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": {
+                "expression": ""
+              },
               "legend": "",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             },
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.pod.filesystem.capacity--float64--Gauge--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "k8s.pod.filesystem.capacity",
-                "type": "Gauge"
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.pod.filesystem.capacity",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": true,
               "expression": "B",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name)"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "877385bf",
+                    "id": "ec521cea-fa7a-477b-8a18-5ab72e7889f6",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
                     },
-                    "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
                   },
                   {
-                    "id": "c70ccfc4",
+                    "id": "059355c2-c9d6-4798-8d4d-8096cacf5959",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.node.name",
                       "key": "k8s.node.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.node.name}}"
+                      "$k8s.node.name"
                     ]
                   },
                   {
-                    "id": "58740964",
+                    "id": "72ed60cb-0a07-4db5-8b1d-8b2ab2dcb61a",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.namespace.name",
                       "key": "k8s.namespace.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.namespace.name}}"
+                      "$k8s.namespace.name"
                     ]
                   }
                 ],
@@ -432,15 +428,14 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": {
+                "expression": ""
+              },
               "legend": "",
               "limit": null,
               "orderBy": [],
               "queryName": "B",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": [
@@ -497,58 +492,56 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.pod.memory.working_set--float64--Gauge--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "k8s.pod.memory.working_set",
-                "type": "Gauge"
-              },
-              "aggregateOperator": "avg",
+              "aggregations": [
+                {
+                  "metricName": "k8s.pod.memory.working_set",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "avg"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name)"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "877385bf",
+                    "id": "ec521cea-fa7a-477b-8a18-5ab72e7889f6",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
                     },
-                    "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
                   },
                   {
-                    "id": "c6107830",
+                    "id": "db0ca806-b0cb-4047-a873-809a68e3a622",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.node.name",
                       "key": "k8s.node.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.node.name}}"
+                      "$k8s.node.name"
                     ]
                   },
                   {
-                    "id": "9e3c50e2",
+                    "id": "700ec97d-3a9e-4e30-948b-6ff2ba98017b",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.namespace.name",
                       "key": "k8s.namespace.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.namespace.name}}"
+                      "$k8s.namespace.name"
                     ]
                   }
                 ],
@@ -578,15 +571,14 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": {
+                "expression": ""
+              },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "avg"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
@@ -636,58 +628,56 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "k8s.pod.network.io--float64--Sum--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "k8s.pod.network.io",
-                "type": "Sum"
-              },
-              "aggregateOperator": "rate",
+              "aggregations": [
+                {
+                  "metricName": "k8s.pod.network.io",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name  AND k8s.node.name IN $k8s.node.name AND k8s.namespace.name IN $k8s.namespace.name)"
+              },
               "filters": {
                 "items": [
                   {
-                    "id": "877385bf",
+                    "id": "ec521cea-fa7a-477b-8a18-5ab72e7889f6",
                     "key": {
                       "dataType": "string",
-                      "id": "k8s.cluster.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.cluster.name--string--",
                       "key": "k8s.cluster.name",
-                      "type": "tag"
+                      "type": ""
                     },
-                    "op": "=",
-                    "value": "{{.k8s.cluster.name}}"
+                    "op": "IN",
+                    "value": "$k8s.cluster.name"
                   },
                   {
-                    "id": "9613b4da",
+                    "id": "4f83540e-eba0-4ea0-b4f9-7a38be3762c4",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.node.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.node.name",
                       "key": "k8s.node.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.node.name}}"
+                      "$k8s.node.name"
                     ]
                   },
                   {
-                    "id": "7605354f",
+                    "id": "0dccd2b9-7486-49b5-ac8b-2944e6c67211",
                     "key": {
-                      "dataType": "string",
-                      "id": "k8s.namespace.name--string--tag--false",
-                      "isColumn": false,
+                      "id": "k8s.namespace.name",
                       "key": "k8s.namespace.name",
-                      "type": "tag"
+                      "type": ""
                     },
                     "op": "in",
                     "value": [
-                      "{{.k8s.namespace.name}}"
+                      "$k8s.namespace.name"
                     ]
                   }
                 ],
@@ -731,15 +721,14 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": {
+                "expression": ""
+              },
               "legend": "{{k8s.namespace.name}}-{{k8s.pod.name}}-{{interface}}-{{direction}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "rate"
+              "stepInterval": 60
             }
           ],
           "queryFormulas": []
@@ -773,5 +762,6 @@
       "title": "Pod network IO",
       "yAxisUnit": "bytes"
     }
-  ]
+  ],
+  "uuid": "019d0496-e23e-70c2-ac41-55810de09673"
 }
