@@ -30,6 +30,8 @@ Each dashboard is built for specific services and data sources like OpenTelemetr
 ## Available Dashboards
 Checkout list of all dashboards [here](https://signoz.io/docs/dashboards/dashboard-templates/overview/#available-dashboard-templates)
 
+- [Elasticsearch](elasticsearch/) - Comprehensive Elasticsearch monitoring with node metrics, cluster health, index metrics, query/request metrics, and cache metrics (OTLP)
+
 ## Request New Dashboard Template
 
 Before requesting a new dashboard, please check if a similar request has already been made by searching through the open issues here: [Existing Dashboard Requests](https://github.com/SigNoz/signoz/issues?q=is%3Aopen+is%3Aissue+label%3Adashboard-template).
