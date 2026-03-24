@@ -1,5 +1,9 @@
 # cert-manager Dashboard - Prometheus
 
+## Screenshot
+
+![cert-manager dashboard](assets/cert-manager-dashboard.png)
+
 ## Data Ingestion
 
 This dashboard expects cert-manager metrics scraped by Prometheus and available in SigNoz metrics storage.
