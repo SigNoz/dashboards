@@ -1,0 +1,618 @@
+{
+  "description": "Dashboard for cert-manager Prometheus metrics, including certificate health, expiry, and ACME traffic.",
+  "uuid": "2ef0a9b8-9a8f-4af2-9d02-c52c62a4f40a",
+  "layout": [
+    {
+      "h": 4,
+      "i": "d8f11a56-f947-4fb6-a9aa-7115712564a1",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 4,
+      "i": "6d65c1c2-1bd8-48f8-bc4f-ef1fe86f4110",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 3,
+      "y": 0
+    },
+    {
+      "h": 4,
+      "i": "74442a9b-8e77-4238-93a4-eb75e95d7dc3",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 6,
+      "y": 0
+    },
+    {
+      "h": 4,
+      "i": "f646f6cc-fb00-4bcf-aef6-565132ce3ce1",
+      "moved": false,
+      "static": false,
+      "w": 3,
+      "x": 9,
+      "y": 0
+    },
+    {
+      "h": 6,
+      "i": "e02ea5ed-d1ca-4527-8585-a6974fb2a9a6",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 4
+    },
+    {
+      "h": 6,
+      "i": "3151cc65-e857-4c21-a137-bfd93ff6cd8e",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 4
+    },
+    {
+      "h": 6,
+      "i": "13118107-8df5-40aa-a898-f6f6f5f6ff1d",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 10
+    },
+    {
+      "h": 6,
+      "i": "3539c225-d892-43d0-baff-3590987cb198",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 10
+    }
+  ],
+  "name": "",
+  "tags": [
+    "cert-manager",
+    "prometheus",
+    "kubernetes"
+  ],
+  "version": "v4",
+  "title": "cert-manager (Prometheus)",
+  "variables": {
+    "f2ee7cb0-1a31-4b67-b7d2-f3627c57f59c": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Kubernetes namespace",
+      "id": "f2ee7cb0-1a31-4b67-b7d2-f3627c57f59c",
+      "modificationUUID": "123e4f31-3234-4f4f-b456-ff329ed89af1",
+      "multiSelect": false,
+      "name": "namespace",
+      "order": 0,
+      "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'namespace')\nFROM signoz_metrics.distributed_time_series_v4\nWHERE metric_name='certmanager_certificate_ready_status' AND fingerprint GLOBAL IN\n(\n  SELECT DISTINCT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE\n  metric_name='certmanager_certificate_ready_status' AND unix_milli>toUnixTimestamp(now() - INTERVAL 5 MINUTE)*1000\n)",
+      "selectedValue": "",
+      "showALLOption": false,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "64f31ea0-19f2-4b7e-90d4-604370a6d2e1": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Issuer or ClusterIssuer name",
+      "id": "64f31ea0-19f2-4b7e-90d4-604370a6d2e1",
+      "modificationUUID": "cf6bcf34-7deb-4cb5-9de8-7f3900e3d1d6",
+      "multiSelect": false,
+      "name": "issuer",
+      "order": 1,
+      "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'issuer_name')\nFROM signoz_metrics.distributed_time_series_v4\nWHERE metric_name='certmanager_certificate_ready_status'\nAND JSONExtractString(labels, 'namespace')={{.namespace}}\nAND fingerprint GLOBAL IN\n(\n  SELECT DISTINCT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE\n  metric_name='certmanager_certificate_ready_status' AND unix_milli>toUnixTimestamp(now() - INTERVAL 5 MINUTE)*1000\n)",
+      "selectedValue": "",
+      "showALLOption": false,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "widgets": [
+    {
+      "description": "",
+      "id": "d8f11a56-f947-4fb6-a9aa-7115712564a1",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(certmanager_certificate_ready_status{condition=\"True\",namespace=~\"{{.namespace}}\",issuer_name=~\"{{.issuer}}\"})",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "905a9577-7ca5-4e7d-96ba-3e42045184f8",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Certificates Ready",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "",
+      "id": "6d65c1c2-1bd8-48f8-bc4f-ef1fe86f4110",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum((certmanager_certificate_expiration_timestamp_seconds{namespace=~\"{{.namespace}}\",issuer_name=~\"{{.issuer}}\"} - time()) < 604800)",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "f9892947-3fa1-4df0-b7b1-97e17f5b5d31",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Expiring in 7 Days",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "",
+      "id": "74442a9b-8e77-4238-93a4-eb75e95d7dc3",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum((time() - certmanager_certificate_renewal_timestamp_seconds{namespace=~\"{{.namespace}}\",issuer_name=~\"{{.issuer}}\"}) > 0)",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "af4f7ccf-722e-4657-a5ea-beb6f1a2897f",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Renewal Due",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "",
+      "id": "f646f6cc-fb00-4bcf-aef6-565132ce3ce1",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(certmanager_http_acme_client_request_count{namespace=~\"{{.namespace}}\"}[5m]))",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "844f0998-dba2-4df9-a5a7-57fc2204f5ba",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "ACME Request Rate",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "e02ea5ed-d1ca-4527-8585-a6974fb2a9a6",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum by (condition) (certmanager_certificate_ready_status{namespace=~\"{{.namespace}}\",issuer_name=~\"{{.issuer}}\"})",
+            "legend": "{{condition}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "4f7696cb-98cf-4de1-b4d2-ff572d98f150",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Certificate Ready Status",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "",
+      "id": "3151cc65-e857-4c21-a137-bfd93ff6cd8e",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"{{.namespace}}\",issuer_name=~\"{{.issuer}}\"} - time()) / 86400",
+            "legend": "{{name}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "a0f52b50-d42d-47ca-a278-75f3877f930c",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Certificate Expiration Horizon (Days)",
+      "yAxisUnit": "d"
+    },
+    {
+      "description": "",
+      "id": "13118107-8df5-40aa-a898-f6f6f5f6ff1d",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(certmanager_controller_sync_call_count{namespace=~\"{{.namespace}}\"}[5m])) by (controller)",
+            "legend": "{{controller}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "ec85043f-8f3e-4ca2-9bc8-f4c9e6d6bb69",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Controller Sync Calls",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "",
+      "id": "3539c225-d892-43d0-baff-3590987cb198",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "legend": "",
+            "disabled": false,
+            "query": ""
+          }
+        ],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(certmanager_http_acme_client_request_count{namespace=~\"{{.namespace}}\"}[5m])) by (host)",
+            "legend": "{{host}}",
+            "disabled": false
+          }
+        ],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "925d17c6-a7ac-4f6b-94f4-3185f5d73556",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "ACME Client Requests by Host",
+      "yAxisUnit": "ops"
+    }
+  ]
+}
