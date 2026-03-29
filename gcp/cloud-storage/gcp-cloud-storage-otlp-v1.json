@@ -1,0 +1,783 @@
+{
+  "description": "Monitoring dashboard for Google Cloud Storage (GCS) buckets. Covers storage utilization, object counts, API request rates, and network throughput per bucket.",
+  "image": "",
+  "layout": [
+    {
+      "h": 1,
+      "i": "ee5f5bff-a9ea-456d-9a03-f358e2182397",
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12,
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 6,
+      "i": "3955bed6-520e-45de-bc73-59ccb3fbece2",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 1
+    },
+    {
+      "h": 6,
+      "i": "7073f2b3-4b84-41b7-ac97-d9e3cf1e6012",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 1
+    },
+    {
+      "h": 1,
+      "i": "fa8ab62d-d57a-4579-9246-7b1c4262441b",
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12,
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 7
+    },
+    {
+      "h": 6,
+      "i": "38a2ec5f-1e70-443a-a50d-32cbfe0079c3",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 8
+    },
+    {
+      "h": 1,
+      "i": "f064cffd-f585-45d7-ab27-764b702da65d",
+      "maxH": 1,
+      "minH": 1,
+      "minW": 12,
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 14
+    },
+    {
+      "h": 6,
+      "i": "c5b0dd00-e7cc-4849-8c3e-fb74d61636c2",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 15
+    },
+    {
+      "h": 6,
+      "i": "c17c5918-2df5-43e3-b4c5-9759a1c4456c",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 15
+    }
+  ],
+  "panelMap": {},
+  "tags": [
+    "gcp",
+    "cloud-storage",
+    "gcs",
+    "bucket",
+    "object-storage"
+  ],
+  "title": "GCP Cloud Storage Monitoring",
+  "uploadedGrafana": false,
+  "variables": {
+    "e73f02df-f42b-42a4-957e-46023a907b3f": {
+      "customValue": "",
+      "description": "The deployment environment.",
+      "id": "e73f02df-f42b-42a4-957e-46023a907b3f",
+      "key": "e73f02df-f42b-42a4-957e-46023a907b3f",
+      "modificationUUID": "94723ba1-7400-48c3-bbed-6cdf93bc08e2",
+      "multiSelect": false,
+      "name": "deployment.environment",
+      "order": 0,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'deployment.environment'))\nFROM signoz_metrics.time_series_v4\nWHERE metric_name like '%storage%'",
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "af1c4fb5-5cc6-429a-b704-2d6c7ae4ca0e": {
+      "customValue": "",
+      "description": "GCP Project ID",
+      "id": "af1c4fb5-5cc6-429a-b704-2d6c7ae4ca0e",
+      "modificationUUID": "18f4c2bf-f4d8-4a50-ad0a-b2140ca96f3a",
+      "multiSelect": false,
+      "name": "project_id",
+      "order": 1,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'project_id'))\nFROM signoz_metrics.time_series_v4\nWHERE metric_name like '%storage%'",
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "9bab3146-1908-4c16-ab5e-a912e7d9d271": {
+      "customValue": "",
+      "description": "GCS Bucket Name",
+      "id": "9bab3146-1908-4c16-ab5e-a912e7d9d271",
+      "modificationUUID": "4cda58d5-e26f-4abd-913c-9724093d535c",
+      "multiSelect": false,
+      "name": "bucket_name",
+      "order": 2,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'bucket_name'))\nFROM signoz_metrics.time_series_v4\nWHERE metric_name like '%storage%'",
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "version": "v3",
+  "widgets": [
+    {
+      "description": "Bucket storage utilization metrics",
+      "id": "ee5f5bff-a9ea-456d-9a03-f358e2182397",
+      "panelTypes": "row",
+      "title": "Storage"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Total bytes of data stored in the bucket, grouped by storage class.",
+      "fillSpans": false,
+      "id": "3955bed6-520e-45de-bc73-59ccb3fbece2",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "storage.googleapis.com/storage/total_bytes--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "storage.googleapis.com/storage/total_bytes",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "d653d795",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "a0ff047e",
+                    "key": {
+                      "dataType": "string",
+                      "id": "project_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "project_id",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.project_id}}"
+                  },
+                  {
+                    "id": "ec27288a",
+                    "key": {
+                      "dataType": "string",
+                      "id": "bucket_name--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "bucket_name",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.bucket_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "bucket_name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "bucket_name",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{bucket_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "3edec0c3-d8fe-431f-a9bd-a1f3b4065881",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Total Bytes Stored",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Total number of objects in the bucket, grouped by storage class.",
+      "fillSpans": false,
+      "id": "7073f2b3-4b84-41b7-ac97-d9e3cf1e6012",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "int64",
+                "id": "storage.googleapis.com/storage/object_count--int64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "storage.googleapis.com/storage/object_count",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "d653d795",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "a0ff047e",
+                    "key": {
+                      "dataType": "string",
+                      "id": "project_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "project_id",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.project_id}}"
+                  },
+                  {
+                    "id": "ec27288a",
+                    "key": {
+                      "dataType": "string",
+                      "id": "bucket_name--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "bucket_name",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.bucket_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "bucket_name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "bucket_name",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{bucket_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "e3750002-b88a-4e6d-8895-ed5b33abd8af",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Total Object Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "API request metrics per bucket",
+      "id": "fa8ab62d-d57a-4579-9246-7b1c4262441b",
+      "panelTypes": "row",
+      "title": "Requests"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Delta count of API calls on the bucket, grouped by method and response code.",
+      "fillSpans": false,
+      "id": "38a2ec5f-1e70-443a-a50d-32cbfe0079c3",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "int64",
+                "id": "storage.googleapis.com/storage/api/request_count--int64--Delta--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "storage.googleapis.com/storage/api/request_count",
+                "type": "Delta"
+              },
+              "aggregateOperator": "increase",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "d653d795",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "a0ff047e",
+                    "key": {
+                      "dataType": "string",
+                      "id": "project_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "project_id",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.project_id}}"
+                  },
+                  {
+                    "id": "ec27288a",
+                    "key": {
+                      "dataType": "string",
+                      "id": "bucket_name--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "bucket_name",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.bucket_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "bucket_name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "bucket_name",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{bucket_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "increase"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "3cb755ff-ab51-4cdf-b6e9-5d597d9de9f3",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Request Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Data transfer metrics for the bucket",
+      "id": "f064cffd-f585-45d7-ab27-764b702da65d",
+      "panelTypes": "row",
+      "title": "Network"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Delta bytes of data received, including metadata, by Google Cloud Storage.",
+      "fillSpans": false,
+      "id": "c5b0dd00-e7cc-4849-8c3e-fb74d61636c2",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "int64",
+                "id": "storage.googleapis.com/storage/network/received_bytes_count--int64--Delta--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "storage.googleapis.com/storage/network/received_bytes_count",
+                "type": "Delta"
+              },
+              "aggregateOperator": "increase",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "d653d795",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "a0ff047e",
+                    "key": {
+                      "dataType": "string",
+                      "id": "project_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "project_id",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.project_id}}"
+                  },
+                  {
+                    "id": "ec27288a",
+                    "key": {
+                      "dataType": "string",
+                      "id": "bucket_name--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "bucket_name",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.bucket_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "bucket_name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "bucket_name",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{bucket_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "increase"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "1bd6e00f-0f58-4269-a128-26a4c149c18a",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Bytes Received",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Delta bytes of data sent from Google Cloud Storage to the client.",
+      "fillSpans": false,
+      "id": "c17c5918-2df5-43e3-b4c5-9759a1c4456c",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "int64",
+                "id": "storage.googleapis.com/storage/network/sent_bytes_count--int64--Delta--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "storage.googleapis.com/storage/network/sent_bytes_count",
+                "type": "Delta"
+              },
+              "aggregateOperator": "increase",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "d653d795",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.deployment.environment}}"
+                  },
+                  {
+                    "id": "a0ff047e",
+                    "key": {
+                      "dataType": "string",
+                      "id": "project_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "project_id",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.project_id}}"
+                  },
+                  {
+                    "id": "ec27288a",
+                    "key": {
+                      "dataType": "string",
+                      "id": "bucket_name--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "bucket_name",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{.bucket_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "bucket_name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "bucket_name",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{bucket_name}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "increase"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "b0705ab9-b577-4e70-915d-32353b430e93",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Bytes Sent",
+      "yAxisUnit": "bytes"
+    }
+  ]
+}
