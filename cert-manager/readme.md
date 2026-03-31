@@ -6,22 +6,11 @@
 
 ## Data Ingestion
 
-This dashboard expects cert-manager metrics scraped by Prometheus and available in SigNoz metrics storage.
+This dashboard expects cert-manager Prometheus metrics to be scraped into SigNoz.
 
-### Option 1: Kubernetes Helm chart values
+cert-manager exposes Prometheus metrics on port 9402. Make sure the metrics endpoint is enabled and reachable from the OpenTelemetry Collector.
 
-Enable metrics and a ServiceMonitor in cert-manager values:
-
-```yaml
-prometheus:
-  enabled: true
-servicemonitor:
-  enabled: true
-```
-
-### Option 2: OpenTelemetry Collector Prometheus receiver
-
-Add a Prometheus scrape job that discovers cert-manager pods/services:
+### OpenTelemetry Collector Prometheus receiver
 
 ```yaml
 receivers:
@@ -29,6 +18,9 @@ receivers:
     config:
       scrape_configs:
         - job_name: cert-manager
+          honor_timestamps: true
+          scrape_interval: 30s
+          metrics_path: /metrics
           kubernetes_sd_configs:
             - role: endpoints
           relabel_configs:
@@ -38,6 +30,18 @@ receivers:
             - source_labels: [__meta_kubernetes_service_name]
               action: keep
               regex: cert-manager
+            - source_labels: [__meta_kubernetes_endpoint_port_number]
+              action: keep
+              regex: '9402'
+
+processors:
+  batch: {}
+
+exporters:
+  otlp:
+    endpoint: ${SIGNOZ_OTLP_ENDPOINT}
+    tls:
+      insecure: true
 
 service:
   pipelines:
@@ -47,18 +51,27 @@ service:
       exporters: [otlp]
 ```
 
+### Optional Helm values
+
+If you deploy cert-manager with Helm, make sure metrics are enabled and exposed on port 9402.
+
+```yaml
+prometheus:
+  enabled: true
+servicemonitor:
+  enabled: true
+```
+
 ## Variables
 
-- {{namespace}}: Kubernetes namespace containing cert-manager and Certificate resources.
-- {{issuer}}: Issuer/ClusterIssuer label to filter certificate-centric views.
+- namespace: Certificate namespace filter.
+- issuer_name: Cascading issuer filter scoped by namespace.
+- controller: cert-manager controller filter.
 
-## Dashboard Panels
+## Dashboard Sections
 
-- Certificates Ready: Total certificates in Ready=True state.
-- Expiring in 7 Days: Count of certificates near expiration.
-- Renewal Due: Certificates whose renewal timestamp is already reached.
-- ACME Request Rate: Current request throughput to ACME endpoints.
-- Certificate Ready Status: Condition split for ready status series.
-- Certificate Expiration Horizon (Days): Days remaining before expiration per certificate.
-- Controller Sync Calls: Controller reconciliation call rate by controller.
-- ACME Client Requests by Host: ACME request rate grouped by host.
+- Certificate Overview
+- Certificate Lifecycle
+- ACME Client
+- Controller Performance
+- Resource Usage
