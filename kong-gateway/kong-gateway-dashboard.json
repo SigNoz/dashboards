@@ -1,5 +1,5 @@
 {
-  "description": "Kong API Gateway monitoring using the Prometheus plugin. Covers request rate, latency percentiles, error metrics, bandwidth, upstream health, and Lua memory. Variables: environment, Kong service.",
+  "description": "Kong API Gateway monitoring using the OpenTelemetry plugin (Kong 3.13+). Covers request rate, latency percentiles, error metrics, bandwidth, upstream health, and Lua memory. Variables: environment, Kong service.",
   "layout": [
     {
       "h": 1,
@@ -39,7 +39,7 @@
     },
     {
       "h": 3,
-      "i": "val-datastore",
+      "i": "val-db-status",
       "minH": 2,
       "minW": 2,
       "w": 3,
@@ -101,13 +101,22 @@
       "y": 13
     },
     {
+      "h": 7,
+      "i": "ts-internal-latency",
+      "minH": 5,
+      "minW": 4,
+      "w": 12,
+      "x": 0,
+      "y": 20
+    },
+    {
       "h": 1,
       "i": "row-error",
       "minH": 1,
       "minW": 2,
       "w": 12,
       "x": 0,
-      "y": 20
+      "y": 27
     },
     {
       "h": 7,
@@ -116,7 +125,7 @@
       "minW": 4,
       "w": 6,
       "x": 0,
-      "y": 21
+      "y": 28
     },
     {
       "h": 7,
@@ -125,7 +134,7 @@
       "minW": 4,
       "w": 6,
       "x": 6,
-      "y": 21
+      "y": 28
     },
     {
       "h": 1,
@@ -134,7 +143,7 @@
       "minW": 2,
       "w": 12,
       "x": 0,
-      "y": 28
+      "y": 35
     },
     {
       "h": 7,
@@ -143,16 +152,16 @@
       "minW": 4,
       "w": 6,
       "x": 0,
-      "y": 29
+      "y": 36
     },
     {
       "h": 7,
-      "i": "ts-nginx-conn",
+      "i": "ts-nginx-conn-gauge",
       "minH": 5,
       "minW": 4,
       "w": 6,
       "x": 6,
-      "y": 29
+      "y": 36
     },
     {
       "h": 1,
@@ -161,7 +170,7 @@
       "minW": 2,
       "w": 12,
       "x": 0,
-      "y": 36
+      "y": 43
     },
     {
       "h": 7,
@@ -170,7 +179,7 @@
       "minW": 4,
       "w": 12,
       "x": 0,
-      "y": 37
+      "y": 44
     },
     {
       "h": 1,
@@ -179,7 +188,7 @@
       "minW": 2,
       "w": 12,
       "x": 0,
-      "y": 44
+      "y": 51
     },
     {
       "h": 7,
@@ -188,18 +197,18 @@
       "minW": 4,
       "w": 12,
       "x": 0,
-      "y": 45
+      "y": 52
     }
   ],
-  "tags": ["kong", "api-gateway", "prometheus", "kubernetes"],
-  "title": "Kong Gateway",
+  "tags": ["kong", "api-gateway", "opentelemetry", "kubernetes"],
+  "title": "Kong Gateway (OpenTelemetry)",
   "variables": {
     "deployment_environment": {
-      "allSelected": true,
+      "allSelected": false,
       "description": "Deployment environment",
       "dynamicVariablesAttribute": "deployment.environment",
       "dynamicVariablesSource": "metrics",
-      "id": "v3",
+      "id": "v1",
       "key": "deployment_environment",
       "multiSelect": true,
       "name": "deployment_environment",
@@ -211,9 +220,9 @@
     "kong_service": {
       "allSelected": true,
       "description": "Kong service name",
-      "dynamicVariablesAttribute": "service",
+      "dynamicVariablesAttribute": "kong.service.name",
       "dynamicVariablesSource": "metrics",
-      "id": "v4",
+      "id": "v2",
       "key": "kong_service",
       "multiSelect": true,
       "name": "kong_service",
@@ -251,7 +260,8 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_http_requests_total",
+                  "metricName": "http.server.request.count",
+                  "reduceTo": "sum",
                   "spaceAggregation": "sum",
                   "temporality": "cumulative",
                   "timeAggregation": "increase"
@@ -260,15 +270,14 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "sum",
               "selectColumns": [],
               "stepInterval": 60
             }
@@ -323,7 +332,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_http_requests_total",
+                  "metricName": "http.server.request.count",
                   "spaceAggregation": "sum",
                   "temporality": "cumulative",
                   "timeAggregation": "rate"
@@ -332,9 +341,9 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -395,7 +404,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_nginx_connections_total",
+                  "metricName": "kong.nginx.connection.count",
                   "spaceAggregation": "sum",
                   "temporality": "unspecified",
                   "timeAggregation": "latest"
@@ -404,9 +413,9 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND state = 'active'"
+                "expression": "deployment.environment IN $deployment_environment AND kong.connection.state = 'active'"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -456,8 +465,8 @@
     },
     {
       "contextLinks": { "linksData": [] },
-      "description": "1 = reachable, 0 = unreachable. Always 1 in DB-less mode.",
-      "id": "val-datastore",
+      "description": "1 = connected to DB, 0 = not connected. Always 1 in DB-less mode.",
+      "id": "val-db-status",
       "panelTypes": "value",
       "query": {
         "builder": {
@@ -466,7 +475,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_datastore_reachable",
+                  "metricName": "kong.db.connection.status",
                   "spaceAggregation": "sum",
                   "temporality": "unspecified",
                   "timeAggregation": "latest"
@@ -477,7 +486,7 @@
               "filter": {
                 "expression": "deployment.environment IN $deployment_environment"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -523,7 +532,7 @@
         { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
       ],
       "thresholds": [],
-      "title": "Datastore Reachable"
+      "title": "DB Connected"
     },
     {
       "contextLinks": { "linksData": [] },
@@ -553,7 +562,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_http_requests_total",
+                  "metricName": "http.server.request.count",
                   "spaceAggregation": "sum",
                   "temporality": "cumulative",
                   "timeAggregation": "rate"
@@ -562,15 +571,19 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [
-                { "dataType": "string", "key": "service", "type": "tag" }
+                {
+                  "dataType": "string",
+                  "key": "kong.service.name",
+                  "type": "tag"
+                }
               ],
               "having": { "expression": "" },
-              "legend": "{{service}}",
+              "legend": "{{kong.service.name}}",
               "orderBy": [],
               "queryName": "A",
               "selectColumns": [],
@@ -618,7 +631,7 @@
     },
     {
       "contextLinks": { "linksData": [] },
-      "description": "Request rate grouped by HTTP response code — shows 2xx, 4xx, 5xx distribution",
+      "description": "Request rate grouped by HTTP response status code — shows 2xx, 4xx, 5xx distribution",
       "id": "ts-status-code",
       "legendPosition": "bottom",
       "panelTypes": "graph",
@@ -629,7 +642,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_http_requests_total",
+                  "metricName": "http.server.request.count",
                   "spaceAggregation": "sum",
                   "temporality": "cumulative",
                   "timeAggregation": "rate"
@@ -638,15 +651,19 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [
-                { "dataType": "string", "key": "code", "type": "tag" }
+                {
+                  "dataType": "int64",
+                  "key": "http.response.status_code",
+                  "type": "tag"
+                }
               ],
               "having": { "expression": "" },
-              "legend": "{{code}}",
+              "legend": "{{http.response.status_code}}",
               "orderBy": [],
               "queryName": "A",
               "selectColumns": [],
@@ -709,7 +726,7 @@
     },
     {
       "contextLinks": { "linksData": [] },
-      "description": "Total end-to-end request latency percentiles including upstream and Kong overhead",
+      "description": "Total end-to-end request latency percentiles (Kong + upstream) in seconds",
       "id": "ts-req-latency",
       "legendPosition": "bottom",
       "panelTypes": "graph",
@@ -720,7 +737,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_request_latency_ms.bucket",
+                  "metricName": "kong.latency.total.bucket",
                   "spaceAggregation": "p50",
                   "temporality": "cumulative"
                 }
@@ -728,9 +745,9 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -744,7 +761,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_request_latency_ms.bucket",
+                  "metricName": "kong.latency.total.bucket",
                   "spaceAggregation": "p90",
                   "temporality": "cumulative"
                 }
@@ -752,9 +769,9 @@
               "dataSource": "metrics",
               "expression": "B",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -768,7 +785,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_request_latency_ms.bucket",
+                  "metricName": "kong.latency.total.bucket",
                   "spaceAggregation": "p99",
                   "temporality": "cumulative"
                 }
@@ -776,9 +793,9 @@
               "dataSource": "metrics",
               "expression": "C",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -826,11 +843,11 @@
       ],
       "thresholds": [],
       "title": "Request Latency (p50 / p90 / p99)",
-      "yAxisUnit": "ms"
+      "yAxisUnit": "s"
     },
     {
       "contextLinks": { "linksData": [] },
-      "description": "Latency added by upstream services only (excludes Kong plugin overhead)",
+      "description": "Latency added by upstream services only (excludes Kong plugin overhead) in seconds",
       "id": "ts-ups-latency",
       "legendPosition": "bottom",
       "panelTypes": "graph",
@@ -841,7 +858,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_upstream_latency_ms.bucket",
+                  "metricName": "kong.latency.upstream.bucket",
                   "spaceAggregation": "p50",
                   "temporality": "cumulative"
                 }
@@ -849,9 +866,9 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -865,7 +882,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_upstream_latency_ms.bucket",
+                  "metricName": "kong.latency.upstream.bucket",
                   "spaceAggregation": "p90",
                   "temporality": "cumulative"
                 }
@@ -873,9 +890,9 @@
               "dataSource": "metrics",
               "expression": "B",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -889,7 +906,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_upstream_latency_ms.bucket",
+                  "metricName": "kong.latency.upstream.bucket",
                   "spaceAggregation": "p99",
                   "temporality": "cumulative"
                 }
@@ -897,9 +914,9 @@
               "dataSource": "metrics",
               "expression": "C",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -947,7 +964,128 @@
       ],
       "thresholds": [],
       "title": "Upstream Latency (p50 / p90 / p99)",
-      "yAxisUnit": "ms"
+      "yAxisUnit": "s"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Kong internal processing time only (Gateway overhead, excludes upstream) in seconds",
+      "id": "ts-internal-latency",
+      "legendPosition": "bottom",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "kong.latency.internal.bucket",
+                  "spaceAggregation": "p50",
+                  "temporality": "cumulative"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": {
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
+              },
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "p50",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "kong.latency.internal.bucket",
+                  "spaceAggregation": "p90",
+                  "temporality": "cumulative"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": {
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
+              },
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "p90",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "kong.latency.internal.bucket",
+                  "spaceAggregation": "p99",
+                  "temporality": "cumulative"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "C",
+              "filter": {
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
+              },
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "p99",
+              "orderBy": [],
+              "queryName": "C",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [],
+        "promql": [],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "thresholds": [],
+      "title": "Kong Internal Latency (p50 / p90 / p99)",
+      "yAxisUnit": "s"
     },
     {
       "contextLinks": { "linksData": [] },
@@ -977,7 +1115,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_http_requests_total",
+                  "metricName": "http.server.request.count",
                   "spaceAggregation": "sum",
                   "temporality": "cumulative",
                   "timeAggregation": "rate"
@@ -986,30 +1124,41 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service AND code REGEXP '^5'"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service AND http.response.status_code >= 500 AND http.response.status_code < 600"
               },
               "filters": {
                 "items": [
                   {
-                    "id": "f-5xx-code",
                     "key": {
-                      "dataType": "string",
-                      "fieldContext": "attribute",
-                      "key": "code",
+                      "dataType": "int64",
+                      "key": "http.response.status_code",
                       "type": "tag"
                     },
-                    "op": "REGEXP",
-                    "value": "^5"
+                    "op": ">=",
+                    "value": 500
+                  },
+                  {
+                    "key": {
+                      "dataType": "int64",
+                      "key": "http.response.status_code",
+                      "type": "tag"
+                    },
+                    "op": "<",
+                    "value": 600
                   }
                 ],
                 "op": "AND"
               },
               "functions": [],
               "groupBy": [
-                { "dataType": "string", "key": "service", "type": "tag" }
+                {
+                  "dataType": "string",
+                  "key": "kong.service.name",
+                  "type": "tag"
+                }
               ],
               "having": { "expression": "" },
-              "legend": "{{service}}",
+              "legend": "{{kong.service.name}}",
               "orderBy": [],
               "queryName": "A",
               "selectColumns": [],
@@ -1068,7 +1217,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_http_requests_total",
+                  "metricName": "http.server.request.count",
                   "spaceAggregation": "sum",
                   "temporality": "cumulative",
                   "timeAggregation": "rate"
@@ -1077,30 +1226,41 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service AND code REGEXP '^4'"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service AND http.response.status_code >= 400 AND http.response.status_code < 500"
               },
               "filters": {
                 "items": [
                   {
-                    "id": "f-4xx-code",
                     "key": {
-                      "dataType": "string",
-                      "fieldContext": "attribute",
-                      "key": "code",
+                      "dataType": "int64",
+                      "key": "http.response.status_code",
                       "type": "tag"
                     },
-                    "op": "REGEXP",
-                    "value": "^4"
+                    "op": ">=",
+                    "value": 400
+                  },
+                  {
+                    "key": {
+                      "dataType": "int64",
+                      "key": "http.response.status_code",
+                      "type": "tag"
+                    },
+                    "op": "<",
+                    "value": 500
                   }
                 ],
                 "op": "AND"
               },
               "functions": [],
               "groupBy": [
-                { "dataType": "string", "key": "code", "type": "tag" }
+                {
+                  "dataType": "int64",
+                  "key": "http.response.status_code",
+                  "type": "tag"
+                }
               ],
               "having": { "expression": "" },
-              "legend": "{{code}}",
+              "legend": "{{http.response.status_code}}",
               "orderBy": [],
               "queryName": "A",
               "selectColumns": [],
@@ -1163,7 +1323,7 @@
     },
     {
       "contextLinks": { "linksData": [] },
-      "description": "Ingress + egress bandwidth rate per Kong service",
+      "description": "Ingress (request) and egress (response) bandwidth rate per Kong service in bytes/s",
       "id": "ts-bandwidth",
       "legendPosition": "bottom",
       "panelTypes": "graph",
@@ -1174,7 +1334,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_bandwidth_bytes",
+                  "metricName": "http.server.request.size.sum",
                   "spaceAggregation": "sum",
                   "temporality": "cumulative",
                   "timeAggregation": "rate"
@@ -1183,17 +1343,52 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment AND service IN $kong_service"
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [
-                { "dataType": "string", "key": "service", "type": "tag" }
+                {
+                  "dataType": "string",
+                  "key": "kong.service.name",
+                  "type": "tag"
+                }
               ],
               "having": { "expression": "" },
-              "legend": "{{service}}",
+              "legend": "{{kong.service.name}} req",
               "orderBy": [],
               "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "http.server.response.size.sum",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": {
+                "expression": "deployment.environment IN $deployment_environment AND kong.service.name IN $kong_service"
+              },
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "key": "kong.service.name",
+                  "type": "tag"
+                }
+              ],
+              "having": { "expression": "" },
+              "legend": "{{kong.service.name}} resp",
+              "orderBy": [],
+              "queryName": "B",
               "selectColumns": [],
               "stepInterval": 60
             }
@@ -1239,8 +1434,8 @@
     },
     {
       "contextLinks": { "linksData": [] },
-      "description": "Active, reading, writing, waiting nginx connection counts over time",
-      "id": "ts-nginx-conn",
+      "description": "Current active, writing, waiting, and reading connection counts from Nginx. These are gauges showing real-time state (not cumulative counters).",
+      "id": "ts-nginx-conn-gauge",
       "legendPosition": "bottom",
       "panelTypes": "graph",
       "query": {
@@ -1250,7 +1445,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_nginx_connections_total",
+                  "metricName": "kong.nginx.connection.count",
                   "spaceAggregation": "sum",
                   "temporality": "unspecified",
                   "timeAggregation": "avg"
@@ -1259,15 +1454,32 @@
               "dataSource": "metrics",
               "expression": "A",
               "filter": {
-                "expression": "deployment.environment IN $deployment_environment"
+                "expression": "deployment.environment IN $deployment_environment AND kong.connection.state IN ('active', 'writing', 'waiting', 'reading')"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "kong.connection.state",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": ["active", "writing", "waiting", "reading"]
+                  }
+                ],
+                "op": "AND"
+              },
               "functions": [],
               "groupBy": [
-                { "dataType": "string", "key": "state", "type": "tag" }
+                {
+                  "dataType": "string",
+                  "key": "kong.connection.state",
+                  "type": "tag"
+                }
               ],
               "having": { "expression": "" },
-              "legend": "{{state}}",
+              "legend": "{{kong.connection.state}}",
               "orderBy": [],
               "queryName": "A",
               "selectColumns": [],
@@ -1310,7 +1522,7 @@
         { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
       ],
       "thresholds": [],
-      "title": "Nginx Connections by State"
+      "title": "Active Nginx Connections"
     },
     {
       "contextLinks": { "linksData": [] },
@@ -1340,7 +1552,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_upstream_target_health",
+                  "metricName": "kong.upstream.target.status",
                   "spaceAggregation": "sum",
                   "temporality": "unspecified",
                   "timeAggregation": "avg"
@@ -1351,14 +1563,22 @@
               "filter": {
                 "expression": "deployment.environment IN $deployment_environment"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [
-                { "dataType": "string", "key": "upstream", "type": "tag" },
-                { "dataType": "string", "key": "state", "type": "tag" }
+                {
+                  "dataType": "string",
+                  "key": "kong.upstream.name",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "key": "kong.upstream.state",
+                  "type": "tag"
+                }
               ],
               "having": { "expression": "" },
-              "legend": "{{upstream}} — {{state}}",
+              "legend": "{{kong.upstream.name}} — {{kong.upstream.state}}",
               "orderBy": [],
               "queryName": "A",
               "selectColumns": [],
@@ -1431,7 +1651,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_memory_lua_shared_dict_bytes",
+                  "metricName": "kong.shared_dict.usage",
                   "spaceAggregation": "sum",
                   "temporality": "unspecified",
                   "timeAggregation": "latest"
@@ -1442,7 +1662,7 @@
               "filter": {
                 "expression": "deployment.environment IN $deployment_environment"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -1456,7 +1676,7 @@
               "aggregateAttribute": {},
               "aggregations": [
                 {
-                  "metricName": "kong_memory_lua_shared_dict_total_bytes",
+                  "metricName": "kong.shared_dict.size",
                   "spaceAggregation": "sum",
                   "temporality": "unspecified",
                   "timeAggregation": "latest"
@@ -1467,7 +1687,7 @@
               "filter": {
                 "expression": "deployment.environment IN $deployment_environment"
               },
-              "filters": { "items": null, "op": "" },
+              "filters": { "items": [], "op": "AND" },
               "functions": [],
               "groupBy": [],
               "having": { "expression": "" },
@@ -1518,5 +1738,5 @@
       "yAxisUnit": "bytes"
     }
   ],
-  "uuid": "019d7778-b28a-7ce7-9db2-0aa8784b33ec"
+  "uuid": "019d830d-dc23-7b97-824c-fc4cf95b7b0f"
 }
