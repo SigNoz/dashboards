@@ -1,13 +1,21 @@
-# Kong Gateway Monitoring Dashboard
+# Kong Gateway Dashboard - Prometheus
 
-This dashboard provides a high-level overview of Kong's health and performance metrics, including RPS, Latency (P99), Bandwidth, and Plugin Errors.
+This dashboard provides a high-level overview of Kong's health and performance metrics, including RPS, Latency (P99), Bandwidth, and Kong Plugin Errors.
 
-## Setup
+## Metrics Ingestion
 
-1. Install the Prometheus plugin in your Kong Gateway.
-2. 2. Configure SigNoz to scrap metrics from Kong's Prometheus endpoint.
-   3. 3. Import the `kong-prometheus-v1.json` dashboard in SigNoz.
-     
-      4. ## Visuals
-     
-      5. ![Overview](assets/overview.png)
+To ingest metrics, install the `prometheus-plugin` on your Kong Gateway and configure the OpenTelemetry Collector to scrape the `:8001/metrics` endpoint. 
+
+## Variables
+
+- `{{instance}}`: The specific Kong Gateway instance endpoint.
+
+## Dashboard Panels
+
+* **RPS**: Total Request Per Second processed by Kong.
+* **Latency**: P99 Response Latency.
+* **Plugin Errors**: Errors separated by specific plugin failures.
+
+## Screenshots
+
+![Kong Overview](assets/overview.png)
