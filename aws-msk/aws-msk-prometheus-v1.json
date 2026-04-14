@@ -1,0 +1,1710 @@
+{
+  "title": "AWS MSK Cluster Monitoring",
+  "description": "Comprehensive monitoring dashboard for Amazon Managed Streaming for Apache Kafka (MSK) clusters. Combines JMX Exporter metrics (via MSK Open Monitoring) with AWS CloudWatch metrics for complete cluster visibility.",
+  "tags": ["AWS", "MSK", "Kafka", "Prometheus", "CloudWatch"],
+  "version": "v5",
+  "uploadedGrafana": false,
+  "image": "",
+  "uuid": "msk-cluster-v5-20260414",
+  "variables": {
+    "var-deployment-environment": {
+      "id": "var-deployment-environment",
+      "name": "deployment.environment",
+      "description": "Select deployment environment",
+      "type": "QUERY",
+      "order": 0,
+      "multiSelect": false,
+      "allSelected": true,
+      "showALLOption": true,
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "sort": "DISABLED",
+      "modificationUUID": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'deployment.environment')) as `deployment.environment`\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%kafka%'\n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\n  AND JSONExtractString(labels, 'deployment.environment') != ''\nGROUP BY `deployment.environment`"
+    },
+    "var-cluster-name": {
+      "id": "var-cluster-name",
+      "name": "cluster.name",
+      "description": "Select MSK cluster name",
+      "type": "QUERY",
+      "order": 1,
+      "multiSelect": false,
+      "allSelected": true,
+      "showALLOption": true,
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "sort": "DISABLED",
+      "modificationUUID": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'cluster.name')) as `cluster.name`\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%kafka%'\n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\n  AND JSONExtractString(labels, 'cluster.name') != ''\nGROUP BY `cluster.name`"
+    },
+    "var-broker-id": {
+      "id": "var-broker-id",
+      "name": "broker.id",
+      "description": "Select broker ID",
+      "type": "QUERY",
+      "order": 2,
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "sort": "DISABLED",
+      "modificationUUID": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'kafka.server:type=app-info,id=([^,]+)', 'broker.id')) as `broker.id`\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%kafka%'\n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\n  AND JSONExtractString(labels, 'broker.id') != ''\nGROUP BY `broker.id`"
+    },
+    "var-topic": {
+      "id": "var-topic",
+      "name": "topic",
+      "description": "Select topic name",
+      "type": "QUERY",
+      "order": 3,
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "sort": "DISABLED",
+      "modificationUUID": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'topic')) as topic\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%kafka.server:type=BrokerTopicMetrics%' \n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\n  AND JSONExtractString(labels, 'topic') != ''\nGROUP BY topic"
+    },
+    "var-consumer-group": {
+      "id": "var-consumer-group",
+      "name": "group",
+      "description": "Select consumer group",
+      "type": "QUERY",
+      "order": 4,
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "sort": "DISABLED",
+      "modificationUUID": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'group')) as `group`\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%kafka.consumer:type=consumer-fetch-manager-metrics%'\n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\n  AND JSONExtractString(labels, 'group') != ''\nGROUP BY `group`"
+    },
+    "var-service-name": {
+      "id": "var-service-name",
+      "name": "service.name",
+      "description": "Select service name",
+      "type": "DYNAMIC",
+      "order": 5,
+      "multiSelect": true,
+      "allSelected": true,
+      "showALLOption": true,
+      "defaultValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "sort": "DISABLED",
+      "dynamicVariablesSource": "All telemetry",
+      "dynamicVariablesAttribute": "service.name",
+      "modificationUUID": "f6a7b8c9-d0e1-2345-fabc-456789012345"
+    }
+  },
+  "panelMap": {
+    "panel-broker-metrics": {
+      "collapsed": false,
+      "widgets": [
+        {"i": "w-active-ctrl", "w": 4, "h": 6, "x": 0, "y": 0},
+        {"i": "w-offline-parts", "w": 4, "h": 6, "x": 4, "y": 0},
+        {"i": "w-under-rep", "w": 4, "h": 6, "x": 8, "y": 0},
+        {"i": "w-leader-count", "w": 4, "h": 6, "x": 0, "y": 6},
+        {"i": "w-broker-cpu", "w": 8, "h": 8, "x": 0, "y": 12},
+        {"i": "w-broker-memory", "w": 8, "h": 8, "x": 0, "y": 20},
+        {"i": "w-disk-usage", "w": 8, "h": 8, "x": 0, "y": 28},
+        {"i": "w-disk-throughput", "w": 8, "h": 8, "x": 0, "y": 36}
+      ]
+    },
+    "panel-topic-metrics": {
+      "collapsed": false,
+      "widgets": [
+        {"i": "w-msg-in-rate", "w": 6, "h": 8, "x": 0, "y": 0},
+        {"i": "w-msg-out-rate", "w": 6, "h": 8, "x": 6, "y": 0},
+        {"i": "w-bytes-in-rate", "w": 6, "h": 8, "x": 0, "y": 8},
+        {"i": "w-bytes-out-rate", "w": 6, "h": 8, "x": 6, "y": 8},
+        {"i": "w-produce-fail", "w": 6, "h": 8, "x": 0, "y": 16},
+        {"i": "w-fetch-fail", "w": 6, "h": 8, "x": 6, "y": 16}
+      ]
+    },
+    "panel-partition-metrics": {
+      "collapsed": false,
+      "widgets": [
+        {"i": "w-under-rep-part", "w": 6, "h": 8, "x": 0, "y": 0},
+        {"i": "w-offline-parts-ts", "w": 6, "h": 8, "x": 6, "y": 0},
+        {"i": "w-partition-count", "w": 6, "h": 8, "x": 0, "y": 8},
+        {"i": "w-isr-count", "w": 6, "h": 8, "x": 6, "y": 8},
+        {"i": "w-leader-election", "w": 6, "h": 8, "x": 0, "y": 16}
+      ]
+    },
+    "panel-consumer-metrics": {
+      "collapsed": false,
+      "widgets": [
+        {"i": "w-consumer-lag", "w": 8, "h": 8, "x": 0, "y": 0},
+        {"i": "w-consumer-error", "w": 8, "h": 8, "x": 0, "y": 8},
+        {"i": "w-max-offset-lag", "w": 8, "h": 8, "x": 0, "y": 16}
+      ]
+    },
+    "panel-aws-metrics": {
+      "collapsed": false,
+      "widgets": [
+        {"i": "w-cpu-usage", "w": 6, "h": 8, "x": 0, "y": 0},
+        {"i": "w-cpu-credit", "w": 6, "h": 8, "x": 6, "y": 0},
+        {"i": "w-burst-balance", "w": 6, "h": 8, "x": 0, "y": 8},
+        {"i": "w-network-io", "w": 6, "h": 8, "x": 6, "y": 8}
+      ]
+    }
+  },
+  "widgets": [
+    {
+      "id": "r-broker-metrics",
+      "panelTypes": "row",
+      "title": "Broker Metrics",
+      "description": ""
+    },
+    {
+      "id": "w-active-ctrl",
+      "title": "Active Controller Count",
+      "description": "Number of active controllers in the cluster. Should be exactly 1 for a healthy MSK cluster.",
+      "panelTypes": "value",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "decimalPrecision": 0,
+      "thresholds": [
+        {"value": 0, "severity": "critical"},
+        {"value": 1, "severity": "ok"},
+        {"value": 2, "severity": "critical"}
+      ],
+      "query": {
+        "queryType": "builder",
+        "id": "q-active-ctrl",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_activecontrollercount_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_ActiveControllerCount_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "latest",
+            "spaceAggregation": "max",
+            "timeAggregation": "latest",
+            "reduceTo": "latest",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+              ]
+            },
+            "groupBy": [],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Active Controller"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-offline-parts",
+      "title": "Offline Partitions",
+      "description": "Number of partitions that have no leader. Zero is healthy - any non-zero value indicates data availability issues.",
+      "panelTypes": "value",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "decimalPrecision": 0,
+      "thresholds": [
+        {"value": 0, "severity": "ok"},
+        {"value": 1, "severity": "critical"}
+      ],
+      "query": {
+        "queryType": "builder",
+        "id": "q-offline-parts",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_offlinepartitionscount_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_OfflinePartitionsCount_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "latest",
+            "spaceAggregation": "max",
+            "timeAggregation": "latest",
+            "reduceTo": "latest",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+              ]
+            },
+            "groupBy": [],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Offline Partitions"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-under-rep",
+      "title": "Under-Replicated Partitions",
+      "description": "Number of partitions where the number of in-sync replicas is less than the replication factor. Zero is healthy.",
+      "panelTypes": "value",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "decimalPrecision": 0,
+      "thresholds": [
+        {"value": 0, "severity": "ok"},
+        {"value": 1, "severity": "warning"}
+      ],
+      "query": {
+        "queryType": "builder",
+        "id": "q-under-rep",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_underreplicatedpartitions_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_UnderReplicatedPartitions_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "latest",
+            "spaceAggregation": "max",
+            "timeAggregation": "latest",
+            "reduceTo": "latest",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+              ]
+            },
+            "groupBy": [],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Under-Replicated"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-leader-count",
+      "title": "Leader Count",
+      "description": "Number of partitions for which this broker is the leader. Used to verify leader distribution across brokers.",
+      "panelTypes": "value",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "decimalPrecision": 0,
+      "query": {
+        "queryType": "builder",
+        "id": "q-leader-count",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_leadercount_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_LeaderCount_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "latest",
+            "spaceAggregation": "sum",
+            "timeAggregation": "latest",
+            "reduceTo": "latest",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-broker-cpu",
+      "title": "Broker CPU Usage",
+      "description": "CPU utilization per broker. High sustained CPU usage may indicate the need for larger instance types.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "percent",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-broker-cpu",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_cpuidle_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_CpuIdle_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "avg",
+            "timeAggregation": "avg",
+            "reduceTo": "avg",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [{"name": "histogram_quantile", "args": [{"key": "percentile", "value": 95}]}],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}} CPU"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-broker-memory",
+      "title": "Broker Memory Usage",
+      "description": "Memory consumption per broker in bytes. Monitor for memory pressure that could impact Kafka performance.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "bytes",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-broker-memory",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_memoryused_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_MemoryUsed_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "avg",
+            "timeAggregation": "avg",
+            "reduceTo": "avg",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}} Memory"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-disk-usage",
+      "title": "Broker Disk Usage",
+      "description": "Disk space used by each broker. Monitor disk usage to prevent running out of storage.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "bytes",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-disk-usage",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_diskusage--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_DiskUsage",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "avg",
+            "timeAggregation": "avg",
+            "reduceTo": "avg",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}} Disk"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-disk-throughput",
+      "title": "Broker Disk Throughput",
+      "description": "Read/write throughput on the disk for each broker. High throughput may indicate heavy log I/O.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "bytespersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-disk-throughput",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_logflushrateoneloginterval_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_LogFlushRateOneLogInterval_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}} Disk Flush Rate"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "r-topic-metrics",
+      "panelTypes": "row",
+      "title": "Topic Metrics",
+      "description": ""
+    },
+    {
+      "id": "w-msg-in-rate",
+      "title": "Messages In Per Second",
+      "description": "Number of messages produced to each topic per second. Shows per-topic production rate.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "reqpersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-msg-in-rate",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_messagesinpersec_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_MessagesInPerSec_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-msg-out-rate",
+      "title": "Messages Out Per Second",
+      "description": "Number of messages consumed from each topic per second. Shows per-topic consumption rate.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "reqpersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-msg-out-rate",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_bytesoutpersec_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_BytesOutPerSec_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-bytes-in-rate",
+      "title": "Bytes In Per Second",
+      "description": "Volume of data produced to each topic per second. Key metric for understanding data ingestion patterns.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "bytespersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-bytes-in-rate",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_bytesinpersec_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_BytesInPerSec_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-bytes-out-rate",
+      "title": "Bytes Out Per Second",
+      "description": "Volume of data consumed from each topic per second. Key metric for understanding data consumption patterns.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "bytespersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-bytes-out-rate",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_bytesoutpersec_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_BytesOutPerSec_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-produce-fail",
+      "title": "Produce Failed Rate",
+      "description": "Rate of failed produce requests. Non-zero values indicate producers are failing to write messages.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "reqpersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-produce-fail",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_producefailedpersec_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_ProduceFailedPerSec_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-fetch-fail",
+      "title": "Fetch Failed Rate",
+      "description": "Rate of failed fetch requests. Non-zero values indicate consumers are failing to read messages.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "reqpersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-fetch-fail",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_fetchfailedpersec_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_FetchFailedPerSec_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "r-partition-metrics",
+      "panelTypes": "row",
+      "title": "Partition Metrics",
+      "description": ""
+    },
+    {
+      "id": "w-under-rep-part",
+      "title": "Under-Replicated Partitions (Time Series)",
+      "description": "Time series view of under-replicated partitions across the cluster. Sustained non-zero values indicate replication lag.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-under-rep-ts",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_underreplicatedpartitions_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_UnderReplicatedPartitions_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "max",
+            "timeAggregation": "max",
+            "reduceTo": "max",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-offline-parts-ts",
+      "title": "Offline Partitions (Time Series)",
+      "description": "Time series view of offline partitions. Any non-zero value means partitions have no leader and data is unavailable.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-offline-parts-ts",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_offlinepartitionscount_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_OfflinePartitionsCount_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "max",
+            "timeAggregation": "max",
+            "reduceTo": "max",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+              ]
+            },
+            "groupBy": [],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Offline Partitions"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-partition-count",
+      "title": "Partition Count",
+      "description": "Total number of partitions across the MSK cluster. Track partition growth for capacity planning.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-partition-count",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_partitioncount--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_PartitionCount",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "sum",
+            "timeAggregation": "avg",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-isr-count",
+      "title": "Partition ISR (In-Sync Replicas)",
+      "description": "Number of in-sync replicas per partition. Should match the replication factor for healthy partitions.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-isr-count",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_isrexpandrate_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_IsrExpandRate_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "avg",
+            "timeAggregation": "rate",
+            "reduceTo": "avg",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-leader-election",
+      "title": "Leader Election Rate",
+      "description": "Rate of leader elections per second. Frequent elections indicate broker instability.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "reqpersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-leader-election",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_leaderelectionrate_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_LeaderElectionRate_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "r-consumer-metrics",
+      "panelTypes": "row",
+      "title": "Consumer Metrics",
+      "description": ""
+    },
+    {
+      "id": "w-consumer-lag",
+      "title": "Consumer Lag",
+      "description": "Consumer group lag (max offset lag) showing how far behind consumers are from the latest produced messages.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-consumer-lag",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_maxoffsetlag_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_MaxOffsetLag_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "max",
+            "timeAggregation": "max",
+            "reduceTo": "max",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "group", "type": "tag"}, "op": "in", "value": "$group"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [
+              {"key": {"key": "group", "type": "tag"}, "isColumn": false},
+              {"key": {"key": "topic", "type": "tag"}, "isColumn": false}
+            ],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{group}} - {{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-consumer-error",
+      "title": "Consumer Error Rate",
+      "description": "Error rate for consumer requests across the MSK cluster. Non-zero values indicate consumer connectivity or processing issues.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "reqpersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-consumer-error",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_consumefailedpersec_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_ConsumeFailedPerSec_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "rate",
+            "spaceAggregation": "sum",
+            "timeAggregation": "rate",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "group", "type": "tag"}, "op": "in", "value": "$group"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "group", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{group}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-max-offset-lag",
+      "title": "Max Offset Lag Per Topic",
+      "description": "Maximum offset lag across all partitions per topic. Helps identify which topics have the most consumer lag.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-max-offset-lag",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_maxoffsetlag_count--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_MaxOffsetLag_count",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "max",
+            "timeAggregation": "max",
+            "reduceTo": "max",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "topic", "type": "tag"}, "op": "in", "value": "$topic"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "topic", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "{{topic}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "r-aws-metrics",
+      "panelTypes": "row",
+      "title": "AWS CloudWatch Metrics",
+      "description": ""
+    },
+    {
+      "id": "w-cpu-usage",
+      "title": "CPU Credit Usage",
+      "description": "CPU credit usage for MSK brokers on burstable instance types (T-series). Track credit consumption to avoid CPU throttling.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-cpu-credit",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_cpucreditusage_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_CpuCreditUsage_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "sum",
+            "timeAggregation": "avg",
+            "reduceTo": "sum",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-cpu-credit",
+      "title": "CPU Credit Balance",
+      "description": "Remaining CPU credits for MSK brokers. Low balance indicates the broker is consuming more CPU than its baseline.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "short",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-cpu-balance",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_cpucreditbalance_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_CpuCreditBalance_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "avg",
+            "timeAggregation": "avg",
+            "reduceTo": "avg",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-burst-balance",
+      "title": "Burst Balance",
+      "description": "CPU burst balance percentage for MSK brokers. When this reaches 0%, CPU performance is throttled to baseline.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "percent",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-burst-balance",
+        "builder": {
+          "queryData": [{
+            "expression": "A",
+            "queryName": "A",
+            "dataSource": "metrics",
+            "disabled": false,
+            "aggregateAttribute": {
+              "dataType": "float64",
+              "id": "aws_kafka_burstbalance_sum--float64--Gauge--true",
+              "isColumn": true,
+              "isJSON": false,
+              "key": "aws_Kafka_BurstBalance_sum",
+              "type": "Gauge"
+            },
+            "aggregateOperator": "avg",
+            "spaceAggregation": "avg",
+            "timeAggregation": "avg",
+            "reduceTo": "avg",
+            "filters": {
+              "op": "AND",
+              "items": [
+                {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"},
+                {"key": {"key": "broker.id", "type": "tag"}, "op": "in", "value": "$broker.id"}
+              ]
+            },
+            "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+            "having": [],
+            "orderBy": [],
+            "functions": [],
+            "limit": null,
+            "stepInterval": 60,
+            "legend": "Broker {{broker.id}}"
+          }],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    },
+    {
+      "id": "w-network-io",
+      "title": "Network I/O",
+      "description": "Network input/output for MSK brokers as tracked by AWS CloudWatch. Monitor for network bottlenecks.",
+      "panelTypes": "graph",
+      "fillSpans": false,
+      "opacity": "1",
+      "nullZeroValues": "zero",
+      "yAxisUnit": "bytespersec",
+      "lineInterpolation": "smooth",
+      "legendPosition": "bottom",
+      "isStacked": false,
+      "fillMode": "none",
+      "lineStyle": "solid",
+      "query": {
+        "queryType": "builder",
+        "id": "q-network-io",
+        "builder": {
+          "queryData": [
+            {
+              "expression": "A",
+              "queryName": "A",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_bytesinpersec_sum--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_Kafka_BytesInPerSec_sum",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "rate",
+              "spaceAggregation": "sum",
+              "timeAggregation": "rate",
+              "reduceTo": "sum",
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                  {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+                ]
+              },
+              "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+              "having": [],
+              "orderBy": [],
+              "functions": [],
+              "limit": null,
+              "stepInterval": 60,
+              "legend": "Network In - Broker {{broker.id}}"
+            },
+            {
+              "expression": "B",
+              "queryName": "B",
+              "dataSource": "metrics",
+              "disabled": false,
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_bytesoutpersec_sum--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_Kafka_BytesOutPerSec_sum",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "rate",
+              "spaceAggregation": "sum",
+              "timeAggregation": "rate",
+              "reduceTo": "sum",
+              "filters": {
+                "op": "AND",
+                "items": [
+                  {"key": {"key": "deployment.environment", "type": "tag"}, "op": "=", "value": "$deployment.environment"},
+                  {"key": {"key": "service.name", "type": "tag"}, "op": "in", "value": "$service.name"}
+                ]
+              },
+              "groupBy": [{"key": {"key": "broker.id", "type": "tag"}, "isColumn": false}],
+              "having": [],
+              "orderBy": [],
+              "functions": [],
+              "limit": null,
+              "stepInterval": 60,
+              "legend": "Network Out - Broker {{broker.id}}"
+            }
+          ],
+          "queryFormulas": [],
+          "queryTraceOperator": []
+        }
+      }
+    }
+  ],
+  "layout": [
+    {"i": "r-broker-metrics", "w": 12, "h": 1, "x": 0, "y": 0, "minH": 1, "maxH": 1, "static": false, "moved": false},
+    {"i": "w-active-ctrl", "w": 4, "h": 6, "x": 0, "y": 1, "static": false, "moved": false},
+    {"i": "w-offline-parts", "w": 4, "h": 6, "x": 4, "y": 1, "static": false, "moved": false},
+    {"i": "w-under-rep", "w": 4, "h": 6, "x": 8, "y": 1, "static": false, "moved": false},
+    {"i": "w-leader-count", "w": 4, "h": 6, "x": 0, "y": 7, "static": false, "moved": false},
+    {"i": "w-broker-cpu", "w": 12, "h": 8, "x": 0, "y": 13, "static": false, "moved": false},
+    {"i": "w-broker-memory", "w": 12, "h": 8, "x": 0, "y": 21, "static": false, "moved": false},
+    {"i": "w-disk-usage", "w": 12, "h": 8, "x": 0, "y": 29, "static": false, "moved": false},
+    {"i": "w-disk-throughput", "w": 12, "h": 8, "x": 0, "y": 37, "static": false, "moved": false},
+    {"i": "r-topic-metrics", "w": 12, "h": 1, "x": 0, "y": 45, "minH": 1, "maxH": 1, "static": false, "moved": false},
+    {"i": "w-msg-in-rate", "w": 6, "h": 8, "x": 0, "y": 46, "static": false, "moved": false},
+    {"i": "w-msg-out-rate", "w": 6, "h": 8, "x": 6, "y": 46, "static": false, "moved": false},
+    {"i": "w-bytes-in-rate", "w": 6, "h": 8, "x": 0, "y": 54, "static": false, "moved": false},
+    {"i": "w-bytes-out-rate", "w": 6, "h": 8, "x": 6, "y": 54, "static": false, "moved": false},
+    {"i": "w-produce-fail", "w": 6, "h": 8, "x": 0, "y": 62, "static": false, "moved": false},
+    {"i": "w-fetch-fail", "w": 6, "h": 8, "x": 6, "y": 62, "static": false, "moved": false},
+    {"i": "r-partition-metrics", "w": 12, "h": 1, "x": 0, "y": 70, "minH": 1, "maxH": 1, "static": false, "moved": false},
+    {"i": "w-under-rep-part", "w": 6, "h": 8, "x": 0, "y": 71, "static": false, "moved": false},
+    {"i": "w-offline-parts-ts", "w": 6, "h": 8, "x": 6, "y": 71, "static": false, "moved": false},
+    {"i": "w-partition-count", "w": 6, "h": 8, "x": 0, "y": 79, "static": false, "moved": false},
+    {"i": "w-isr-count", "w": 6, "h": 8, "x": 6, "y": 79, "static": false, "moved": false},
+    {"i": "w-leader-election", "w": 12, "h": 8, "x": 0, "y": 87, "static": false, "moved": false},
+    {"i": "r-consumer-metrics", "w": 12, "h": 1, "x": 0, "y": 95, "minH": 1, "maxH": 1, "static": false, "moved": false},
+    {"i": "w-consumer-lag", "w": 12, "h": 8, "x": 0, "y": 96, "static": false, "moved": false},
+    {"i": "w-consumer-error", "w": 12, "h": 8, "x": 0, "y": 104, "static": false, "moved": false},
+    {"i": "w-max-offset-lag", "w": 12, "h": 8, "x": 0, "y": 112, "static": false, "moved": false},
+    {"i": "r-aws-metrics", "w": 12, "h": 1, "x": 0, "y": 120, "minH": 1, "maxH": 1, "static": false, "moved": false},
+    {"i": "w-cpu-usage", "w": 6, "h": 8, "x": 0, "y": 121, "static": false, "moved": false},
+    {"i": "w-cpu-credit", "w": 6, "h": 8, "x": 6, "y": 121, "static": false, "moved": false},
+    {"i": "w-burst-balance", "w": 6, "h": 8, "x": 0, "y": 129, "static": false, "moved": false},
+    {"i": "w-network-io", "w": 6, "h": 8, "x": 6, "y": 129, "static": false, "moved": false}
+  ]
+}
