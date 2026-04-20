@@ -1,28 +1,205 @@
 {
-    "uuid": "kong-monitoring-dashboard",
-    "title": "Kong Gateway Monitoring",
-    "panels": [
-          {
-                  "title": "Total Requests (RPS)",
-                  "type": "graph",
-                  "targets": [{"expr": "sum(rate(kong_http_requests_total[5m]))"}]
-          },
-          {
-                  "title": "P99 Latency",
-                  "type": "graph",
-                  "targets": [{"expr": "histogram_quantile(0.99, sum(rate(kong_http_latency_ms_bucket[5m])) by (le))"}]
-          },
-          {
-                  "title": "Bandwidth (Bytes In/Out)",
-                  "type": "graph",
-                  "targets": [
-                            {"expr": "sum(rate(kong_bandwidth_bytes_total[5m]))"}
-                  ]
-          },
-          {
-                  "title": "Plugin Errors",
-                  "type": "graph",
-                  "targets": [{"expr": "sum(rate(kong_plugin_errors_total[5m]))"}]
-          }
+    "version": "v5",
+    "title": "Kong Gateway - Clinical Observability",
+    "description": "Comprehensive Kong Gateway monitoring dashboard including 7 architectural sections: Overview, Requests, Latency, Errors, Bandwidth, Plugins, and Resources.",
+    "tags": ["kong", "prometheus", "masterpiece"],
+    "uuid": "kong-gateway-masterpiece-100",
+    "variables": {
+        "namespace": {
+            "name": "namespace",
+            "description": "K8s namespace where Kong is deployed",
+            "type": "DYNAMIC",
+            "dynamicVariablesSource": "All telemetry",
+            "dynamicVariablesAttribute": "k8s.namespace.name",
+            "multiSelect": true,
+            "showALLOption": true
+        },
+        "instance": {
+            "name": "instance",
+            "description": "Kong instance endpoint",
+            "type": "DYNAMIC",
+            "dynamicVariablesSource": "All telemetry",
+            "dynamicVariablesAttribute": "instance",
+            "multiSelect": true,
+            "showALLOption": true
+        }
+    },
+    "layout": [
+        {"h": 4, "w": 12, "x": 0, "y": 0, "i": "row-overview"},
+        {"h": 6, "w": 3, "x": 0, "y": 4, "i": "panel-rps"},
+        {"h": 6, "w": 3, "x": 3, "y": 4, "i": "panel-error-rate"},
+        {"h": 6, "w": 3, "x": 6, "y": 4, "i": "panel-latency-avg"},
+        {"h": 6, "w": 3, "x": 9, "y": 4, "i": "panel-bandwidth"},
+        
+        {"h": 4, "w": 12, "x": 0, "y": 10, "i": "row-latency"},
+        {"h": 7, "w": 6, "x": 0, "y": 14, "i": "panel-latency-p99"},
+        {"h": 7, "w": 6, "x": 6, "y": 14, "i": "panel-latency-buckets"},
+        
+        {"h": 4, "w": 12, "x": 0, "y": 21, "i": "row-traffic"},
+        {"h": 7, "w": 4, "x": 0, "y": 25, "i": "panel-traffic-routes"},
+        {"h": 7, "w": 4, "x": 4, "y": 25, "i": "panel-traffic-services"},
+        {"h": 7, "w": 4, "x": 8, "y": 25, "i": "panel-traffic-consumers"},
+
+        {"h": 4, "w": 12, "x": 0, "y": 32, "i": "row-plugins"},
+        {"h": 8, "w": 12, "x": 0, "y": 36, "i": "panel-plugin-latency"},
+
+        {"h": 4, "w": 12, "x": 0, "y": 44, "i": "row-resources"},
+        {"h": 6, "w": 6, "x": 0, "y": 48, "i": "panel-cpu"},
+        {"h": 6, "w": 6, "x": 6, "y": 48, "i": "panel-memory"}
+    ],
+    "widgets": [
+        {
+            "id": "row-overview",
+            "title": "SECTION 1: GENERAL OVERVIEW",
+            "panelTypes": "text",
+            "description": "High-level summary of Kong health metrics."
+        },
+        {
+            "id": "panel-rps",
+            "title": "Total Requests (RPS)",
+            "description": "Total throughput processed by the Kong Gateway cluster.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "sum(rate(kong_http_requests_total{instance=~\"$instance\"}[5m]))", "legend": "Total RPS"}]
+            }
+        },
+        {
+            "id": "panel-error-rate",
+            "title": "Success Rate (%)",
+            "description": "Percentage of successful requests (non-5xx). Higher is better.",
+            "panelTypes": "value",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "sum(rate(kong_http_requests_total{code!~\"5..\", instance=~\"$instance\"}[5m])) / sum(rate(kong_http_requests_total{instance=~\"$instance\"}[5m])) * 100", "legend": "Success Rate"}]
+            }
+        },
+        {
+            "id": "panel-latency-p99",
+            "title": "P99 Latency (Tail Performance)",
+            "description": "Quantile-based latency tracking for the slowest 1% of requests.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "histogram_quantile(0.99, sum(rate(kong_http_latency_ms_bucket{instance=~\"$instance\"}[5m])) by (le))", "legend": "P99 Latency (ms)"}]
+            }
+        },
+        {
+            "id": "panel-plugin-latency",
+            "title": "Plugin Execution Overhead",
+            "description": "Identification of latency bottlenecks introduced by specifically active plugins.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "sum(rate(kong_plugin_latency_ms_sum{instance=~\"$instance\"}[5m])) by (plugin) / sum(rate(kong_plugin_latency_ms_count{instance=~\"$instance\"}[5m])) by (plugin)", "legend": "{{plugin}}"}]
+            }
+        },
+        {
+            "id": "panel-cpu",
+            "title": "CPU Usage (%)",
+            "description": "Host-level CPU consumption by the Kong process.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "rate(process_cpu_seconds_total{instance=~\"$instance\"}[5m]) * 100", "legend": "CPU %"}]
+            }
+        }
+        {
+            "id": "panel-bandwidth",
+            "title": "Throughput (Bandwidth)",
+            "description": "Total Ingress and Egress transfer rates monitored at the gateway level.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [
+                    {"query": "sum(rate(kong_bandwidth_bytes_total{type=\"ingress\", instance=~\"$instance\"}[5m]))", "legend": "Ingress"},
+                    {"query": "sum(rate(kong_bandwidth_bytes_total{type=\"egress\", instance=~\"$instance\"}[5m]))", "legend": "Egress"}
+                ]
+            }
+        },
+        {
+            "id": "row-latency",
+            "title": "SECTION 2: LATENCY & RESPONSE PERFORMANCE",
+            "panelTypes": "text",
+            "description": "Deep dive into request processing time and bottlenecks."
+        },
+        {
+            "id": "panel-latency-avg",
+            "title": "Average Latency (ms)",
+            "description": "Mean response time across all successful transactions.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "sum(rate(kong_http_latency_ms_sum{instance=~\"$instance\"}[5m])) / sum(rate(kong_http_latency_ms_count{instance=~\"$instance\"}[5m]))", "legend": "Avg Latency"}]
+            }
+        },
+        {
+            "id": "panel-latency-buckets",
+            "title": "Latency Heatmap (ms)",
+            "description": "Distribution of request latencies across defined Prometheus buckets.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "sum(rate(kong_http_latency_ms_bucket{instance=~\"$instance\"}[5m])) by (le)", "legend": "{{le}} ms"}]
+            }
+        },
+        {
+            "id": "row-traffic",
+            "title": "SECTION 3: TRAFFIC SEGMENTATION",
+            "panelTypes": "text",
+            "description": "Analysis of traffic distribution across routes, services, and consumers."
+        },
+        {
+            "id": "panel-traffic-routes",
+            "title": "Top Routes by RPS",
+            "description": "Identification of the most active ingress endpoints.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "topk(10, sum(rate(kong_http_requests_total{instance=~\"$instance\"}[5m])) by (route_name))", "legend": "{{route_name}}"}]
+            }
+        },
+        {
+            "id": "panel-traffic-services",
+            "title": "Top Services by RPS",
+            "description": "Traffic volume distribution per backend service.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "topk(10, sum(rate(kong_http_requests_total{instance=~\"$instance\"}[5m])) by (service_name))", "legend": "{{service_name}}"}]
+            }
+        },
+        {
+            "id": "panel-traffic-consumers",
+            "title": "Top Consumers (Auth Required)",
+            "description": "Usage patterns of identified consumers (requires authentication plugins).",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "topk(10, sum(rate(kong_http_requests_total{instance=~\"$instance\"}[5m])) by (consumer_name))", "legend": "{{consumer_name}}"}]
+            }
+        },
+        {
+            "id": "row-plugins",
+            "title": "SECTION 4: PLUGIN ARCHITECTURE PERFORMANCE",
+            "panelTypes": "text",
+            "description": "Monitoring the impact of Kong plugins on the request lifecycle."
+        },
+        {
+            "id": "row-resources",
+            "title": "SECTION 5: SYSTEM RESOURCE UTILIZATION",
+            "panelTypes": "text",
+            "description": "Critical monitoring of CPU, RAM, and internal process state."
+        },
+        {
+            "id": "panel-memory",
+            "title": "Memory Usage (RSS)",
+            "description": "Resident Set Size memory allocation for the Kong Gateway process.",
+            "panelTypes": "graph",
+            "query": {
+                "queryType": "promql",
+                "promql": [{"query": "process_resident_memory_bytes{instance=~\"$instance\"}", "legend": "Memory (Bytes)"}]
+            }
+        }
     ]
 }
