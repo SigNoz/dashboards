@@ -9,6 +9,11 @@ The Kubernetes Infra dashboard consists of charts plotted using Kubelet and K8s 
 
 ### Learn more about Kubernetes dashboards:
 
-- [Kubernetes Cluster Metrics Dashboard](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-cluster-metrics/)
-- [Kubernetes Pod Metrics Dashboard (Detailed)](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-pod-metrics-detailed/)
-- [Kubernetes Node Metrics Dashboard (Detailed)](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-node-metrics-detailed/)
+- [Kubernetes Cluster Metrics](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-cluster-metrics/)
+- [Host Metrics](https://signoz.io/docs/dashboards/dashboard-templates/hostmetrics-k8s/)
+- [Kubernetes Events](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-events/)
+- [Kubernetes PVC Metrics](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-pvc/)
+- [Kubernetes Pod Metrics (Overall)](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-pod-metrics-overall/)
+- [Kubernetes Pod Metrics (Detailed)](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-pod-metrics-detailed/)
+- [Kubernetes Node Metrics (Overall)](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-node-metrics-overall/)
+- [Kubernetes Node Metrics (Detailed)](https://signoz.io/docs/dashboards/dashboard-templates/kubernetes-node-metrics-detailed/)
