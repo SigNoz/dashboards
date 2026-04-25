@@ -1,0 +1,1163 @@
+{
+  "id": "aws_msk_prometheus_v1",
+  "description": "Comprehensive AWS MSK Cluster Monitoring Dashboard with Broker, Topic, Partition, Consumer, and CloudWatch metrics.",
+  "layout": [
+    {"h": 1, "i": "section-broker", "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false, "w": 12, "x": 0, "y": 0},
+    {"h": 5, "i": "broker-cpu", "moved": false, "static": false, "w": 6, "x": 0, "y": 1},
+    {"h": 5, "i": "broker-memory", "moved": false, "static": false, "w": 6, "x": 6, "y": 1},
+    {"h": 5, "i": "broker-network-in", "moved": false, "static": false, "w": 6, "x": 0, "y": 6},
+    {"h": 5, "i": "broker-network-out", "moved": false, "static": false, "w": 6, "x": 6, "y": 6},
+    {"h": 5, "i": "broker-disk-usage", "moved": false, "static": false, "w": 6, "x": 0, "y": 11},
+    {"h": 5, "i": "broker-disk-throughput", "moved": false, "static": false, "w": 6, "x": 6, "y": 11},
+    {"h": 1, "i": "section-topic", "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false, "w": 12, "x": 0, "y": 16},
+    {"h": 5, "i": "topic-messages-in", "moved": false, "static": false, "w": 6, "x": 0, "y": 17},
+    {"h": 5, "i": "topic-messages-out", "moved": false, "static": false, "w": 6, "x": 6, "y": 17},
+    {"h": 5, "i": "topic-bytes-in", "moved": false, "static": false, "w": 6, "x": 0, "y": 22},
+    {"h": 5, "i": "topic-bytes-out", "moved": false, "static": false, "w": 6, "x": 6, "y": 22},
+    {"h": 1, "i": "section-partition", "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false, "w": 12, "x": 0, "y": 27},
+    {"h": 5, "i": "partition-under-replicated", "moved": false, "static": false, "w": 6, "x": 0, "y": 28},
+    {"h": 5, "i": "partition-isr", "moved": false, "static": false, "w": 6, "x": 6, "y": 28},
+    {"h": 5, "i": "partition-count", "moved": false, "static": false, "w": 6, "x": 0, "y": 33},
+    {"h": 5, "i": "partition-offline", "moved": false, "static": false, "w": 6, "x": 6, "y": 33},
+    {"h": 1, "i": "section-consumer", "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false, "w": 12, "x": 0, "y": 38},
+    {"h": 5, "i": "consumer-lag", "moved": false, "static": false, "w": 6, "x": 0, "y": 39},
+    {"h": 5, "i": "consumer-error-rate", "moved": false, "static": false, "w": 6, "x": 6, "y": 39},
+    {"h": 1, "i": "section-cloudwatch", "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false, "w": 12, "x": 0, "y": 44},
+    {"h": 5, "i": "cw-cpu-credit", "moved": false, "static": false, "w": 6, "x": 0, "y": 45},
+    {"h": 5, "i": "cw-burst-balance", "moved": false, "static": false, "w": 6, "x": 6, "y": 45},
+    {"h": 5, "i": "cw-network-io", "moved": false, "static": false, "w": 12, "x": 0, "y": 50}
+  ],
+  "panelMap": {},
+  "tags": ["aws", "msk", "kafka", "prometheus"],
+  "title": "AWS MSK Cluster Monitoring",
+  "uploadedGrafana": false,
+  "variables": {
+    "var-cluster": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Select MSK Cluster",
+      "id": "var-cluster",
+      "modificationUUID": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "multiSelect": false,
+      "name": "cluster_name",
+      "order": 0,
+      "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'cluster_name') as cluster_name FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name LIKE 'aws_kafka_%' AND cluster_name != '' ORDER BY cluster_name",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "var-broker": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Select Broker ID",
+      "id": "var-broker",
+      "modificationUUID": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+      "multiSelect": true,
+      "name": "broker_id",
+      "order": 1,
+      "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'broker_id') as broker_id FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name LIKE 'aws_kafka_%' AND JSONExtractString(labels, 'cluster_name') = '{{.cluster_name}}' ORDER BY broker_id",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "var-topic": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Select Topic",
+      "id": "var-topic",
+      "modificationUUID": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+      "multiSelect": true,
+      "name": "topic",
+      "order": 2,
+      "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'topic') as topic FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name LIKE 'aws_kafka_%' AND JSONExtractString(labels, 'cluster_name') = '{{.cluster_name}}' AND topic != '' ORDER BY topic",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "var-environment": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Deployment Environment",
+      "id": "var-environment",
+      "modificationUUID": "d4e5f6a7-b8c9-0123-def4-567890123456",
+      "multiSelect": false,
+      "name": "deployment_environment",
+      "order": 3,
+      "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'deployment.environment') as env FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name LIKE 'aws_kafka_%' ORDER BY env",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "version": "v4",
+  "widgets": [
+    {
+      "description": "",
+      "id": "section-broker",
+      "isStacked": false,
+      "panelTypes": "row",
+      "query": {},
+      "title": "Broker Metrics"
+    },
+    {
+      "description": "CPU utilization percentage for each broker in the MSK cluster",
+      "fillSpans": false,
+      "id": "broker-cpu",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_cpu_user_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_cpu_user_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": 100,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker CPU Usage (%)",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Memory usage for each broker in the MSK cluster",
+      "fillSpans": false,
+      "id": "broker-memory",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_memory_used_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_memory_used_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Memory Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "Network bytes received by each broker per second",
+      "fillSpans": false,
+      "id": "broker-network-in",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_network_rx_packets_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_network_rx_packets_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}} In",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Network Traffic In",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "Network bytes transmitted by each broker per second",
+      "fillSpans": false,
+      "id": "broker-network-out",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_network_tx_packets_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_network_tx_packets_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}} Out",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Network Traffic Out",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "Disk space used by each MSK broker's Kafka data logs",
+      "fillSpans": false,
+      "id": "broker-disk-usage",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_kafka_data_logs_disk_used_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_kafka_data_logs_disk_used_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Disk Usage",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Read/Write throughput on disk for each MSK broker",
+      "fillSpans": false,
+      "id": "broker-disk-throughput",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_volume_read_bytes_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_volume_read_bytes_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Read {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_volume_write_bytes_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_volume_write_bytes_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Write {{broker_id}}",
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Disk Throughput",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "",
+      "id": "section-topic",
+      "isStacked": false,
+      "panelTypes": "row",
+      "query": {},
+      "title": "Topic Metrics"
+    },
+    {
+      "description": "Number of messages sent to each topic per second",
+      "fillSpans": false,
+      "id": "topic-messages-in",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_messages_in_per_sec_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_messages_in_per_sec_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}, "op": "in", "value": ["{{.topic}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}],
+              "legend": "{{topic}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Messages In Per Second",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Number of messages consumed from each topic per second",
+      "fillSpans": false,
+      "id": "topic-messages-out",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_fetch_message_conversions_per_sec_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_fetch_message_conversions_per_sec_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}, "op": "in", "value": ["{{.topic}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}],
+              "legend": "{{topic}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Messages Out Per Second",
+      "yAxisUnit": "ops"
+    },
+    {
+      "description": "Volume of data produced to each topic per second",
+      "fillSpans": false,
+      "id": "topic-bytes-in",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_bytes_in_per_sec_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_bytes_in_per_sec_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}, "op": "in", "value": ["{{.topic}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}],
+              "legend": "{{topic}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Bytes In Per Second",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "Volume of data consumed from each topic per second",
+      "fillSpans": false,
+      "id": "topic-bytes-out",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_bytes_out_per_sec_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_bytes_out_per_sec_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}, "op": "in", "value": ["{{.topic}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}],
+              "legend": "{{topic}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Bytes Out Per Second",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "description": "",
+      "id": "section-partition",
+      "isStacked": false,
+      "panelTypes": "row",
+      "query": {},
+      "title": "Partition Metrics"
+    },
+    {
+      "description": "Count of under-replicated partitions across the MSK cluster",
+      "fillSpans": false,
+      "id": "partition-under-replicated",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_under_replicated_partitions_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_under_replicated_partitions_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "legend": "Under-Replicated Partitions",
+              "queryName": "A",
+              "reduceTo": "sum",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [{"color": "#f44336", "thresholdValue": 1, "thresholdFormat": "1", "thresholdOperator": ">="}],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Under-Replicated Partitions",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Count of in-sync replicas for partitions",
+      "fillSpans": false,
+      "id": "partition-isr",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_under_min_isr_partition_count_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_under_min_isr_partition_count_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "legend": "Partitions Under Min ISR",
+              "queryName": "A",
+              "reduceTo": "sum",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Partition ISR Health",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Number of partitions per topic across the cluster",
+      "fillSpans": false,
+      "id": "partition-count",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_partition_count_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_partition_count_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}, "op": "in", "value": ["{{.topic}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "topic--string--tag--false", "isColumn": false, "key": "topic", "type": "tag"}],
+              "legend": "{{topic}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Partition Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Number of offline partitions in the cluster",
+      "fillSpans": false,
+      "id": "partition-offline",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_offline_partitions_count_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_offline_partitions_count_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [],
+              "legend": "Offline Partitions",
+              "queryName": "A",
+              "reduceTo": "sum",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [{"color": "#f44336", "thresholdValue": 1, "thresholdFormat": "1", "thresholdOperator": ">="}],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Offline Partitions",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "",
+      "id": "section-consumer",
+      "isStacked": false,
+      "panelTypes": "row",
+      "query": {},
+      "title": "Consumer Metrics"
+    },
+    {
+      "description": "Consumer lag for each consumer group in the MSK cluster",
+      "fillSpans": false,
+      "id": "consumer-lag",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_estimated_max_time_lag_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_estimated_max_time_lag_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "max",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "consumer_group--string--tag--false", "isColumn": false, "key": "consumer_group", "type": "tag"}],
+              "legend": "{{consumer_group}}",
+              "queryName": "A",
+              "reduceTo": "max",
+              "spaceAggregation": "max",
+              "stepInterval": 60,
+              "timeAggregation": "max"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Consumer Lag",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "Error rate for consumer requests across the MSK cluster",
+      "fillSpans": false,
+      "id": "consumer-error-rate",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_fetch_consumer_total_time_ms_mean_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_fetch_consumer_total_time_ms_mean_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Consumer Fetch Time (ms)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "description": "",
+      "id": "section-cloudwatch",
+      "isStacked": false,
+      "panelTypes": "row",
+      "query": {},
+      "title": "AWS CloudWatch Metrics"
+    },
+    {
+      "description": "CPU credit usage for MSK brokers (for burstable instances)",
+      "fillSpans": false,
+      "id": "cw-cpu-credit",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_cpu_credit_usage_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_cpu_credit_usage_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "CPU Credit Usage",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "CPU burst balance for MSK brokers (remaining credits)",
+      "fillSpans": false,
+      "id": "cw-burst-balance",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_burst_balance_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_burst_balance_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"},
+                  {"id": "f2", "key": {"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}, "op": "in", "value": ["{{.broker_id}}"]}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Broker {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [{"color": "#ff9800", "thresholdValue": 20, "thresholdFormat": "1", "thresholdOperator": "<="}],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Burst Balance",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Network input/output for MSK brokers as tracked by AWS CloudWatch",
+      "fillSpans": false,
+      "id": "cw-network-io",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_network_rx_dropped_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_network_rx_dropped_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Dropped RX {{broker_id}}",
+              "queryName": "A",
+              "reduceTo": "sum",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws_kafka_network_tx_dropped_average--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws_kafka_network_tx_dropped_average",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {"id": "f1", "key": {"dataType": "string", "id": "cluster_name--string--tag--false", "isColumn": false, "key": "cluster_name", "type": "tag"}, "op": "=", "value": "{{.cluster_name}}"}
+                ],
+                "op": "AND"
+              },
+              "groupBy": [{"dataType": "string", "id": "broker_id--string--tag--false", "isColumn": false, "key": "broker_id", "type": "tag"}],
+              "legend": "Dropped TX {{broker_id}}",
+              "queryName": "B",
+              "reduceTo": "sum",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": true, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Network I/O (Dropped Packets)",
+      "yAxisUnit": "short"
+    }
+  ]
+}
