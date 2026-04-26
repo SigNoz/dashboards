@@ -1,0 +1,2097 @@
+{
+  "description": "Comprehensive monitoring dashboard for AWS Managed Streaming for Apache Kafka (MSK) clusters. Covers broker metrics, topic throughput, partition health, consumer lag, and AWS CloudWatch instance metrics.",
+  "layout": [
+    {
+      "h": 1,
+      "i": "section-broker",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 6,
+      "i": "w-broker-cpu",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 1
+    },
+    {
+      "h": 6,
+      "i": "w-broker-memory",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 1
+    },
+    {
+      "h": 6,
+      "i": "w-network-in",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 7
+    },
+    {
+      "h": 6,
+      "i": "w-network-out",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 7
+    },
+    {
+      "h": 6,
+      "i": "w-disk-usage",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 13
+    },
+    {
+      "h": 6,
+      "i": "w-disk-throughput",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 13
+    },
+    {
+      "h": 1,
+      "i": "section-topic",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 19
+    },
+    {
+      "h": 6,
+      "i": "w-messages-in",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 20
+    },
+    {
+      "h": 6,
+      "i": "w-messages-out",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 20
+    },
+    {
+      "h": 6,
+      "i": "w-bytes-in",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 26
+    },
+    {
+      "h": 6,
+      "i": "w-bytes-out",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 26
+    },
+    {
+      "h": 1,
+      "i": "section-partition",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 32
+    },
+    {
+      "h": 6,
+      "i": "w-under-replicated",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 0,
+      "y": 33
+    },
+    {
+      "h": 6,
+      "i": "w-partition-isr",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 4,
+      "y": 33
+    },
+    {
+      "h": 6,
+      "i": "w-partition-count",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 8,
+      "y": 33
+    },
+    {
+      "h": 1,
+      "i": "section-consumer",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 39
+    },
+    {
+      "h": 6,
+      "i": "w-consumer-lag",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 40
+    },
+    {
+      "h": 6,
+      "i": "w-consumer-error-rate",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 40
+    },
+    {
+      "h": 1,
+      "i": "section-cloudwatch",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 46
+    },
+    {
+      "h": 6,
+      "i": "w-cpu-credit",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 0,
+      "y": 47
+    },
+    {
+      "h": 6,
+      "i": "w-burst-balance",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 4,
+      "y": 47
+    },
+    {
+      "h": 6,
+      "i": "w-cw-network-io",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 8,
+      "y": 47
+    }
+  ],
+  "panelMap": {},
+  "tags": [
+    "AWS",
+    "MSK",
+    "Kafka",
+    "OTLP"
+  ],
+  "title": "AWS MSK Cluster",
+  "uploadedGrafana": false,
+  "variables": {
+    "var-deployment-environment": {
+      "allSelected": false,
+      "customValue": "",
+      "description": "Select the deployment environment",
+      "id": "var-deployment-environment",
+      "key": "var-deployment-environment",
+      "modificationUUID": "var-deployment-environment-mod",
+      "multiSelect": false,
+      "name": "deployment.environment",
+      "order": 0,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'deployment.environment')) as `deployment.environment`\nFROM signoz_metrics.time_series_v4\nWHERE (metric_name LIKE '%kafka%' OR metric_name LIKE '%jvm%')\n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\nGROUP BY `deployment.environment`",
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "var-broker-id": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Select MSK broker ID",
+      "id": "var-broker-id",
+      "key": "var-broker-id",
+      "modificationUUID": "var-broker-id-mod",
+      "multiSelect": true,
+      "name": "broker_id",
+      "order": 1,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'broker_id')) as `broker_id`\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%kafka%'\n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\nGROUP BY `broker_id`",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "var-topic": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Select Kafka topic",
+      "id": "var-topic",
+      "key": "var-topic",
+      "modificationUUID": "var-topic-mod",
+      "multiSelect": true,
+      "name": "topic",
+      "order": 2,
+      "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'topic')) as `topic`\nFROM signoz_metrics.time_series_v4\nWHERE metric_name LIKE '%kafka%'\n  AND (unix_milli >= (toUnixTimestamp(now() - toIntervalDay(1)) * 1000))\nGROUP BY `topic`",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "version": "v4",
+  "widgets": [
+    {
+      "id": "section-broker",
+      "panelTypes": "row",
+      "title": "Broker Metrics",
+      "collapsed": false,
+      "query": {"queryType": "builder", "builder": {"queryData": [], "queryFormulas": []}},
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "columnUnits": {},
+      "fillSpans": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "mergeAllActiveQueries": false,
+      "description": ""
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {
+        "A": "%"
+      },
+      "description": "CPU utilization percentage for each MSK broker, collected via JVM process CPU metrics from OTEL JMX receiver.",
+      "fillSpans": false,
+      "id": "w-broker-cpu",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.cpu.utilization--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.cpu.utilization",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "broker-cpu-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "broker-cpu-broker",
+                    "key": {
+                      "dataType": "string",
+                      "id": "broker_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "broker_id",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{broker_id}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [
+                {
+                  "name": "timeShift",
+                  "args": []
+                }
+              ],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} CPU",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Broker CPU Usage (%)",
+      "yAxisUnit": "percentunit"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {
+        "A": "bytes"
+      },
+      "description": "JVM heap memory used by each MSK broker process.",
+      "fillSpans": false,
+      "id": "w-broker-memory",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "jvm.memory.heap.used--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "jvm.memory.heap.used",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "broker-mem-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "broker-mem-broker",
+                    "key": {
+                      "dataType": "string",
+                      "id": "broker_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "broker_id",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{broker_id}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} Heap",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Broker Memory Usage (Heap)",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Network bytes received per second by each MSK broker (kafka.server.BrokerTopicMetrics.BytesInPerSec via JMX receiver).",
+      "fillSpans": false,
+      "id": "w-network-in",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.broker_topic_metrics.bytes_in_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.broker_topic_metrics.bytes_in_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "net-in-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "net-in-broker",
+                    "key": {
+                      "dataType": "string",
+                      "id": "broker_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "broker_id",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{broker_id}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} In",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Network Traffic In (bytes/s)",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Network bytes sent per second by each MSK broker (kafka.server.BrokerTopicMetrics.BytesOutPerSec via JMX receiver).",
+      "fillSpans": false,
+      "id": "w-network-out",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.broker_topic_metrics.bytes_out_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.broker_topic_metrics.bytes_out_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "net-out-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "net-out-broker",
+                    "key": {
+                      "dataType": "string",
+                      "id": "broker_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "broker_id",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{broker_id}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} Out",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Network Traffic Out (bytes/s)",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Disk space used by Kafka log data on each broker (kafka.log.log.size via JMX receiver).",
+      "fillSpans": false,
+      "id": "w-disk-usage",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.log.log.size--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.log.log.size",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "disk-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "disk-broker",
+                    "key": {
+                      "dataType": "string",
+                      "id": "broker_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "broker_id",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{broker_id}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} Disk",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Broker Disk Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Combined read and write disk throughput (bytes/s) per broker.",
+      "fillSpans": false,
+      "id": "w-disk-throughput",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "system.disk.io--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "system.disk.io",
+                "type": "Sum"
+              },
+              "aggregateOperator": "rate",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "disk-tp-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "disk-tp-broker",
+                    "key": {
+                      "dataType": "string",
+                      "id": "broker_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "broker_id",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{broker_id}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "direction--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "direction",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} {{direction}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Broker Disk Throughput (bytes/s)",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "id": "section-topic",
+      "panelTypes": "row",
+      "title": "Topic Metrics",
+      "collapsed": false,
+      "query": {"queryType": "builder", "builder": {"queryData": [], "queryFormulas": []}},
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "columnUnits": {},
+      "fillSpans": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "mergeAllActiveQueries": false,
+      "description": ""
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Number of messages produced to each Kafka topic per second.",
+      "fillSpans": false,
+      "id": "w-messages-in",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.broker_topic_metrics.messages_in_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.broker_topic_metrics.messages_in_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "msg-in-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "msg-in-topic",
+                    "key": {
+                      "dataType": "string",
+                      "id": "topic--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "topic",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{topic}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "topic--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "topic",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{topic}} msgs/s in",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Messages In Per Second",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Number of messages consumed from each Kafka topic per second.",
+      "fillSpans": false,
+      "id": "w-messages-out",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.broker_topic_metrics.bytes_out_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.broker_topic_metrics.bytes_out_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "msg-out-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "msg-out-topic",
+                    "key": {
+                      "dataType": "string",
+                      "id": "topic--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "topic",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{topic}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "topic--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "topic",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{topic}} msgs/s out",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Messages Out Per Second",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Volume of data (bytes) produced to each Kafka topic per second.",
+      "fillSpans": false,
+      "id": "w-bytes-in",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.broker_topic_metrics.bytes_in_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.broker_topic_metrics.bytes_in_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "bytes-in-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "bytes-in-topic",
+                    "key": {
+                      "dataType": "string",
+                      "id": "topic--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "topic",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{topic}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "topic--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "topic",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{topic}} bytes/s in",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Bytes In Per Second",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Volume of data (bytes) consumed from each Kafka topic per second.",
+      "fillSpans": false,
+      "id": "w-bytes-out",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.broker_topic_metrics.bytes_out_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.broker_topic_metrics.bytes_out_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "bytes-out-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "bytes-out-topic",
+                    "key": {
+                      "dataType": "string",
+                      "id": "topic--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "topic",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{topic}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "topic--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "topic",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{topic}} bytes/s out",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Bytes Out Per Second",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "id": "section-partition",
+      "panelTypes": "row",
+      "title": "Partition Metrics",
+      "collapsed": false,
+      "query": {"queryType": "builder", "builder": {"queryData": [], "queryFormulas": []}},
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "columnUnits": {},
+      "fillSpans": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "mergeAllActiveQueries": false,
+      "description": ""
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Number of under-replicated partitions. Non-zero values indicate replication lag or broker issues.",
+      "fillSpans": false,
+      "id": "w-under-replicated",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.replica_manager.under_replicated_partitions--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.replica_manager.under_replicated_partitions",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "under-rep-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} Under-Replicated",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [
+        {
+          "index": 0,
+          "matchType": "1",
+          "name": "",
+          "op": ">",
+          "value": 0,
+          "color": "red"
+        }
+      ],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Under-Replicated Partitions",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Count of in-sync replicas per partition. Lower values may indicate degraded replication health.",
+      "fillSpans": false,
+      "id": "w-partition-isr",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.replica_manager.isr_shrinks_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.replica_manager.isr_shrinks_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "isr-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} ISR Shrinks/s",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Partition ISR Shrinks/s",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Total number of partitions managed by each broker.",
+      "fillSpans": false,
+      "id": "w-partition-count",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.replica_manager.partition_count--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.replica_manager.partition_count",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "part-count-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "part-count-broker",
+                    "key": {
+                      "dataType": "string",
+                      "id": "broker_id--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "broker_id",
+                      "type": "tag"
+                    },
+                    "op": "in",
+                    "value": ["{{broker_id}}"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} Partitions",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Partition Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "id": "section-consumer",
+      "panelTypes": "row",
+      "title": "Consumer Metrics",
+      "collapsed": false,
+      "query": {"queryType": "builder", "builder": {"queryData": [], "queryFormulas": []}},
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "columnUnits": {},
+      "fillSpans": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "mergeAllActiveQueries": false,
+      "description": ""
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Consumer group lag — number of messages behind the latest offset. High lag indicates consumers are falling behind producers.",
+      "fillSpans": false,
+      "id": "w-consumer-lag",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.consumer_group.lag--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.consumer_group.lag",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "max",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "consumer-lag-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "kafka.consumer_group--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "kafka.consumer_group",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "id": "topic--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "topic",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{kafka.consumer_group}} / {{topic}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "max",
+              "spaceAggregation": "max",
+              "stepInterval": 60,
+              "timeAggregation": "max"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Consumer Lag",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Error rate for consumer fetch requests (failed fetches per second). Elevated rates indicate connectivity or broker issues.",
+      "fillSpans": false,
+      "id": "w-consumer-error-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.server.request_handler.avg_idle_pct--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.server.request_handler.avg_idle_pct",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "consumer-err-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "Request Handler Idle %",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "kafka.network.request_metrics.errors_per_sec--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "kafka.network.request_metrics.errors_per_sec",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "consumer-err-env-b",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  },
+                  {
+                    "id": "consumer-err-request-type",
+                    "key": {
+                      "dataType": "string",
+                      "id": "request--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "request",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "Fetch"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "broker_id--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "broker_id",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{broker_id}} Fetch Errors/s",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Consumer Error Rate (Fetch Errors/s)",
+      "yAxisUnit": "short"
+    },
+    {
+      "id": "section-cloudwatch",
+      "panelTypes": "row",
+      "title": "AWS Metrics (CloudWatch Integration)",
+      "collapsed": false,
+      "query": {"queryType": "builder", "builder": {"queryData": [], "queryFormulas": []}},
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "columnUnits": {},
+      "fillSpans": false,
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "mergeAllActiveQueries": false,
+      "description": ""
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "CPU credit usage for MSK brokers running on burstable EC2 instances (T-family). Collected via AWS CloudWatch receiver for OTEL Collector. Metric: aws.msk.broker.cpu_credit_usage.",
+      "fillSpans": false,
+      "id": "w-cpu-credit",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws.msk.broker.cpu_credit_usage--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws.msk.broker.cpu_credit_usage",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "cpu-credit-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "Broker_ID--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "Broker_ID",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{Broker_ID}} CPU Credits Used",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "CPU Credit Usage (CloudWatch)",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Remaining CPU burst balance for MSK brokers on burstable instances. When this reaches 0 the broker throttles to baseline CPU. Metric: aws.msk.broker.cpu_credit_balance.",
+      "fillSpans": false,
+      "id": "w-burst-balance",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws.msk.broker.cpu_credit_balance--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws.msk.broker.cpu_credit_balance",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "burst-bal-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "Broker_ID--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "Broker_ID",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{Broker_ID}} Burst Balance",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Burst Balance (CloudWatch)",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Network I/O for MSK brokers as tracked by AWS CloudWatch. Shows both bytes in (NetworkRxDropped/NetworkRxErrors) and out at the EC2 instance level. Metrics: aws.msk.broker.network_rx_bytes and aws.msk.broker.network_tx_bytes.",
+      "fillSpans": false,
+      "id": "w-cw-network-io",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws.msk.broker.network_rx_bytes--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws.msk.broker.network_rx_bytes",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "cw-net-env",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "Broker_ID--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "Broker_ID",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{Broker_ID}} RX",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "aws.msk.broker.network_tx_bytes--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "aws.msk.broker.network_tx_bytes",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "sum",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "cw-net-env-b",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment.environment}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "Broker_ID--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "Broker_ID",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "Broker {{Broker_ID}} TX",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreference": "GLOBAL_TIME",
+      "title": "Network I/O (CloudWatch)",
+      "yAxisUnit": "bytes"
+    }
+  ]
+}
