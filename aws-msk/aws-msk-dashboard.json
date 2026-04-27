@@ -1,0 +1,177 @@
+{
+  "id": "aws_msk_cluster",
+  "title": "AWS MSK Cluster Monitoring",
+  "description": "Comprehensive monitoring for AWS Managed Streaming for Kafka (MSK) cluster metrics.",
+  "tags": [
+    "aws",
+    "msk",
+    "kafka",
+    "infrastructure"
+  ],
+  "version": "v4",
+  "variables": {
+    "msk_cluster": {
+      "allSelected": true,
+      "id": "msk_cluster",
+      "name": "cluster_name",
+      "queryValue": "label_values(kafka_server_ReplicaManager_UnderReplicatedPartitions, cluster_name)",
+      "selectedValue": [],
+      "showALLOption": true,
+      "type": "QUERY",
+      "sort": "ASC"
+    }
+  },
+  "layout": [
+    { "h": 5, "i": "under_replicated", "w": 4, "x": 0, "y": 0 },
+    { "h": 5, "i": "offline_partitions", "w": 4, "x": 4, "y": 0 },
+    { "h": 5, "i": "active_controller", "w": 4, "x": 8, "y": 0 },
+    { "h": 8, "i": "messages_in", "w": 6, "x": 0, "y": 5 },
+    { "h": 8, "i": "network_io", "w": 6, "x": 6, "y": 5 },
+    { "h": 8, "i": "cpu_usage", "w": 4, "x": 0, "y": 13 },
+    { "h": 8, "i": "memory_usage", "w": 4, "x": 4, "y": 13 },
+    { "h": 8, "i": "disk_usage", "w": 4, "x": 8, "y": 13 }
+  ],
+  "widgets": [
+    {
+      "id": "under_replicated",
+      "title": "Under Replicated Partitions",
+      "description": "Number of partitions that are not fully replicated across all replicas.",
+      "panelTypes": "value",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(kafka_server_ReplicaManager_UnderReplicatedPartitions{cluster_name=~\"$cluster_name\"})",
+            "legend": "Under Replicated"
+          }
+        ]
+      },
+      "yAxisUnit": "none"
+    },
+    {
+      "id": "offline_partitions",
+      "title": "Offline Partitions",
+      "description": "Number of partitions that are offline and unavailable.",
+      "panelTypes": "value",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(kafka_server_ReplicaManager_OfflinePartitionsCount{cluster_name=~\"$cluster_name\"})",
+            "legend": "Offline"
+          }
+        ]
+      },
+      "yAxisUnit": "none"
+    },
+    {
+      "id": "active_controller",
+      "title": "Active Controllers",
+      "description": "Number of active controllers in the cluster (expecting 1).",
+      "panelTypes": "value",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(kafka_controller_KafkaController_ActiveControllerCount{cluster_name=~\"$cluster_name\"})",
+            "legend": "Active Controller"
+          }
+        ]
+      },
+      "yAxisUnit": "none"
+    },
+    {
+      "id": "messages_in",
+      "title": "Messages In Rate",
+      "description": "Rate of messages being produced to the cluster.",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(rate(kafka_server_BrokerTopicMetrics_MessagesInPerSec{cluster_name=~\"$cluster_name\"}[5m]))",
+            "legend": "Total Messages In"
+          }
+        ]
+      },
+      "yAxisUnit": "reqps"
+    },
+    {
+      "id": "network_io",
+      "title": "Network Throughput (Bytes In/Out)",
+      "description": "Comparison of Total Bytes In vs Total Bytes Out for the cluster.",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "BytesIn",
+            "query": "sum(rate(kafka_server_BrokerTopicMetrics_BytesInPerSec{cluster_name=~\"$cluster_name\"}[5m]))",
+            "legend": "Bytes In"
+          },
+          {
+            "name": "BytesOut",
+            "query": "sum(rate(kafka_server_BrokerTopicMetrics_BytesOutPerSec{cluster_name=~\"$cluster_name\"}[5m]))",
+            "legend": "Bytes Out"
+          }
+        ]
+      },
+      "yAxisUnit": "bytes"
+    },
+    {
+      "id": "cpu_usage",
+      "title": "Broker CPU Usage",
+      "description": "Average CPU utilization across all brokers in the cluster.",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\", cluster_name=~\"$cluster_name\"}[5m])) * 100)",
+            "legend": "{{instance}}"
+          }
+        ]
+      },
+      "yAxisUnit": "percent"
+    },
+    {
+      "id": "memory_usage",
+      "title": "Broker Memory Usage",
+      "description": "Percentage of used memory per broker.",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "(node_memory_MemTotal_bytes{cluster_name=~\"$cluster_name\"} - node_memory_MemAvailable_bytes{cluster_name=~\"$cluster_name\"}) / node_memory_MemTotal_bytes{cluster_name=~\"$cluster_name\"} * 100",
+            "legend": "{{instance}}"
+          }
+        ]
+      },
+      "yAxisUnit": "percent"
+    },
+    {
+      "id": "disk_usage",
+      "title": "Broker Disk Usage",
+      "description": "Storage utilization percentage for Kafka logs.",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "promql",
+        "promql": [
+          {
+            "name": "A",
+            "query": "(node_filesystem_size_bytes{mountpoint=\"/\", cluster_name=~\"$cluster_name\"} - node_filesystem_avail_bytes{mountpoint=\"/\", cluster_name=~\"$cluster_name\"}) / node_filesystem_size_bytes{mountpoint=\"/\", cluster_name=~\"$cluster_name\"} * 100",
+            "legend": "{{instance}}"
+          }
+        ]
+      },
+      "yAxisUnit": "percent"
+    }
+  ]
+}
