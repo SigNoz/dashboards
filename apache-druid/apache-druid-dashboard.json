@@ -1,0 +1,1203 @@
+{
+  "description": "Broker and coordinator metrics — query performance, JVM health, GC activity, and HTTP thread pool saturation.",
+  "layout": [
+    {
+      "h": 3,
+      "i": "druid-broker-heartbeat",
+      "minH": 2,
+      "minW": 2,
+      "w": 3,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "druid-broker-open-conn",
+      "minH": 2,
+      "minW": 2,
+      "w": 3,
+      "x": 3,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "druid-broker-thread-util",
+      "minH": 2,
+      "minW": 2,
+      "w": 3,
+      "x": 6,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "druid-coord-duty-kpi",
+      "minH": 2,
+      "minW": 2,
+      "w": 3,
+      "x": 9,
+      "y": 0
+    },
+    {
+      "h": 7,
+      "i": "druid-broker-query-time",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 0,
+      "y": 3
+    },
+    {
+      "h": 7,
+      "i": "druid-broker-query-cpu",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 6,
+      "y": 3
+    },
+    {
+      "h": 7,
+      "i": "druid-broker-jvm-heap",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 0,
+      "y": 10
+    },
+    {
+      "h": 7,
+      "i": "druid-broker-gc-count",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 6,
+      "y": 10
+    },
+    {
+      "h": 7,
+      "i": "druid-broker-thread-pool",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 0,
+      "y": 17
+    },
+    {
+      "h": 7,
+      "i": "druid-broker-gc-cpu",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 6,
+      "y": 17
+    },
+    {
+      "h": 7,
+      "i": "druid-coord-duty-times",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 0,
+      "y": 24
+    },
+    {
+      "h": 7,
+      "i": "druid-coord-jvm-heap",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 6,
+      "y": 24
+    },
+    {
+      "h": 7,
+      "i": "druid-coord-thread-pool",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 0,
+      "y": 31
+    },
+    {
+      "h": 7,
+      "i": "druid-coord-gc-count",
+      "minH": 5,
+      "minW": 4,
+      "w": 6,
+      "x": 6,
+      "y": 31
+    }
+  ],
+  "tags": ["druid", "apache", "database", "metrics"],
+  "title": "Apache Druid",
+  "variables": {
+    "var-service": {
+      "allSelected": false,
+      "customValue": "apache-druid",
+      "description": "Filter by service.name",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "metrics",
+      "id": "var-service",
+      "modificationUUID": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "name": "service",
+      "order": 0,
+      "sort": "ASC",
+      "type": "DYNAMIC"
+    }
+  },
+  "widgets": [
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Broker service heartbeat count — confirms the broker is alive and emitting metrics",
+      "id": "druid-broker-heartbeat",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.service.heartbeat",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": "delta",
+                  "timeAggregation": "sum"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-broker-heartbeat",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Heartbeat",
+      "yAxisUnit": "none"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Current number of open Jetty connections on the broker",
+      "id": "druid-broker-open-conn",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jetty.numOpenConnections",
+                  "reduceTo": "last",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-broker-open-conn",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Open Connections",
+      "yAxisUnit": "none"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Fraction of broker Jetty threads in use (0–1). Values near 1 indicate saturation.",
+      "id": "druid-broker-thread-util",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jetty.threadPool.utilizationRate",
+                  "reduceTo": "last",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-broker-thread-util",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [
+        {
+          "index": "0",
+          "selectedGraph": "graph",
+          "thresholdColor": "#F2495C",
+          "thresholdFormat": "none",
+          "thresholdLabel": "High",
+          "thresholdOperator": ">",
+          "thresholdUnit": "percentunit",
+          "thresholdValue": 0.8
+        }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Thread Pool Utilization",
+      "yAxisUnit": "percentunit"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Latest time the coordinator spent running its management duty cycle (ms)",
+      "id": "druid-coord-duty-kpi",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.coordinator.time",
+                  "reduceTo": "last",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-coord-duty-kpi",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Coordinator Duty Time",
+      "yAxisUnit": "ms"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Average time to execute scan queries on the broker. Spikes indicate slow historical nodes or large scan ranges.",
+      "fillMode": "none",
+      "fillSpans": true,
+      "id": "druid-broker-query-time",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.query.time.[].scan",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Query Time",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "id": "e35ca8bf-c2d8-4086-83b7-cc76de1b6231",
+        "promql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Query Time (ms)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "CPU time consumed by scan queries on the broker (reported by Druid in microseconds). High CPU with low query time points to CPU-bound processing.",
+      "fillMode": "none",
+      "fillSpans": true,
+      "id": "druid-broker-query-cpu",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.query.cpu.time.[].scan",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "CPU Time",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "id": "3a135ff1-9812-46aa-9f1e-e983279755f9",
+        "promql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Query CPU Time (µs)",
+      "yAxisUnit": "µs"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Broker JVM heap used vs committed vs max. Used approaching max signals GC pressure or an undersized heap.",
+      "id": "druid-broker-jvm-heap",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jvm.mem.used.heap",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Used",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jvm.mem.committed.heap",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Committed",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jvm.mem.max.heap",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "C",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Max",
+              "orderBy": [],
+              "queryName": "C",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-broker-jvm-heap",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker JVM Heap Memory",
+      "yAxisUnit": "decbytes"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Number of G1 GC cycles per interval for old and young generations. Frequent old-gen GC indicates heap pressure.",
+      "id": "druid-broker-gc-count",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jvm.gc.count.[old].[g1]",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": "delta",
+                  "timeAggregation": "sum"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Old Gen",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jvm.gc.count.[young].[g1]",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": "delta",
+                  "timeAggregation": "sum"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Young Gen",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-broker-gc-count",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker GC Count",
+      "yAxisUnit": "none"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Broker HTTP thread pool — busy, idle, and total threads. Busy approaching total means the broker is close to rejecting requests.",
+      "id": "druid-broker-thread-pool",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jetty.threadPool.busy",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Busy",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jetty.threadPool.idle",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Idle",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jetty.threadPool.total",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "C",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Total",
+              "orderBy": [],
+              "queryName": "C",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-broker-thread-pool",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker Jetty Thread Pool",
+      "yAxisUnit": "none"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "CPU time consumed by G1 GC per interval (reported by Druid in nanoseconds). Rising old-gen values mean GC is stealing significant CPU from query processing.",
+      "id": "druid-broker-gc-cpu",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jvm.gc.cpu.[old].[g1]",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": "delta",
+                  "timeAggregation": "sum"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Old Gen",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.broker.jvm.gc.cpu.[young].[g1]",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": "delta",
+                  "timeAggregation": "sum"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Young Gen",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-broker-gc-cpu",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Broker GC CPU Time (ns)",
+      "yAxisUnit": "ns"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Time each coordinator duty group takes to complete — Historical management, Indexing service, and Metadata store. Sustained spikes may indicate segment assignment backlog.",
+      "fillMode": "none",
+      "fillSpans": true,
+      "id": "druid-coord-duty-times",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.coordinator.global.time.HistoricalManagementDuties",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Historical Mgmt",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.coordinator.global.time.IndexingServiceDuties",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Indexing Service",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.coordinator.global.time.MetadataStoreManagementDuties",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "filter": { "expression": "service.name = $service" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Metadata Store",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "C",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "id": "29102a68-ce79-495f-9c1c-e98ff3a18cea",
+        "promql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Coordinator Global Duty Times",
+      "yAxisUnit": "ms"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Coordinator JVM heap used vs committed vs max. The coordinator is long-running; a growing used/max ratio over time suggests a memory leak.",
+      "id": "druid-coord-jvm-heap",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jvm.mem.used.heap",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Used",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jvm.mem.committed.heap",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Committed",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jvm.mem.max.heap",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "C",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Max",
+              "orderBy": [],
+              "queryName": "C",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-coord-jvm-heap",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Coordinator JVM Heap Memory",
+      "yAxisUnit": "decbytes"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Coordinator HTTP thread pool — busy, idle, and total. Useful for spotting coordinator API saturation during high segment load.",
+      "id": "druid-coord-thread-pool",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jetty.threadPool.busy",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Busy",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jetty.threadPool.idle",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Idle",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jetty.threadPool.total",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "avg",
+                  "timeAggregation": "avg"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "C",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Total",
+              "orderBy": [],
+              "queryName": "C",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-coord-thread-pool",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Coordinator Jetty Thread Pool",
+      "yAxisUnit": "none"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "G1 GC cycles per interval on the coordinator — old and young generation. Elevated old-gen on the coordinator often precedes segment assignment slowdowns.",
+      "id": "druid-coord-gc-count",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jvm.gc.count.[old].[g1]",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": "delta",
+                  "timeAggregation": "sum"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Old Gen",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregateAttribute": {},
+              "aggregations": [
+                {
+                  "metricName": "druid.coordinator.jvm.gc.count.[young].[g1]",
+                  "reduceTo": "sum",
+                  "spaceAggregation": "sum",
+                  "temporality": "delta",
+                  "timeAggregation": "sum"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filter": { "expression": "service.name = $service" },
+              "filters": { "items": null, "op": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": { "expression": "" },
+              "legend": "Young Gen",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": false, "name": "A", "query": "" }],
+        "id": "q-druid-coord-gc-count",
+        "promql": [{ "disabled": false, "name": "A", "query": "" }],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Coordinator GC Count",
+      "yAxisUnit": "none"
+    }
+  ],
+  "uuid": "019daad2-066c-7056-8850-70615a6e20a1"
+}
