@@ -1,0 +1,127 @@
+{
+  "title": "Kong Gateway",
+  "description": "Kong API Gateway monitoring dashboard with request metrics, latency, errors and resource usage",
+  "tags": ["kong", "api-gateway", "kubernetes"],
+  "version": "1.0.0",
+  "variables": {
+    "namespace": {
+      "type": "query",
+      "query": "label_values(kong_http_requests_total, namespace)",
+      "defaultValue": "default",
+      "sort": "asc",
+      "multiSelect": false
+    },
+    "service": {
+      "type": "query",
+      "query": "label_values(kong_http_requests_total{namespace=\"{{.namespace}}\"}, service)",
+      "defaultValue": "all",
+      "sort": "asc",
+      "multiSelect": true
+    }
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Requests",
+      "type": "value",
+      "query": "sum(kong_http_requests_total{namespace=\"{{.namespace}}\"})",
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "id": 2,
+      "title": "Active Connections",
+      "type": "value",
+      "query": "sum(kong_nginx_connections_active{namespace=\"{{.namespace}}\"})",
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "id": 3,
+      "title": "Request Rate",
+      "type": "timeseries",
+      "query": "sum(rate(kong_http_requests_total{namespace=\"{{.namespace}}\"}[5m]))",
+      "gridPos": {"x": 0, "y": 4, "w": 12, "h": 6}
+    },
+    {
+      "id": 4,
+      "title": "Status Codes",
+      "type": "pie",
+      "query": "sum by (code) (kong_http_status{namespace=\"{{.namespace}}\"})",
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 10}
+    },
+    {
+      "id": 5,
+      "title": "Average Latency",
+      "type": "value",
+      "query": "avg(kong_latency_ms{namespace=\"{{.namespace}}\"})",
+      "unit": "ms",
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4}
+    },
+    {
+      "id": 6,
+      "title": "Latency Percentiles",
+      "type": "timeseries",
+      "queries": [
+        {
+          "name": "p50",
+          "query": "histogram_quantile(0.50, rate(kong_latency_ms_bucket{namespace=\"{{.namespace}}\"}[5m]))"
+        },
+        {
+          "name": "p90",
+          "query": "histogram_quantile(0.90, rate(kong_latency_ms_bucket{namespace=\"{{.namespace}}\"}[5m]))"
+        },
+        {
+          "name": "p99",
+          "query": "histogram_quantile(0.99, rate(kong_latency_ms_bucket{namespace=\"{{.namespace}}\"}[5m]))"
+        }
+      ],
+      "gridPos": {"x": 0, "y": 10, "w": 12, "h": 6}
+    },
+    {
+      "id": 7,
+      "title": "Error Rate",
+      "type": "timeseries",
+      "query": "sum(rate(kong_http_requests_total{status=~\"5..\",namespace=\"{{.namespace}}\"}[5m])) / sum(rate(kong_http_requests_total{namespace=\"{{.namespace}}\"}[5m])) * 100",
+      "unit": "percent",
+      "gridPos": {"x": 12, "y": 10, "w": 12, "h": 6}
+    },
+    {
+      "id": 8,
+      "title": "Bandwidth In",
+      "type": "timeseries",
+      "query": "sum(rate(kong_bandwidth_bytes{type=\"ingress\",namespace=\"{{.namespace}}\"}[5m]))",
+      "unit": "Bps",
+      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 6}
+    },
+    {
+      "id": 9,
+      "title": "Bandwidth Out",
+      "type": "timeseries",
+      "query": "sum(rate(kong_bandwidth_bytes{type=\"egress\",namespace=\"{{.namespace}}\"}[5m]))",
+      "unit": "Bps",
+      "gridPos": {"x": 12, "y": 16, "w": 12, "h": 6}
+    },
+    {
+      "id": 10,
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"{{.namespace}}\",pod=~\"kong.*\"}[5m])) * 100",
+      "unit": "percent",
+      "gridPos": {"x": 0, "y": 22, "w": 8, "h": 6}
+    },
+    {
+      "id": 11,
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "query": "sum(container_memory_usage_bytes{namespace=\"{{.namespace}}\",pod=~\"kong.*\"}) / 1024 / 1024",
+      "unit": "MB",
+      "gridPos": {"x": 8, "y": 22, "w": 8, "h": 6}
+    },
+    {
+      "id": 12,
+      "title": "Pod Restarts",
+      "type": "value",
+      "query": "sum(kube_pod_container_status_restarts_total{namespace=\"{{.namespace}}\",pod=~\"kong.*\"})",
+      "gridPos": {"x": 16, "y": 22, "w": 8, "h": 6}
+    }
+  ]
+}
