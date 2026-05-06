@@ -1,0 +1,1430 @@
+{
+  "description": "ASP.NET Core application monitoring via Prometheus metrics. Covers HTTP request rates, latency percentiles, error rates, Kestrel connections, .NET runtime GC, thread pool, and process-level resource usage.",
+  "layout": [
+    { "h": 1, "i": "row-http", "w": 12, "x": 0, "y": 0, "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false },
+    { "h": 3, "i": "w-rps", "w": 3, "x": 0, "y": 1, "moved": false, "static": false },
+    { "h": 3, "i": "w-error-rate", "w": 3, "x": 3, "y": 1, "moved": false, "static": false },
+    { "h": 3, "i": "w-p50", "w": 3, "x": 6, "y": 1, "moved": false, "static": false },
+    { "h": 3, "i": "w-p99", "w": 3, "x": 9, "y": 1, "moved": false, "static": false },
+    { "h": 7, "i": "w-req-rate", "w": 6, "x": 0, "y": 4, "moved": false, "static": false },
+    { "h": 7, "i": "w-latency-heatmap", "w": 6, "x": 6, "y": 4, "moved": false, "static": false },
+    { "h": 7, "i": "w-status-codes", "w": 6, "x": 0, "y": 11, "moved": false, "static": false },
+    { "h": 7, "i": "w-latency-p", "w": 6, "x": 6, "y": 11, "moved": false, "static": false },
+    { "h": 1, "i": "row-kestrel", "w": 12, "x": 0, "y": 18, "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false },
+    { "h": 7, "i": "w-kestrel-active", "w": 6, "x": 0, "y": 19, "moved": false, "static": false },
+    { "h": 7, "i": "w-kestrel-queued", "w": 6, "x": 6, "y": 19, "moved": false, "static": false },
+    { "h": 7, "i": "w-kestrel-rejected", "w": 6, "x": 0, "y": 26, "moved": false, "static": false },
+    { "h": 7, "i": "w-kestrel-duration", "w": 6, "x": 6, "y": 26, "moved": false, "static": false },
+    { "h": 1, "i": "row-runtime", "w": 12, "x": 0, "y": 33, "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false },
+    { "h": 7, "i": "w-gc-count", "w": 6, "x": 0, "y": 34, "moved": false, "static": false },
+    { "h": 7, "i": "w-heap-size", "w": 6, "x": 6, "y": 34, "moved": false, "static": false },
+    { "h": 7, "i": "w-threadpool-queue", "w": 6, "x": 0, "y": 41, "moved": false, "static": false },
+    { "h": 7, "i": "w-threadpool-threads", "w": 6, "x": 6, "y": 41, "moved": false, "static": false },
+    { "h": 1, "i": "row-process", "w": 12, "x": 0, "y": 48, "maxH": 1, "minH": 1, "minW": 12, "moved": false, "static": false },
+    { "h": 7, "i": "w-cpu", "w": 6, "x": 0, "y": 49, "moved": false, "static": false },
+    { "h": 7, "i": "w-memory", "w": 6, "x": 6, "y": 49, "moved": false, "static": false }
+  ],
+  "panelMap": {},
+  "tags": ["aspnet-core", "dotnet", "prometheus", "kestrel"],
+  "title": "ASP.NET Core (Prometheus)",
+  "uploadedGrafana": false,
+  "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "variables": {
+    "var_job": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Prometheus job label for the ASP.NET Core application",
+      "dynamicVariablesAttribute": "job",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "var_job",
+      "key": "var_job",
+      "modificationUUID": "a1b2c3d4-0001-0001-0001-000000000001",
+      "multiSelect": false,
+      "name": "job",
+      "order": 0,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "var_instance": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Application instance (host:port)",
+      "dynamicVariablesAttribute": "instance",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "var_instance",
+      "key": "var_instance",
+      "modificationUUID": "a1b2c3d4-0001-0001-0001-000000000002",
+      "multiSelect": true,
+      "name": "instance",
+      "order": 1,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "description": "",
+      "id": "row-http",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "HTTP Traffic"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "decimalPrecision": 2,
+      "description": "Total HTTP requests per second across all routes and status codes",
+      "fillSpans": false,
+      "id": "w-rps",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-rps",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "req/s",
+            "name": "A",
+            "query": "sum(rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "decimalPrecision": 2,
+      "description": "Fraction of HTTP responses with 5xx status codes",
+      "fillSpans": false,
+      "id": "w-error-rate",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-error-rate",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "error %",
+            "name": "A",
+            "query": "100 * sum(rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\",code=~\"5..\"}[2m])) / sum(rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [
+        { "color": "#FFA500", "index": 0, "moveThresholdLabel": false, "thresholdValue": 1, "traceFilter": { "items": [], "op": "AND" } },
+        { "color": "#FF0000", "index": 1, "moveThresholdLabel": false, "thresholdValue": 5, "traceFilter": { "items": [], "op": "AND" } }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "5xx Error Rate (%)",
+      "yAxisUnit": "percent"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "decimalPrecision": 2,
+      "description": "Median (p50) HTTP request duration",
+      "fillSpans": false,
+      "id": "w-p50",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-p50",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p50",
+            "name": "A",
+            "query": "histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Latency p50",
+      "yAxisUnit": "s"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "decimalPrecision": 2,
+      "description": "99th percentile HTTP request duration",
+      "fillSpans": false,
+      "id": "w-p99",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-p99",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p99",
+            "name": "A",
+            "query": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Latency p99",
+      "yAxisUnit": "s"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "HTTP request rate broken down by route and method",
+      "fillSpans": false,
+      "id": "w-req-rate",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-req-rate",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{method}} {{route}} {{code}}",
+            "name": "A",
+            "query": "sum by (method, route, code) (rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate by Route",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "HTTP request latency percentiles (p50, p90, p95, p99) over time",
+      "fillSpans": false,
+      "id": "w-latency-heatmap",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-latency-heatmap",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p50",
+            "name": "A",
+            "query": "histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          },
+          {
+            "disabled": false,
+            "legend": "p90",
+            "name": "B",
+            "query": "histogram_quantile(0.9, sum(rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          },
+          {
+            "disabled": false,
+            "legend": "p95",
+            "name": "C",
+            "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          },
+          {
+            "disabled": false,
+            "legend": "p99",
+            "name": "D",
+            "query": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Latency Percentiles",
+      "yAxisUnit": "s"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "HTTP response count grouped by status code class",
+      "fillSpans": false,
+      "id": "w-status-codes",
+      "isLogScale": false,
+      "isStacked": true,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-status-codes",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "2xx",
+            "name": "A",
+            "query": "sum(rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\",code=~\"2..\"}[2m]))"
+          },
+          {
+            "disabled": false,
+            "legend": "3xx",
+            "name": "B",
+            "query": "sum(rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\",code=~\"3..\"}[2m]))"
+          },
+          {
+            "disabled": false,
+            "legend": "4xx",
+            "name": "C",
+            "query": "sum(rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\",code=~\"4..\"}[2m]))"
+          },
+          {
+            "disabled": false,
+            "legend": "5xx",
+            "name": "D",
+            "query": "sum(rate(http_requests_received_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\",code=~\"5..\"}[2m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Requests by Status Code Class",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "p50, p95, p99 latency broken down by route",
+      "fillSpans": false,
+      "id": "w-latency-p",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-latency-p",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p50 {{route}}",
+            "name": "A",
+            "query": "histogram_quantile(0.5, sum by (le, route) (rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])))"
+          },
+          {
+            "disabled": false,
+            "legend": "p99 {{route}}",
+            "name": "B",
+            "query": "histogram_quantile(0.99, sum by (le, route) (rate(http_request_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Latency by Route (p50 / p99)",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "",
+      "id": "row-kestrel",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "Kestrel"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Number of currently active Kestrel connections",
+      "fillSpans": false,
+      "id": "w-kestrel-active",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-kestrel-active",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{instance}}",
+            "name": "A",
+            "query": "sum by (instance) (kestrel_active_connections{job=~\"{{.job}}\",instance=~\"{{.instance}}\"})"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Active Connections",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Number of connections waiting in the Kestrel accept queue",
+      "fillSpans": false,
+      "id": "w-kestrel-queued",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-kestrel-queued",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{instance}}",
+            "name": "A",
+            "query": "sum by (instance) (kestrel_queued_connections{job=~\"{{.job}}\",instance=~\"{{.instance}}\"})"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Queued Connections",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Rate of connections rejected by Kestrel (connection limit exceeded)",
+      "fillSpans": false,
+      "id": "w-kestrel-rejected",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-kestrel-rejected",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{instance}}",
+            "name": "A",
+            "query": "sum by (instance) (rate(kestrel_rejected_connections_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Rejected Connections/s",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "p50 and p99 Kestrel connection duration",
+      "fillSpans": false,
+      "id": "w-kestrel-duration",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-kestrel-duration",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "p50",
+            "name": "A",
+            "query": "histogram_quantile(0.5, sum(rate(kestrel_connection_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          },
+          {
+            "disabled": false,
+            "legend": "p99",
+            "name": "B",
+            "query": "histogram_quantile(0.99, sum(rate(kestrel_connection_duration_seconds_bucket{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])) by (le))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Connection Duration (p50 / p99)",
+      "yAxisUnit": "s"
+    },
+    {
+      "description": "",
+      "id": "row-runtime",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": ".NET Runtime"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Garbage collection frequency by generation (gen0, gen1, gen2)",
+      "fillSpans": false,
+      "id": "w-gc-count",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-gc-count",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "gen{{gc}}",
+            "name": "A",
+            "query": "sum by (gc) (rate(dotnet_collection_count_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "GC Collections/s by Generation",
+      "yAxisUnit": "cps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Total managed heap memory allocated to the .NET runtime",
+      "fillSpans": false,
+      "id": "w-heap-size",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-heap-size",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "heap {{instance}}",
+            "name": "A",
+            "query": "dotnet_total_memory_bytes{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Managed Heap Size",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Number of items queued to the thread pool waiting to be processed",
+      "fillSpans": false,
+      "id": "w-threadpool-queue",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-threadpool-queue",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "queue depth {{instance}}",
+            "name": "A",
+            "query": "dotnet_threadpool_queue_length{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Thread Pool Queue Depth",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Number of active thread pool threads vs number of completed work items",
+      "fillSpans": false,
+      "id": "w-threadpool-threads",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-threadpool-threads",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "active threads {{instance}}",
+            "name": "A",
+            "query": "dotnet_threadpool_num_threads{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}"
+          },
+          {
+            "disabled": false,
+            "legend": "completed/s {{instance}}",
+            "name": "B",
+            "query": "rate(dotnet_threadpool_completed_items_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Thread Pool Threads & Completed Items",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "",
+      "id": "row-process",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "Process Resources"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "CPU utilisation of the ASP.NET Core process (all cores combined)",
+      "fillSpans": false,
+      "id": "w-cpu",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-cpu",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "cpu {{instance}}",
+            "name": "A",
+            "query": "rate(process_cpu_seconds_total{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}[2m])"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Process CPU Usage",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Process working set (RSS) and private memory usage over time",
+      "fillSpans": false,
+      "id": "w-memory",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "count",
+              "aggregateAttribute": { "dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": "" },
+              "filters": { "items": [], "op": "AND" },
+              "expression": "A",
+              "disabled": false,
+              "having": [],
+              "stepInterval": 60,
+              "limit": null,
+              "orderBy": [],
+              "groupBy": [],
+              "legend": "",
+              "reduceTo": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{ "disabled": true, "legend": "", "name": "A", "query": "" }],
+        "id": "q-memory",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "working set {{instance}}",
+            "name": "A",
+            "query": "process_working_set_bytes{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}"
+          },
+          {
+            "disabled": false,
+            "legend": "private memory {{instance}}",
+            "name": "B",
+            "query": "process_private_memory_bytes{job=~\"{{.job}}\",instance=~\"{{.instance}}\"}"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [
+        { "fieldContext": "log", "name": "timestamp", "signal": "logs", "type": "log" },
+        { "fieldContext": "log", "name": "body", "signal": "logs", "type": "log" }
+      ],
+      "selectedTracesFields": [
+        { "fieldContext": "resource", "fieldDataType": "string", "name": "service.name", "signal": "traces" },
+        { "fieldContext": "span", "fieldDataType": "string", "name": "name", "signal": "traces" },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Process Memory Usage",
+      "yAxisUnit": "bytes"
+    }
+  ]
+}
