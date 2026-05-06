@@ -1,0 +1,1564 @@
+{
+  "description": "Istio Service Mesh monitoring dashboard using Prometheus metrics. Covers request rates, error rates, latency percentiles, TCP connections, and traffic analysis.",
+  "layout": [
+    {"h": 1, "i": "row-overview", "w": 12, "x": 0, "y": 0},
+    {"h": 3, "i": "w-total-requests", "w": 3, "x": 0, "y": 1},
+    {"h": 3, "i": "w-request-rate", "w": 6, "x": 3, "y": 1},
+    {"h": 3, "i": "w-error-rate-overview", "w": 3, "x": 9, "y": 1},
+    {"h": 3, "i": "w-p99-latency-overview", "w": 3, "x": 0, "y": 4},
+    {"h": 3, "i": "w-success-rate", "w": 3, "x": 3, "y": 4},
+    {"h": 3, "i": "w-active-services", "w": 3, "x": 6, "y": 4},
+    {"h": 3, "i": "w-rps-per-source", "w": 3, "x": 9, "y": 4},
+    {"h": 1, "i": "row-traffic", "w": 12, "x": 0, "y": 7},
+    {"h": 4, "i": "w-request-rate-by-service", "w": 6, "x": 0, "y": 8},
+    {"h": 4, "i": "w-response-codes", "w": 6, "x": 6, "y": 8},
+    {"h": 4, "i": "w-request-size", "w": 6, "x": 0, "y": 12},
+    {"h": 4, "i": "w-response-size", "w": 6, "x": 6, "y": 12},
+    {"h": 1, "i": "row-latency", "w": 12, "x": 0, "y": 16},
+    {"h": 4, "i": "w-p50-latency", "w": 4, "x": 0, "y": 17},
+    {"h": 4, "i": "w-p95-latency", "w": 4, "x": 4, "y": 17},
+    {"h": 4, "i": "w-p99-latency", "w": 4, "x": 8, "y": 17},
+    {"h": 4, "i": "w-latency-heatmap", "w": 12, "x": 0, "y": 21},
+    {"h": 1, "i": "row-tcp", "w": 12, "x": 0, "y": 25},
+    {"h": 4, "i": "w-open-connections", "w": 4, "x": 0, "y": 26},
+    {"h": 4, "i": "w-bytes-received", "w": 4, "x": 4, "y": 26},
+    {"h": 4, "i": "w-bytes-sent", "w": 4, "x": 8, "y": 26},
+    {"h": 4, "i": "w-tcp-connections-delta", "w": 6, "x": 0, "y": 30},
+    {"h": 4, "i": "w-tcp-throughput", "w": 6, "x": 6, "y": 30},
+    {"h": 1, "i": "row-errors", "w": 12, "x": 0, "y": 34},
+    {"h": 4, "i": "w-4xx-error-rate", "w": 6, "x": 0, "y": 35},
+    {"h": 4, "i": "w-5xx-error-rate", "w": 6, "x": 6, "y": 35},
+    {"h": 4, "i": "w-error-rate-by-destination", "w": 6, "x": 0, "y": 39},
+    {"h": 4, "i": "w-top-error-sources", "w": 6, "x": 6, "y": 39}
+  ],
+  "panelMap": {},
+  "tags": ["istio", "service-mesh", "kubernetes", "prometheus"],
+  "title": "Istio Service Mesh Monitoring",
+  "uploadedGrafana": false,
+  "variables": {},
+  "version": "v4",
+  "widgets": [
+    {
+      "id": "row-overview",
+      "title": "Overview",
+      "panelTypes": "row",
+      "description": "",
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "builder": {},
+        "clickhouse_sql": {},
+        "id": "row-overview",
+        "promql": [],
+        "queryType": "builder"
+      }
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Total number of HTTP requests received across the mesh",
+      "fillSpans": false,
+      "id": "w-total-requests",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-total-requests",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "Total Requests",
+            "name": "A",
+            "query": "sum(istio_requests_total{reporter=\"destination\"})"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Total Requests",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Rate of HTTP requests per second across all services in the mesh",
+      "fillSpans": false,
+      "id": "w-request-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-request-rate",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "Request Rate",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Global Request Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Percentage of requests that returned a 5xx response code",
+      "fillSpans": false,
+      "id": "w-error-rate-overview",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-error-rate-overview",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "Error Rate %",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{reporter=\"destination\",response_code=~\"5.*\"}[5m])) / sum(rate(istio_requests_total{reporter=\"destination\"}[5m])) * 100"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "5xx Error Rate",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "P99 latency across all services in the mesh",
+      "fillSpans": false,
+      "id": "w-p99-latency-overview",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-p99-latency-overview",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "P99 Latency",
+            "name": "A",
+            "query": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\"}[5m])) by (le))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "P99 Latency (ms)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Percentage of requests with 2xx response codes",
+      "fillSpans": false,
+      "id": "w-success-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-success-rate",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "Success Rate %",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{reporter=\"destination\",response_code=~\"2.*\"}[5m])) / sum(rate(istio_requests_total{reporter=\"destination\"}[5m])) * 100"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Success Rate",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Number of distinct destination services receiving traffic",
+      "fillSpans": false,
+      "id": "w-active-services",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-active-services",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "Active Services",
+            "name": "A",
+            "query": "count(count by (destination_service_name)(rate(istio_requests_total{reporter=\"destination\"}[5m])))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Active Services",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Current request rate per second broken down by source workload",
+      "fillSpans": false,
+      "id": "w-rps-per-source",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-rps-per-source",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "RPS",
+            "name": "A",
+            "query": "sum(rate(istio_requests_total{reporter=\"source\"}[1m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Outbound Request Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "id": "row-traffic",
+      "title": "Traffic Analysis",
+      "panelTypes": "row",
+      "description": "",
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "builder": {},
+        "clickhouse_sql": {},
+        "id": "row-traffic",
+        "promql": [],
+        "queryType": "builder"
+      }
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Request rate per second broken down by destination service",
+      "fillSpans": false,
+      "id": "w-request-rate-by-service",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-request-rate-by-service",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_requests_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate by Destination Service",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Request distribution by HTTP response code",
+      "fillSpans": false,
+      "id": "w-response-codes",
+      "isStacked": true,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-response-codes",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{response_code}}",
+            "name": "A",
+            "query": "sum by (response_code)(rate(istio_requests_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Response Code Distribution",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Average inbound request body size in bytes per service",
+      "fillSpans": false,
+      "id": "w-request-size",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-request-size",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_request_bytes_sum{reporter=\"destination\"}[5m])) / sum by (destination_service_name)(rate(istio_request_bytes_count{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Average Request Size (bytes)",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Average response body size in bytes per service",
+      "fillSpans": false,
+      "id": "w-response-size",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-response-size",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_response_bytes_sum{reporter=\"destination\"}[5m])) / sum by (destination_service_name)(rate(istio_requests_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Average Response Size (bytes)",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "id": "row-latency",
+      "title": "Latency",
+      "panelTypes": "row",
+      "description": "",
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "builder": {},
+        "clickhouse_sql": {},
+        "id": "row-latency",
+        "promql": [],
+        "queryType": "builder"
+      }
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "50th percentile request latency per destination service",
+      "fillSpans": false,
+      "id": "w-p50-latency",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-p50-latency",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "histogram_quantile(0.50, sum by (destination_service_name, le)(rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\"}[5m])))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "P50 Latency (ms)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "95th percentile request latency per destination service",
+      "fillSpans": false,
+      "id": "w-p95-latency",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-p95-latency",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "histogram_quantile(0.95, sum by (destination_service_name, le)(rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\"}[5m])))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "P95 Latency (ms)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "99th percentile request latency per destination service",
+      "fillSpans": false,
+      "id": "w-p99-latency",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-p99-latency",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "histogram_quantile(0.99, sum by (destination_service_name, le)(rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\"}[5m])))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "P99 Latency (ms)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Average request latency across all services",
+      "fillSpans": false,
+      "id": "w-latency-heatmap",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-latency-heatmap",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "P50",
+            "name": "A",
+            "query": "histogram_quantile(0.50, sum by (le)(rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\"}[5m])))"
+          },
+          {
+            "disabled": false,
+            "legend": "P95",
+            "name": "B",
+            "query": "histogram_quantile(0.95, sum by (le)(rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\"}[5m])))"
+          },
+          {
+            "disabled": false,
+            "legend": "P99",
+            "name": "C",
+            "query": "histogram_quantile(0.99, sum by (le)(rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\"}[5m])))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Latency Percentile Comparison (P50 / P95 / P99)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "id": "row-tcp",
+      "title": "TCP Connections",
+      "panelTypes": "row",
+      "description": "",
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "builder": {},
+        "clickhouse_sql": {},
+        "id": "row-tcp",
+        "promql": [],
+        "queryType": "builder"
+      }
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Number of active TCP connections opened minus closed, per destination service",
+      "fillSpans": false,
+      "id": "w-open-connections",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-open-connections",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(istio_tcp_connections_opened_total{reporter=\"destination\"}) - sum by (destination_service_name)(istio_tcp_connections_closed_total{reporter=\"destination\"})"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Active TCP Connections",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Rate of bytes received over TCP connections per service",
+      "fillSpans": false,
+      "id": "w-bytes-received",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-bytes-received",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_tcp_received_bytes_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Received",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Rate of bytes sent over TCP connections per service",
+      "fillSpans": false,
+      "id": "w-bytes-sent",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-bytes-sent",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_tcp_sent_bytes_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Sent",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Rate of new TCP connections opened and closed per second",
+      "fillSpans": false,
+      "id": "w-tcp-connections-delta",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-tcp-connections-delta",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "Opened",
+            "name": "A",
+            "query": "sum(rate(istio_tcp_connections_opened_total{reporter=\"destination\"}[5m]))"
+          },
+          {
+            "disabled": false,
+            "legend": "Closed",
+            "name": "B",
+            "query": "sum(rate(istio_tcp_connections_closed_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Connection Rate (opened vs closed)",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Combined TCP throughput: bytes received + sent per second",
+      "fillSpans": false,
+      "id": "w-tcp-throughput",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-tcp-throughput",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "Received",
+            "name": "A",
+            "query": "sum(rate(istio_tcp_received_bytes_total{reporter=\"destination\"}[5m]))"
+          },
+          {
+            "disabled": false,
+            "legend": "Sent",
+            "name": "B",
+            "query": "sum(rate(istio_tcp_sent_bytes_total{reporter=\"destination\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Throughput",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "id": "row-errors",
+      "title": "Error Analysis",
+      "panelTypes": "row",
+      "description": "",
+      "fillSpans": false,
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "yAxisUnit": "none",
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "query": {
+        "builder": {},
+        "clickhouse_sql": {},
+        "id": "row-errors",
+        "promql": [],
+        "queryType": "builder"
+      }
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Rate of 4xx client errors per destination service",
+      "fillSpans": false,
+      "id": "w-4xx-error-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-4xx-error-rate",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_requests_total{reporter=\"destination\",response_code=~\"4.*\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "4xx Error Rate by Service",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Rate of 5xx server errors per destination service",
+      "fillSpans": false,
+      "id": "w-5xx-error-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-5xx-error-rate",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_requests_total{reporter=\"destination\",response_code=~\"5.*\"}[5m]))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "5xx Error Rate by Service",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Error rate (4xx + 5xx) grouped by destination service",
+      "fillSpans": false,
+      "id": "w-error-rate-by-destination",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-error-rate-by-destination",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{destination_service_name}}",
+            "name": "A",
+            "query": "sum by (destination_service_name)(rate(istio_requests_total{reporter=\"destination\",response_code=~\"[45].*\"}[5m])) / sum by (destination_service_name)(rate(istio_requests_total{reporter=\"destination\"}[5m])) * 100"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Error Rate % by Destination",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Top source workloads generating the most errors",
+      "fillSpans": false,
+      "id": "w-top-error-sources",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""},
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {"items": [], "op": "AND"},
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "w-top-error-sources",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "{{source_workload}}",
+            "name": "A",
+            "query": "topk(10, sum by (source_workload)(rate(istio_requests_total{reporter=\"destination\",response_code=~\"[45].*\"}[5m])))"
+          }
+        ],
+        "queryType": "promql"
+      },
+      "selectedLogFields": [{"dataType": "string", "name": "body", "type": ""}, {"dataType": "string", "name": "timestamp", "type": ""}],
+      "selectedTracesFields": [{"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"}],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Top Error Sources (by workload)",
+      "yAxisUnit": "reqps"
+    }
+  ]
+}
