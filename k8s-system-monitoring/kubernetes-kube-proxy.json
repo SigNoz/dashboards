@@ -1,0 +1,576 @@
+{
+  "description": "Network-agent view for kube-proxy sync loops, network programming durations, and client request rates.",
+  "layout": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "proxy-discovery",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "proxy-sync-rate",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "proxy-netprog-rate",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 9,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "proxy-goroutines",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "proxy-rss",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "proxy-sync-buckets",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "proxy-netprog-buckets",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "proxy-rest-client",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 5,
+      "i": "proxy-sync-last-ts",
+      "moved": false,
+      "static": false
+    }
+  ],
+  "panelMap": {},
+  "tags": [
+    "kubernetes",
+    "node",
+    "kube-proxy",
+    "prometheus"
+  ],
+  "title": "Kubernetes Kube Proxy",
+  "uploadedGrafana": false,
+  "uuid": "1fd5d5c6-9bb6-4dc6-bc0c-4eebb8bb367c",
+  "variables": {
+    "service_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Auto-discovered services (from metric labels).",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "service_name",
+      "key": "service_name",
+      "modificationUUID": "df83b99b-0524-46b1-addd-459a7aea11a6",
+      "multiSelect": true,
+      "name": "service_name",
+      "order": 0,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "k8s_cluster_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional cluster label selector.",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "k8s_cluster_name",
+      "key": "k8s_cluster_name",
+      "modificationUUID": "03e49ad1-3a32-4677-8e73-a1e54e650a40",
+      "multiSelect": true,
+      "name": "k8s_cluster_name",
+      "order": 1,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional OTel environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment_name",
+      "key": "deployment_environment_name",
+      "modificationUUID": "b3a11086-9179-4b9d-9400-47f8e5a529d4",
+      "multiSelect": true,
+      "name": "deployment_environment_name",
+      "order": 2,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional legacy environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment",
+      "key": "deployment_environment",
+      "modificationUUID": "688a724a-4062-4c89-bb9c-7b4d707396cc",
+      "multiSelect": true,
+      "name": "deployment_environment",
+      "order": 3,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "description": "",
+      "id": "proxy-discovery",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubeproxy_sync_proxy_rules_duration_seconds.count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "service.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{service.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Auto-Discovered Kube-Proxy Services",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "proxy-sync-rate",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubeproxy_sync_proxy_rules_duration_seconds.count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "sync/s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Sync Proxy Rules / s",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "proxy-netprog-rate",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubeproxy_network_programming_duration_seconds.count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "events/s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Network Programming / s",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "proxy-goroutines",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "go_goroutines",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "goroutines",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Go Routines",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "",
+      "id": "proxy-rss",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "process_resident_memory_bytes",
+                  "reduceTo": "last",
+                  "spaceAggregation": "avg",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "rss",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Process RSS",
+      "yAxisUnit": "By"
+    },
+    {
+      "description": "",
+      "id": "proxy-sync-buckets",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubeproxy_sync_proxy_rules_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "le",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "<={{le}}s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Sync Proxy Rules Duration Buckets",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "proxy-netprog-buckets",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubeproxy_network_programming_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "le",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "<={{le}}s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Network Programming Duration Buckets",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "proxy-rest-client",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "rest_client_requests_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "code",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{code}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "REST Client Requests By Code",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "proxy-sync-last-ts",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubeproxy_sync_proxy_rules_last_timestamp_seconds",
+                  "reduceTo": "last",
+                  "spaceAggregation": "max",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "service.instance.id",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{service.instance.id}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Last Sync Timestamp",
+      "yAxisUnit": "seconds"
+    }
+  ]
+}
