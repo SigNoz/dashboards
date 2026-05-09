@@ -1,0 +1,75 @@
+{
+  "id": "otel-agent-metrics",
+  "title": "OpenTelemetry Collector Metrics",
+  "variables": {
+    "v1": {
+      "name": "instance",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'instance') AS instance FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'otelcol_process_uptime' GROUP BY instance"
+    }
+  },
+  "widgets": [
+    {
+      "id": "w1",
+      "title": "Collector CPU Usage",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "rate(otelcol_process_cpu_seconds_total{instance=~'$instance'}[5m])", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w2",
+      "title": "Collector Memory RSS",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "otelcol_process_memory_rss{instance=~'$instance'}", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w3",
+      "title": "Accepted Spans (Rate)",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(rate(otelcol_receiver_accepted_spans{instance=~'$instance'}[5m])) by (receiver)", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w4",
+      "title": "Sent Spans (Rate)",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(rate(otelcol_exporter_sent_spans{instance=~'$instance'}[5m])) by (exporter)", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w5",
+      "title": "Dropped Spans (Rate)",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(rate(otelcol_processor_dropped_spans{instance=~'$instance'}[5m])) by (processor)", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w6",
+      "title": "Collector Uptime",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "otelcol_process_uptime{instance=~'$instance'}", "name": "A"}],
+        "queryType": "builder"
+      }
+    }
+  ],
+  "layout": [
+    {"i": "w1", "x": 0, "y": 0, "w": 6, "h": 3},
+    {"i": "w2", "x": 6, "y": 0, "w": 6, "h": 3},
+    {"i": "w3", "x": 0, "y": 3, "w": 6, "h": 3},
+    {"i": "w4", "x": 6, "y": 3, "w": 6, "h": 3},
+    {"i": "w5", "x": 0, "y": 6, "w": 6, "h": 3},
+    {"i": "w6", "x": 6, "y": 6, "w": 6, "h": 3}
+  ]
+}

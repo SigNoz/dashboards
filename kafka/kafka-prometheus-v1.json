@@ -1,0 +1,75 @@
+{
+  "id": "kafka-prometheus-v1",
+  "title": "Kafka Server Monitoring",
+  "variables": {
+    "v1": {
+      "name": "cluster_alias",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'kafka_cluster_alias') AS cluster_alias FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'kafka_broker_mbytes_in' GROUP BY cluster_alias"
+    }
+  },
+  "widgets": [
+    {
+      "id": "w1",
+      "title": "Messages In Per Sec",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(rate(kafka_broker_messages_in_total{kafka_cluster_alias=~'$cluster_alias'}[5m]))", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w2",
+      "title": "Bytes In Per Sec",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(rate(kafka_broker_mbytes_in_total{kafka_cluster_alias=~'$cluster_alias'}[5m])) * 1024 * 1024", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w3",
+      "title": "Bytes Out Per Sec",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(rate(kafka_broker_mbytes_out_total{kafka_cluster_alias=~'$cluster_alias'}[5m])) * 1024 * 1024", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w4",
+      "title": "Consumer Group Lag",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(kafka_consumer_group_lag{kafka_cluster_alias=~'$cluster_alias'}) by (group)", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w5",
+      "title": "Active Controller Count",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(kafka_controller_active_controller_count{kafka_cluster_alias=~'$cluster_alias'})", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w6",
+      "title": "Under Replicated Partitions",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "sum(kafka_partition_under_replicated{kafka_cluster_alias=~'$cluster_alias'})", "name": "A"}],
+        "queryType": "builder"
+      }
+    }
+  ],
+  "layout": [
+    {"i": "w1", "x": 0, "y": 0, "w": 6, "h": 3},
+    {"i": "w2", "x": 6, "y": 0, "w": 6, "h": 3},
+    {"i": "w3", "x": 0, "y": 3, "w": 6, "h": 3},
+    {"i": "w4", "x": 6, "y": 3, "w": 6, "h": 3},
+    {"i": "w5", "x": 0, "y": 6, "w": 6, "h": 3},
+    {"i": "w6", "x": 6, "y": 6, "w": 6, "h": 3}
+  ]
+}
