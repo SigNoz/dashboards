@@ -135,6 +135,7 @@ service:
 - `{{namespace}}`: Namespace of the application
 - `{{health.status}}`: Health status of the application
 - `{{repo}}`: Name of the repository
+- `{{sync.status}}`: Sync status of the application
 
 ## Sections
 - Overview
@@ -190,3 +191,12 @@ service:
   `argocd_git_request_total`
   - Count of Git Fetch Requests -
   `argocd_git_request_total`
+- Application Details
+  - Cluster Connection Status -
+  `argocd_cluster_connection_status`
+  - Pending Repo Requests -
+  `argocd_repo_pending_request_total`
+  - Git Request Duration (P99) -
+  `argocd_git_request_duration_seconds.bucket`
+  - Orphaned Resources per App -
+  `argocd_app_orphaned_resources_count`
