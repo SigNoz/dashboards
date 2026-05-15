@@ -1,0 +1,72 @@
+{
+  "id": "node-exporter-full",
+  "title": "Node Exporter Full",
+  "variables": {
+    "v1": {
+      "name": "host_name",
+      "type": "QUERY",
+      "queryValue": "SELECT JSONExtractString(labels, 'instance') AS host_name FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'node_cpu_seconds_total' GROUP BY host_name"
+    }
+  },
+  "widgets": [
+    {
+      "id": "w1",
+      "title": "CPU Usage (%)",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "avg(rate(node_cpu_seconds_total{mode!='idle', instance=~'$host_name'}[5m])) * 100", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w2",
+      "title": "Memory Usage (%)",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "(1 - (node_memory_MemAvailable_bytes{instance=~'$host_name'} / node_memory_MemTotal_bytes{instance=~'$host_name'})) * 100", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w3",
+      "title": "Disk Usage (%)",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [{"query": "(node_filesystem_size_bytes{instance=~'$host_name',mountpoint='/'} - node_filesystem_free_bytes{instance=~'$host_name',mountpoint='/'}) / node_filesystem_size_bytes{instance=~'$host_name',mountpoint='/'} * 100", "name": "A"}],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w4",
+      "title": "Load Average",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [
+          {"query": "node_load1{instance=~'$host_name'}", "name": "1m", "legend": "1m"},
+          {"query": "node_load5{instance=~'$host_name'}", "name": "5m", "legend": "5m"},
+          {"query": "node_load15{instance=~'$host_name'}", "name": "15m", "legend": "15m"}
+        ],
+        "queryType": "builder"
+      }
+    },
+    {
+      "id": "w5",
+      "title": "Network Traffic (In/Out)",
+      "panelTypes": "graph",
+      "query": {
+        "promql": [
+          {"query": "rate(node_network_receive_bytes_total{instance=~'$host_name'}[5m])", "name": "In", "legend": "Inbound Traffic"},
+          {"query": "rate(node_network_transmit_bytes_total{instance=~'$host_name'}[5m])", "name": "Out", "legend": "Outbound Traffic"}
+        ],
+        "queryType": "builder"
+      }
+    }
+  ],
+  "layout": [
+    {"i": "w1", "x": 0, "y": 0, "w": 6, "h": 3},
+    {"i": "w2", "x": 6, "y": 0, "w": 6, "h": 3},
+    {"i": "w3", "x": 0, "y": 3, "w": 6, "h": 3},
+    {"i": "w4", "x": 6, "y": 3, "w": 6, "h": 3},
+    {"i": "w5", "x": 0, "y": 6, "w": 12, "h": 3}
+  ]
+}
