@@ -1,0 +1,608 @@
+{
+  "description": "Comprehensive Istio service mesh monitoring dashboard based on Prometheus metrics. Covers request throughput, success rate, latency percentiles, traffic distribution, error rates, resource usage, control plane, and security metrics.",
+  "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiByeD0iMTYiIGZpbGw9IiM0NjY1QTQiLz4KPHRleHQgeD0iNjQiIHk9Ijc1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNTAiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn4yRPC90ZXh0Pgo8L3N2Zz4=",
+  "layout": [
+    {"h": 4, "i": "w01", "moved": false, "static": false, "w": 3, "x": 0, "y": 0},
+    {"h": 4, "i": "w02", "moved": false, "static": false, "w": 3, "x": 3, "y": 0},
+    {"h": 4, "i": "w03", "moved": false, "static": false, "w": 3, "x": 6, "y": 0},
+    {"h": 4, "i": "w04", "moved": false, "static": false, "w": 3, "x": 9, "y": 0},
+    {"h": 4, "i": "w05", "moved": false, "static": false, "w": 6, "x": 0, "y": 4},
+    {"h": 4, "i": "w06", "moved": false, "static": false, "w": 6, "x": 6, "y": 4},
+    {"h": 4, "i": "w07", "moved": false, "static": false, "w": 6, "x": 0, "y": 8},
+    {"h": 4, "i": "w08", "moved": false, "static": false, "w": 6, "x": 6, "y": 8},
+    {"h": 4, "i": "w09", "moved": false, "static": false, "w": 6, "x": 0, "y": 12},
+    {"h": 4, "i": "w10", "moved": false, "static": false, "w": 6, "x": 6, "y": 12},
+    {"h": 4, "i": "w11", "moved": false, "static": false, "w": 4, "x": 0, "y": 16},
+    {"h": 4, "i": "w12", "moved": false, "static": false, "w": 4, "x": 4, "y": 16},
+    {"h": 4, "i": "w13", "moved": false, "static": false, "w": 4, "x": 8, "y": 16},
+    {"h": 4, "i": "w14", "moved": false, "static": false, "w": 6, "x": 0, "y": 20},
+    {"h": 4, "i": "w15", "moved": false, "static": false, "w": 6, "x": 6, "y": 20},
+    {"h": 4, "i": "w16", "moved": false, "static": false, "w": 6, "x": 0, "y": 24},
+    {"h": 4, "i": "w17", "moved": false, "static": false, "w": 6, "x": 6, "y": 24},
+    {"h": 4, "i": "w18", "moved": false, "static": false, "w": 4, "x": 0, "y": 28},
+    {"h": 4, "i": "w19", "moved": false, "static": false, "w": 4, "x": 4, "y": 28},
+    {"h": 4, "i": "w20", "moved": false, "static": false, "w": 4, "x": 8, "y": 28}
+  ],
+  "panelMap": {},
+  "tags": ["istio", "prometheus", "service-mesh"],
+  "title": "Istio Service Mesh Monitoring",
+  "uploadedGrafana": false,
+  "version": "v4",
+  "variables": {
+    "namespace": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Filter by Kubernetes namespace",
+      "modificationUUID": "a1c5f37c-0001-4a77-a42f-30288de5f534",
+      "multiSelect": true,
+      "name": "namespace",
+      "queryValue": "label_values(istio_requests_total, destination_workload_namespace)",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "destination_service": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Filter by destination service",
+      "modificationUUID": "b2d6f48d-0002-4b88-b53g-40399ef6a645",
+      "multiSelect": true,
+      "name": "destination_service",
+      "queryValue": "label_values(istio_requests_total{destination_workload_namespace=~\"$namespace\"}, destination_service)",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "source_service": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Filter by source service",
+      "modificationUUID": "c3e7f59e-0003-4c99-c64h-504a0fg7b756",
+      "multiSelect": true,
+      "name": "source_service",
+      "queryValue": "label_values(istio_requests_total{destination_workload_namespace=~\"$namespace\"}, source_service)",
+      "selectedValue": "",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "globalVariableKey": null,
+  "widgets": [
+    {
+      "description": "Total request rate across the service mesh",
+      "id": "w01",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "round(sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"}[5m])), 0.001)",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q01",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "Percentage of successful (non-5xx) requests",
+      "id": "w02",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "round(1 - sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\", response_code=~\"5..\"}[5m])) / sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"}[5m])), 0.001) * 100",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q02",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Success Rate",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Average request latency (p50)",
+      "id": "w03",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"}[5m])) by (le, destination_service))",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q03",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Latency (p50)",
+      "yAxisUnit": "milliseconds"
+    },
+    {
+      "description": "Error rate (5xx responses)",
+      "id": "w04",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "round(sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\", response_code=~\"5..\"}[5m])) / sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"}[5m])), 0.001) * 100",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q04",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Error Rate (5xx)",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Request throughput by destination service over time",
+      "id": "w05",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\"}[5m])) by (destination_service)",
+            "legend": "{{destination_service}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q05",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Throughput by Destination",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "Success rate by destination service over time",
+      "id": "w06",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "1 - sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\", response_code=~\"5..\"}[5m])) by (destination_service) / sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\"}[5m])) by (destination_service)",
+            "legend": "{{destination_service}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q06",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Success Rate by Destination",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Request latency percentiles (p50, p90, p95, p99) over time",
+      "id": "w07",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\"}[5m])) by (le, destination_service))",
+            "legend": "p50 - {{destination_service}}",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "histogram_quantile(0.90, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\"}[5m])) by (le, destination_service))",
+            "legend": "p90 - {{destination_service}}",
+            "disabled": false
+          },
+          {
+            "name": "C",
+            "query": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\"}[5m])) by (le, destination_service))",
+            "legend": "p95 - {{destination_service}}",
+            "disabled": false
+          },
+          {
+            "name": "D",
+            "query": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\"}[5m])) by (le, destination_service))",
+            "legend": "p99 - {{destination_service}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q07",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Latency Percentiles",
+      "yAxisUnit": "milliseconds"
+    },
+    {
+      "description": "HTTP error rates (4xx vs 5xx) over time",
+      "id": "w08",
+      "isStacked": true,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\", response_code=~\"4..\"}[5m])) by (destination_service)",
+            "legend": "4xx - {{destination_service}}",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\", response_code=~\"5..\"}[5m])) by (destination_service)",
+            "legend": "5xx - {{destination_service}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q08",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "HTTP Error Rates (4xx / 5xx)",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "Inbound and outbound traffic by source and destination",
+      "id": "w09",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", source_service=~\"$source_service\", reporter=\"source\"}[5m])) by (source_service, destination_service)",
+            "legend": "{{source_service}} -> {{destination_service}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q09",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Traffic by Source and Destination",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "gRPC error rates across services",
+      "id": "w10",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\", request_protocol=\"grpc\", response_code=~\"[^0].*\"}[5m])) by (destination_service, response_code)",
+            "legend": "{{destination_service}} - {{response_code}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q10",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "gRPC Error Rates",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "TCP bytes sent by destination service",
+      "id": "w11",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(irate(istio_tcp_sent_bytes_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"}[5m]))",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q11",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Sent",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "TCP bytes received by destination service",
+      "id": "w12",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(irate(istio_tcp_received_bytes_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"}[5m]))",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q12",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "TCP Bytes Received",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "Number of active connections in the mesh",
+      "id": "w13",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(istio_tcp_connections_opened_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"}) - sum(istio_tcp_connections_closed_total{destination_workload_namespace=~\"$namespace\", reporter=\"destination\"})",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q13",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Active TCP Connections",
+      "yAxisUnit": "none"
+    },
+    {
+      "description": "Istio control plane CPU usage (pilot, istiod)",
+      "id": "w14",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "rate(container_cpu_usage_seconds_total{namespace=\"istio-system\", container=~\"discovery|istiod\"}[5m]) * 100",
+            "legend": "{{pod}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q14",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Control Plane CPU Usage",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Istio control plane memory usage (pilot, istiod)",
+      "id": "w15",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "container_memory_working_set_bytes{namespace=\"istio-system\", container=~\"discovery|istiod\"}",
+            "legend": "{{pod}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q15",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Control Plane Memory Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "description": "Pilot configuration push latency (ads)",
+      "id": "w16",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "histogram_quantile(0.99, sum(rate(pilot_push_latency_bucket{namespace=\"istio-system\"}[5m])) by (le))",
+            "legend": "p99 push latency",
+            "disabled": false
+          },
+          {
+            "name": "B",
+            "query": "histogram_quantile(0.95, sum(rate(pilot_push_latency_bucket{namespace=\"istio-system\"}[5m])) by (le))",
+            "legend": "p95 push latency",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q16",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Pilot Config Push Latency",
+      "yAxisUnit": "milliseconds"
+    },
+    {
+      "description": "Envoy proxy connections and request rates",
+      "id": "w17",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "sum(irate(envoy_cluster_upstream_rq_total{cluster_name!=\"PassthroughCluster\", cluster_name!~\"BlackHoleCluster|InboundPassthroughCluster|OutboundPassthroughCluster\"}[5m])) by (cluster_name)",
+            "legend": "{{cluster_name}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q17",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Envoy Proxy Request Rate by Cluster",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "mTLS connections as percentage of total",
+      "id": "w18",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "round(sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"source\", connection_security_policy=\"mutual_tls\"}[5m])) / sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", reporter=\"source\"}[5m])), 0.001) * 100",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q18",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "mTLS Connection %",
+      "yAxisUnit": "percent"
+    },
+    {
+      "description": "Retries by destination service",
+      "id": "w19",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "round(sum(irate(istio_requests_total{destination_workload_namespace=~\"$namespace\", destination_service=~\"$destination_service\", reporter=\"destination\", response_flags=~\"UA|UO|UR\"}[5m])) by (destination_service), 0.001)",
+            "legend": "{{destination_service}}",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q19",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Retry Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "Envoy proxy CPU usage",
+      "id": "w20",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "clickhouse_sql": [{"name": "A", "legend": "", "disabled": false, "query": ""}],
+        "promql": [
+          {
+            "name": "A",
+            "query": "avg(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container=\"istio-proxy\"}[5m])) * 100",
+            "legend": "",
+            "disabled": false
+          }
+        ],
+        "builder": {"queryData": [{"dataSource": "metrics", "queryName": "A", "aggregateOperator": "count", "aggregateAttribute": {"dataType": "", "id": "------false", "isColumn": false, "isJSON": false, "key": "", "type": ""}, "filters": {"items": [], "op": "AND"}, "expression": "A", "disabled": false, "having": [], "stepInterval": 60, "limit": null, "orderBy": [], "groupBy": [], "legend": "", "reduceTo": "sum"}], "queryFormulas": []},
+        "id": "q20",
+        "queryType": "promql"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Avg Proxy CPU Usage",
+      "yAxisUnit": "percent"
+    }
+  ]
+}
