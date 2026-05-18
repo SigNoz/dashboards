@@ -1,0 +1,1316 @@
+{
+  "description": "ASP.NET Metrics Dashboard for monitoring ASP.NET Core applications instrumented with OpenTelemetry .NET SDK. Covers application performance, request/response metrics, and process/runtime metrics including GC and thread monitoring.",
+  "image": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIgM0gxNlYxNUgyVjNaIiBzdHJva2U9IiM1MTJCRDQiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik02IDdIMTIiIHN0cm9rZT0iIzUxMkJENCIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KPHBhdGggZD0iTTkgNFYxMCIgc3Ryb2tlPSIjNTEyQkQ0IiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8L3N2Zz4K",
+  "layout": [
+    {"h": 3, "i": "v1-cpu", "w": 2, "x": 0, "y": 0},
+    {"h": 3, "i": "v1-mem", "w": 2, "x": 2, "y": 0},
+    {"h": 3, "i": "v1-req-rate", "w": 2, "x": 4, "y": 0},
+    {"h": 3, "i": "v1-err-rate", "w": 2, "x": 6, "y": 0},
+    {"h": 3, "i": "v1-active", "w": 2, "x": 8, "y": 0},
+    {"h": 3, "i": "v1-threads", "w": 2, "x": 10, "y": 0},
+    {"h": 6, "i": "g1-cpu", "w": 6, "x": 0, "y": 3},
+    {"h": 6, "i": "g1-mem", "w": 6, "x": 6, "y": 3},
+    {"h": 6, "i": "g2-latency", "w": 6, "x": 0, "y": 9},
+    {"h": 6, "i": "g2-err", "w": 6, "x": 6, "y": 9},
+    {"h": 6, "i": "g3-active", "w": 6, "x": 0, "y": 15},
+    {"h": 6, "i": "g3-gc", "w": 6, "x": 6, "y": 15},
+    {"h": 6, "i": "g4-heap", "w": 6, "x": 0, "y": 21},
+    {"h": 6, "i": "g4-threads", "w": 6, "x": 6, "y": 21}
+  ],
+  "panelMap": {},
+  "tags": ["aspnet", "otel"],
+  "title": "ASP.NET (OTEL)",
+  "uploadedGrafana": false,
+  "version": "v4",
+  "variables": [
+    {
+      "name": "deployment_environment",
+      "label": "Deployment Environment",
+      "type": "query",
+      "query": "SELECT DISTINCT deployment_environment FROM metrics WHERE metric_name IN ('process.cpu.usage','http.server.request.duration') ORDER BY deployment_environment",
+      "value": "all",
+      "multiSelect": true
+    },
+    {
+      "name": "service_name",
+      "label": "Service Name",
+      "type": "query",
+      "query": "SELECT DISTINCT service_name FROM metrics WHERE metric_name IN ('process.cpu.usage','http.server.request.duration') ORDER BY service_name",
+      "value": "all",
+      "multiSelect": true
+    }
+  ],
+  "widgets": [
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Current CPU usage of the ASP.NET application process",
+      "fillSpans": false,
+      "id": "v1-cpu",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.cpu.usage--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.cpu.usage",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "last",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-cpu-v",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "deployment.environment",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-cpu-v",
+                    "key": {
+                      "dataType": "string",
+                      "id": "service.name--string--tag--false",
+                      "isColumn": false,
+                      "isJSON": false,
+                      "key": "service.name",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "last"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-cpu-v",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "CPU Usage",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Memory usage of the ASP.NET application process",
+      "fillSpans": false,
+      "id": "v1-mem",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.memory.usage--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.memory.usage",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "last",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-mem-v",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-mem-v",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "last"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-mem-v",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Memory Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Request rate per second",
+      "fillSpans": false,
+      "id": "v1-req-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.request.duration--float64--Histogram--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.request.duration",
+                "type": "Histogram"
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-rr-v",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-rr-v",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-rr-v",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Error rate (HTTP 5xx responses per second)",
+      "fillSpans": false,
+      "id": "v1-err-rate",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.request.duration--float64--Histogram--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.request.duration",
+                "type": "Histogram"
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-er-v",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-er-v",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  },
+                  {
+                    "id": "err-filter-5xx",
+                    "key": {"dataType": "string", "id": "http.response.status_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "http.response.status_code", "type": "tag"},
+                    "op": "LIKE",
+                    "value": "5%"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-er-v",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Error Rate (5xx)",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Current number of active requests being processed",
+      "fillSpans": false,
+      "id": "v1-active",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.active_requests--float64--UpDownCounter--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.active_requests",
+                "type": "UpDownCounter"
+              },
+              "aggregateOperator": "last",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-ar-v",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-ar-v",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "last"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-ar-v",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Active Requests",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Current number of threads in the process",
+      "fillSpans": false,
+      "id": "v1-threads",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.thread.count--float64--UpDownCounter--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.thread.count",
+                "type": "UpDownCounter"
+              },
+              "aggregateOperator": "last",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-th-v",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-th-v",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "last"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-th-v",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Thread Count",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "CPU usage over time",
+      "fillSpans": false,
+      "id": "g1-cpu",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.cpu.usage--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.cpu.usage",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-cpu-g",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-cpu-g",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "CPU Usage",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-cpu-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "CPU Usage",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Memory usage over time",
+      "fillSpans": false,
+      "id": "g1-mem",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.memory.usage--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.memory.usage",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-mem-g",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-mem-g",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "Memory Usage",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-mem-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Memory Usage",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "HTTP server request latency - p50, p95, and p99 percentiles",
+      "fillSpans": false,
+      "id": "g2-latency",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.request.duration--float64--Histogram--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.request.duration",
+                "type": "Histogram"
+              },
+              "aggregateOperator": "p50",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-lat-p50",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-lat-p50",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "p50",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "p50"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.request.duration--float64--Histogram--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.request.duration",
+                "type": "Histogram"
+              },
+              "aggregateOperator": "p95",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-lat-p95",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-lat-p95",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "p95",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "p95"
+            },
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.request.duration--float64--Histogram--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.request.duration",
+                "type": "Histogram"
+              },
+              "aggregateOperator": "p99",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-lat-p99",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-lat-p99",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "p99",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "C",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg",
+              "stepInterval": 60,
+              "timeAggregation": "p99"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}, {"disabled": false, "legend": "", "name": "B", "query": ""}, {"disabled": false, "legend": "", "name": "C", "query": ""}],
+        "id": "q-lat-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}, {"disabled": false, "legend": "", "name": "B", "query": ""}, {"disabled": false, "legend": "", "name": "C", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Latency (p50, p95, p99)",
+      "yAxisUnit": "ms"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "HTTP error rate by status code",
+      "fillSpans": false,
+      "id": "g2-err",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.request.duration--float64--Histogram--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.request.duration",
+                "type": "Histogram"
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-err-g",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-err-g",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  },
+                  {
+                    "id": "err-filter-g1",
+                    "key": {"dataType": "string", "id": "http.response.status_code--string--tag--false", "isColumn": false, "isJSON": false, "key": "http.response.status_code", "type": "tag"},
+                    "op": "IN",
+                    "value": ["4xx", "5xx"]
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "http.response.status_code--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "http.response.status_code",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{http.response.status_code}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-err-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Error Rate (4xx, 5xx)",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Number of active HTTP requests over time",
+      "fillSpans": false,
+      "id": "g3-active",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "http.server.active_requests--float64--UpDownCounter--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "http.server.active_requests",
+                "type": "UpDownCounter"
+              },
+              "aggregateOperator": "last",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-ar-g",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-ar-g",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "Active Requests",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "last"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-ar-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Active Requests",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "GC collection count by generation",
+      "fillSpans": false,
+      "id": "g3-gc",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.runtime.gc.collections.count--float64--Sum--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.runtime.gc.collections.count",
+                "type": "Sum"
+              },
+              "aggregateOperator": "increase",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-gc-g",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-gc-g",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "gc.generation--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "gc.generation",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{gc.generation}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "increase"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-gc-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "GC Collections",
+      "yAxisUnit": "none"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "GC heap size over time",
+      "fillSpans": false,
+      "id": "g4-heap",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.runtime.gc.heap.size--float64--Gauge--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.runtime.gc.heap.size",
+                "type": "Gauge"
+              },
+              "aggregateOperator": "avg",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-heap-g",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-heap-g",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "gc.generation--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "gc.generation",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{gc.generation}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-heap-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "GC Heap Size",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "bucketCount": 30,
+      "columnUnits": {},
+      "description": "Number of threads in the process over time",
+      "fillSpans": false,
+      "id": "g4-threads",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "float64",
+                "id": "process.thread.count--float64--UpDownCounter--true",
+                "isColumn": true,
+                "isJSON": false,
+                "key": "process.thread.count",
+                "type": "UpDownCounter"
+              },
+              "aggregateOperator": "last",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "env-filter-th-g",
+                    "key": {"dataType": "string", "id": "deployment.environment--string--tag--false", "isColumn": false, "isJSON": false, "key": "deployment.environment", "type": "tag"},
+                    "op": "=",
+                    "value": "{{deployment_environment}}"
+                  },
+                  {
+                    "id": "svc-filter-th-g",
+                    "key": {"dataType": "string", "id": "service.name--string--tag--false", "isColumn": false, "isJSON": false, "key": "service.name", "type": "tag"},
+                    "op": "=",
+                    "value": "{{service_name}}"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "Thread Count",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "last"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "id": "q-th-g",
+        "promql": [{"disabled": false, "legend": "", "name": "A", "query": ""}],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {"dataType": "string", "name": "body", "type": ""},
+        {"dataType": "string", "name": "timestamp", "type": ""}
+      ],
+      "selectedTracesFields": [
+        {"dataType": "string", "id": "serviceName--string--tag--true", "isColumn": true, "isJSON": false, "key": "serviceName", "type": "tag"},
+        {"dataType": "string", "id": "name--string--tag--true", "isColumn": true, "isJSON": false, "key": "name", "type": "tag"},
+        {"dataType": "float64", "id": "durationNano--float64--tag--true", "isColumn": true, "isJSON": false, "key": "durationNano", "type": "tag"}
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Thread Count",
+      "yAxisUnit": "none"
+    }
+  ]
+}
