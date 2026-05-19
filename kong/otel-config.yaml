@@ -1,0 +1,29 @@
+mode: deployment
+config:
+  exporters:
+    otlp:
+      endpoint: "https://ingest.{region-code}.signoz.cloud:443" # replace {region} with your region if you are using signoz cloud, otherwise use localhost:4317 or wherever your collector is running
+      headers:
+        signoz-access-token: "<signoz-token>" # Obtain from https://{your-signoz-url}/settings/ingestion-settings (signoz-token is only required for signoz cloud)
+
+  processors:
+    resource/env:
+      attributes:
+      - key: deployment.environment
+        value: Staging
+        action: upsert
+
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+  service:
+    pipelines:
+      metrics:
+        receivers: [otlp]        
+        processors: [resource/env]
+        exporters: [otlp]        
+        
+image:
+  repository: "otel/opentelemetry-collector-contrib"
