@@ -70,14 +70,12 @@
       "type": "QUERY"
     }
   },
-  "version": "v4",
+  "version": "v5",
   "widgets": [
     {
       "bucketCount": 30,
       "bucketWidth": 0,
-      "columnUnits": {
-        "B": "ns"
-      },
+      "columnUnits": { "B": "ns" },
       "description": "",
       "fillSpans": false,
       "id": "ba27811a-2716-4a25-9f84-dbf30896b2e8",
@@ -90,15 +88,6 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "",
-                "id": "------false",
-                "isColumn": false,
-                "isJSON": false,
-                "key": "",
-                "type": ""
-              },
-              "aggregateOperator": "count",
               "dataSource": "traces",
               "disabled": false,
               "expression": "A",
@@ -161,35 +150,25 @@
                   "id": "httpMethod--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "httpMethod",
-                  "type": "tag"
+                  "key": "httpMethod"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "Count",
               "limit": null,
-              "orderBy": [
+              "orderBy": [ { "columnName": "count()", "order": "desc" } ],
+              "queryName": "A",
+              "stepInterval": 60,
+              "aggregations": [
                 {
-                  "columnName": "#SIGNOZ_VALUE",
-                  "order": "desc"
+                  "expression": "count()"
                 }
               ],
-              "queryName": "A",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
-              "stepInterval": 60,
-              "timeAggregation": "rate"
+              "filter": {
+                "expression": "(serviceName = $service.name AND httpMethod EXISTS AND spanKind = 'Server') httpRoute EXISTS AND httpMethod EXISTS"
+              }
             },
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "durationNano--float64--tag--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "durationNano",
-                "type": "tag"
-              },
-              "aggregateOperator": "avg",
               "dataSource": "traces",
               "disabled": false,
               "expression": "B",
@@ -252,19 +231,23 @@
                   "id": "httpMethod--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "httpMethod",
-                  "type": "tag"
+                  "key": "httpMethod"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "Avg Duration",
               "limit": null,
               "orderBy": [],
               "queryName": "B",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
               "stepInterval": 60,
-              "timeAggregation": "avg"
+              "aggregations": [
+                {
+                  "expression": "avg(durationNano)"
+                }
+              ],
+              "filter": {
+                "expression": "(serviceName = $service.name AND httpMethod EXISTS AND spanKind = 'Server') httpRoute EXISTS AND httpMethod EXISTS"
+              }
             }
           ],
           "queryFormulas": []
@@ -353,9 +336,7 @@
     {
       "bucketCount": 30,
       "bucketWidth": 0,
-      "columnUnits": {
-        "B": "ns"
-      },
+      "columnUnits": { "B": "ns" },
       "description": "",
       "fillSpans": false,
       "id": "e3b48480-d15c-44eb-a054-13ffa59a9227",
@@ -368,15 +349,6 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "",
-                "id": "------false",
-                "isColumn": false,
-                "isJSON": false,
-                "key": "",
-                "type": ""
-              },
-              "aggregateOperator": "noop",
               "dataSource": "traces",
               "disabled": false,
               "expression": "B",
@@ -426,22 +398,17 @@
               },
               "functions": [],
               "groupBy": [],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "",
               "limit": null,
               "offset": 0,
-              "orderBy": [
-                {
-                  "columnName": "durationNano",
-                  "order": "desc"
-                }
-              ],
+              "orderBy": [ { "columnName": "durationNano", "order": "desc" } ],
               "pageSize": 10,
               "queryName": "B",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
               "stepInterval": 60,
-              "timeAggregation": "rate"
+              "filter": {
+                "expression": "(serviceName = $service.name AND httpMethod EXISTS AND spanKind = 'Server')"
+              }
             }
           ],
           "queryFormulas": []
@@ -514,9 +481,7 @@
     {
       "bucketCount": 30,
       "bucketWidth": 0,
-      "columnUnits": {
-        "B": "ns"
-      },
+      "columnUnits": { "B": "ns" },
       "description": "",
       "fillSpans": false,
       "id": "7522011f-7111-4707-9686-bb052dd827a7",
@@ -529,15 +494,6 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "durationNano--float64--tag--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "durationNano",
-                "type": "tag"
-              },
-              "aggregateOperator": "p90",
               "dataSource": "traces",
               "disabled": false,
               "expression": "A",
@@ -600,20 +556,24 @@
                   "id": "httpMethod--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "httpMethod",
-                  "type": "tag"
+                  "key": "httpMethod"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "{{httpRoute}} - {{httpMethod}}",
               "limit": null,
               "orderBy": [],
               "pageSize": 10,
               "queryName": "A",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
               "stepInterval": 60,
-              "timeAggregation": "p90"
+              "aggregations": [
+                {
+                  "expression": "p90(durationNano)"
+                }
+              ],
+              "filter": {
+                "expression": "(spanKind = 'Server' AND httpMethod EXISTS AND serviceName = $service.name) httpRoute EXISTS AND httpMethod EXISTS"
+              }
             }
           ],
           "queryFormulas": []
@@ -715,15 +675,6 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "",
-                "id": "------false",
-                "isColumn": false,
-                "isJSON": false,
-                "key": "",
-                "type": ""
-              },
-              "aggregateOperator": "rate",
               "dataSource": "traces",
               "disabled": false,
               "expression": "A",
@@ -780,8 +731,7 @@
                   "id": "responseStatusCode--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "responseStatusCode",
-                  "type": "tag"
+                  "key": "responseStatusCode"
                 },
                 {
                   "dataType": "string",
@@ -792,15 +742,20 @@
                   "type": "tag"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "{{httpRoute}} - {{responseStatusCode}}",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
               "stepInterval": 60,
-              "timeAggregation": "rate"
+              "aggregations": [
+                {
+                  "expression": "rate()"
+                }
+              ],
+              "filter": {
+                "expression": "(httpMethod EXISTS AND serviceName IN $service.name AND spanKind = 'Server') responseStatusCode EXISTS AND httpRoute EXISTS"
+              }
             }
           ],
           "queryFormulas": []
@@ -889,10 +844,7 @@
     {
       "bucketCount": 30,
       "bucketWidth": 0,
-      "columnUnits": {
-        "B": "reqps",
-        "C": "ns"
-      },
+      "columnUnits": { "B": "reqps", "C": "ns" },
       "description": "",
       "fillSpans": false,
       "id": "9d8edd39-4fa6-4fdc-acc4-a23df0baa650",
@@ -905,15 +857,6 @@
         "builder": {
           "queryData": [
             {
-              "aggregateAttribute": {
-                "dataType": "",
-                "id": "------false",
-                "isColumn": false,
-                "isJSON": false,
-                "key": "",
-                "type": ""
-              },
-              "aggregateOperator": "count",
               "dataSource": "traces",
               "disabled": false,
               "expression": "A",
@@ -944,38 +887,32 @@
                   "id": "externalHttpUrl--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "externalHttpUrl",
-                  "type": "tag"
+                  "key": "externalHttpUrl"
                 },
                 {
                   "dataType": "string",
                   "id": "externalHttpMethod--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "externalHttpMethod",
-                  "type": "tag"
+                  "key": "externalHttpMethod"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "Total Calls",
               "limit": null,
               "orderBy": [],
               "queryName": "A",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
               "stepInterval": 60,
-              "timeAggregation": "rate"
+              "aggregations": [
+                {
+                  "expression": "count()"
+                }
+              ],
+              "filter": {
+                "expression": "serviceName IN $service.name externalHttpUrl EXISTS AND externalHttpMethod EXISTS"
+              }
             },
             {
-              "aggregateAttribute": {
-                "dataType": "",
-                "id": "------false",
-                "isColumn": false,
-                "isJSON": false,
-                "key": "",
-                "type": ""
-              },
-              "aggregateOperator": "rate",
               "dataSource": "traces",
               "disabled": false,
               "expression": "B",
@@ -1006,38 +943,32 @@
                   "id": "externalHttpUrl--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "externalHttpUrl",
-                  "type": "tag"
+                  "key": "externalHttpUrl"
                 },
                 {
                   "dataType": "string",
                   "id": "externalHttpMethod--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "externalHttpMethod",
-                  "type": "tag"
+                  "key": "externalHttpMethod"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "Request Rate",
               "limit": null,
               "orderBy": [],
               "queryName": "B",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
               "stepInterval": 60,
-              "timeAggregation": "rate"
+              "aggregations": [
+                {
+                  "expression": "rate()"
+                }
+              ],
+              "filter": {
+                "expression": "serviceName IN $service.name externalHttpUrl EXISTS AND externalHttpMethod EXISTS"
+              }
             },
             {
-              "aggregateAttribute": {
-                "dataType": "float64",
-                "id": "durationNano--float64--tag--true",
-                "isColumn": true,
-                "isJSON": false,
-                "key": "durationNano",
-                "type": "tag"
-              },
-              "aggregateOperator": "p90",
               "dataSource": "traces",
               "disabled": false,
               "expression": "C",
@@ -1068,27 +999,30 @@
                   "id": "externalHttpUrl--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "externalHttpUrl",
-                  "type": "tag"
+                  "key": "externalHttpUrl"
                 },
                 {
                   "dataType": "string",
                   "id": "externalHttpMethod--string--tag--true",
                   "isColumn": true,
                   "isJSON": false,
-                  "key": "externalHttpMethod",
-                  "type": "tag"
+                  "key": "externalHttpMethod"
                 }
               ],
-              "having": [],
+              "having": { "expression": "" },
               "legend": "P90 Duration",
               "limit": null,
               "orderBy": [],
               "queryName": "C",
-              "reduceTo": "avg",
-              "spaceAggregation": "sum",
               "stepInterval": 60,
-              "timeAggregation": "p90"
+              "aggregations": [
+                {
+                  "expression": "p90(durationNano)"
+                }
+              ],
+              "filter": {
+                "expression": "serviceName IN $service.name externalHttpUrl EXISTS AND externalHttpMethod EXISTS"
+              }
             }
           ],
           "queryFormulas": []
