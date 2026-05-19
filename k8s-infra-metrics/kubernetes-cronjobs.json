@@ -1,0 +1,1461 @@
+{
+  "title": "Kubernetes CronJobs: Current State and Recent Runs",
+  "description": "Current state shows the Jobs Kubernetes still keeps. Recent runs shows the Job runs SigNoz observed in the selected time range.",
+  "tags": [
+    "kubernetes",
+    "cronjobs",
+    "jobs",
+    "batch",
+    "k8s-infra",
+    "opentelemetry"
+  ],
+  "uploadedGrafana": false,
+  "uuid": "28e49ddd-c868-4975-ad7c-69dad693d632",
+  "version": "v5",
+  "panelMap": {},
+  "variables": {
+    "k8s.cluster.name": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Cluster label selector for CronJob metrics.",
+      "id": "k8s.cluster.name",
+      "key": "k8s.cluster.name",
+      "modificationUUID": "31427bdc-3d7b-4ebd-b52e-9541c59aef2c",
+      "multiSelect": true,
+      "name": "k8s.cluster.name",
+      "order": 0,
+      "queryValue": "SELECT JSONExtractString(labels, 'k8s.cluster.name') AS `k8s.cluster.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'k8s.job.max_parallel_pods' GROUP BY `k8s.cluster.name`",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "k8s.namespace.name": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Namespace selector for CronJob-backed Jobs.",
+      "id": "k8s.namespace.name",
+      "key": "k8s.namespace.name",
+      "modificationUUID": "3ef2487f-0cbf-4fe8-9228-4a11e15f3966",
+      "multiSelect": true,
+      "name": "k8s.namespace.name",
+      "order": 1,
+      "queryValue": "SELECT JSONExtractString(labels, 'k8s.namespace.name') AS `k8s.namespace.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'k8s.job.max_parallel_pods' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name GROUP BY `k8s.namespace.name`",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "k8s.job.name": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "Job executions created by the selected CronJobs.",
+      "id": "k8s.job.name",
+      "key": "k8s.job.name",
+      "modificationUUID": "7ba4f6dc-6d89-494b-a0eb-d3ed72d61dbf",
+      "multiSelect": true,
+      "name": "k8s.job.name",
+      "order": 2,
+      "queryValue": "SELECT JSONExtractString(labels, 'k8s.job.name') AS `k8s.job.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'k8s.job.max_parallel_pods' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.namespace.name') IN $k8s.namespace.name GROUP BY `k8s.job.name`",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    },
+    "k8s.cronjob.name": {
+      "allSelected": true,
+      "customValue": "",
+      "description": "CronJob resources emitting active job counts.",
+      "id": "k8s.cronjob.name",
+      "key": "k8s.cronjob.name",
+      "modificationUUID": "cd008fd6-f60b-471b-a2c0-a31008e549f5",
+      "multiSelect": true,
+      "name": "k8s.cronjob.name",
+      "order": 3,
+      "queryValue": "SELECT JSONExtractString(labels, 'k8s.cronjob.name') AS `k8s.cronjob.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'k8s.cronjob.active_jobs' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.namespace.name') IN $k8s.namespace.name GROUP BY `k8s.cronjob.name`",
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "type": "QUERY"
+    }
+  },
+  "widgets": [
+    {
+      "description": "CronJobs that appear to be running right now.",
+      "id": "cronjob-active-pods-current",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.cronjob.active_jobs",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "active cronjobs",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.cronjob.name IN $k8s.cronjob.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Active CronJob Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Successful Jobs that Kubernetes still keeps right now.",
+      "id": "cronjob-successful-pods-current",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.successful_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "successful pods",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Successful Job Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Failed Jobs that Kubernetes still keeps right now.",
+      "id": "cronjob-failed-pods-current",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.failed_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "failed pods",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Failed Job Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Expected successful pod count for Jobs Kubernetes still keeps right now.",
+      "id": "cronjob-desired-success-current",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.desired_successful_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "desired successful pods",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Desired Success Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Maximum parallel pod limit for Jobs Kubernetes still keeps right now.",
+      "id": "cronjob-max-parallel-current",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.max_parallel_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "max parallel pods",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Max Parallel Pod Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Job runs SigNoz observed during the selected time range.",
+      "fillSpans": false,
+      "id": "cronjob-observed-job-runs-selected-range",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": "SELECT count() FROM ( SELECT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE metric_name = 'k8s.job.max_parallel_pods' AND unix_milli >= $start_timestamp_ms AND unix_milli < $end_timestamp_ms AND fingerprint GLOBAL IN ( SELECT DISTINCT fingerprint FROM signoz_metrics.time_series_v4_1day WHERE metric_name = 'k8s.job.max_parallel_pods' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.namespace.name') IN $k8s.namespace.name AND JSONExtractString(labels, 'k8s.job.name') IN $k8s.job.name ) GROUP BY fingerprint HAVING max(value) > 0 )"
+          }
+        ],
+        "id": "86de8dfe-c8f8-4a99-96d2-d8335918f899",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "clickhouse_sql"
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "serviceName",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "name",
+          "type": "tag"
+        },
+        {
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "durationNano",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "httpMethod",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "responseStatusCode",
+          "type": "tag"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Job Run Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Successful Job runs SigNoz observed during the selected time range.",
+      "fillSpans": false,
+      "id": "cronjob-observed-successful-runs-selected-range",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": "SELECT count() FROM ( SELECT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE metric_name = 'k8s.job.successful_pods' AND unix_milli >= $start_timestamp_ms AND unix_milli < $end_timestamp_ms AND fingerprint GLOBAL IN ( SELECT DISTINCT fingerprint FROM signoz_metrics.time_series_v4_1day WHERE metric_name = 'k8s.job.successful_pods' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.namespace.name') IN $k8s.namespace.name AND JSONExtractString(labels, 'k8s.job.name') IN $k8s.job.name ) GROUP BY fingerprint HAVING max(value) > 0 )"
+          }
+        ],
+        "id": "ae14cc85-f338-41f5-bd91-c632d2fb6e30",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "clickhouse_sql"
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "serviceName",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "name",
+          "type": "tag"
+        },
+        {
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "durationNano",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "httpMethod",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "responseStatusCode",
+          "type": "tag"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Successful Job Run Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Failed Job runs SigNoz observed during the selected time range.",
+      "fillSpans": false,
+      "id": "cronjob-observed-failed-runs-selected-range",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": "SELECT count() FROM ( SELECT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE metric_name = 'k8s.job.failed_pods' AND unix_milli >= $start_timestamp_ms AND unix_milli < $end_timestamp_ms AND fingerprint GLOBAL IN ( SELECT DISTINCT fingerprint FROM signoz_metrics.time_series_v4_1day WHERE metric_name = 'k8s.job.failed_pods' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.namespace.name') IN $k8s.namespace.name AND JSONExtractString(labels, 'k8s.job.name') IN $k8s.job.name ) GROUP BY fingerprint HAVING max(value) > 0 )"
+          }
+        ],
+        "id": "b2104fc1-1179-4f81-bb29-bd1d58bf5f43",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "clickhouse_sql"
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "serviceName",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "name",
+          "type": "tag"
+        },
+        {
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "durationNano",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "httpMethod",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "responseStatusCode",
+          "type": "tag"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Failed Job Run Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "description": "Highest number of CronJob runs seen at the same time during the selected time range.",
+      "fillSpans": false,
+      "id": "cronjob-observed-peak-active-selected-range",
+      "isStacked": false,
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": "SELECT ifNull(max(value), 0) FROM signoz_metrics.distributed_samples_v4 WHERE metric_name = 'k8s.cronjob.active_jobs' AND unix_milli >= $start_timestamp_ms AND unix_milli < $end_timestamp_ms AND fingerprint GLOBAL IN ( SELECT DISTINCT fingerprint FROM signoz_metrics.time_series_v4_1day WHERE metric_name = 'k8s.cronjob.active_jobs' AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.namespace.name') IN $k8s.namespace.name AND JSONExtractString(labels, 'k8s.cronjob.name') IN $k8s.cronjob.name )"
+          }
+        ],
+        "id": "9e7421c7-fd8f-4d2f-aa44-34bcfca85434",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "clickhouse_sql"
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "serviceName",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "name",
+          "type": "tag"
+        },
+        {
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "durationNano",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "httpMethod",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "responseStatusCode",
+          "type": "tag"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Peak Concurrent Job Count",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Success, failure, and active run status for what Kubernetes still keeps right now.",
+      "id": "cronjob-execution-state-trends",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.cronjob.active_jobs",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "active cronjobs",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.cronjob.name IN $k8s.cronjob.name)"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.successful_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "successful",
+              "queryName": "B",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.failed_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "failed",
+              "queryName": "C",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Job Status",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Expected successful pods compared with parallel pod limits for what Kubernetes still keeps right now.",
+      "id": "cronjob-scheduling-constraints-trends",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.desired_successful_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "desired successful",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.max_parallel_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "max parallel",
+              "queryName": "B",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Desired Success vs Parallel Limit",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Active pod count by Job for what Kubernetes still keeps right now.",
+      "id": "cronjob-active-pods-by-job",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.active_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "k8s.job.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{k8s.job.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Active Pods by Job",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Successful pod count by Job for what Kubernetes still keeps right now.",
+      "id": "cronjob-successful-pods-by-job",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.successful_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "k8s.job.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{k8s.job.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Successful Jobs by Name",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Failed pod count by Job for what Kubernetes still keeps right now.",
+      "id": "cronjob-failed-pods-by-job",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.failed_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "k8s.job.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{k8s.job.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Failed Jobs by Name",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "Expected successful pods and parallel limits by Job for what Kubernetes still keeps right now.",
+      "id": "cronjob-desired-vs-parallel-by-job",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.desired_successful_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "k8s.job.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "desired {{k8s.job.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "k8s.job.max_parallel_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "max"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "k8s.job.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "max parallel {{k8s.job.name}}",
+              "queryName": "B",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name AND k8s.job.name IN $k8s.job.name)"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Current Desired Success vs Parallel Limit by Job",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {
+      "Desired Successful Pods": "",
+      "Failed Pods": "",
+      "Max Parallel Pods": "",
+      "Successful Pods": ""
+      },
+      "columnWidths": {
+        "Desired Successful Pods": 145,
+        "Failed Pods": 145,
+        "Job Name": 220,
+        "Latest Sample (UTC)": 200,
+        "Max Parallel Pods": 145,
+        "Successful Pods": 145
+      },
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Job-by-job details for the runs SigNoz observed during the selected time range.",
+      "fillSpans": false,
+      "id": "cronjob-selected-range-job-run-details",
+      "isLogScale": false,
+      "isStacked": false,
+      "legendPosition": "bottom",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "table",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregateAttribute": {
+                "dataType": "",
+                "id": "------false",
+                "isColumn": false,
+                "isJSON": false,
+                "key": "",
+                "type": ""
+              },
+              "aggregateOperator": "count",
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum",
+              "stepInterval": 60,
+              "timeAggregation": "rate"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": "SELECT toString(JSONExtractString(ts.labels, 'k8s.job.name')) AS `Job Name`, toUInt64(maxIf(s.value, s.metric_name = 'k8s.job.successful_pods')) AS `Successful Pods`, toUInt64(maxIf(s.value, s.metric_name = 'k8s.job.failed_pods')) AS `Failed Pods`, toUInt64(maxIf(s.value, s.metric_name = 'k8s.job.desired_successful_pods')) AS `Desired Successful Pods`, toUInt64(maxIf(s.value, s.metric_name = 'k8s.job.max_parallel_pods')) AS `Max Parallel Pods`, formatDateTime(max(fromUnixTimestamp64Milli(s.unix_milli)), '%Y-%m-%d %H:%i:%s') AS `Latest Sample (UTC)` FROM signoz_metrics.distributed_samples_v4 AS s INNER JOIN ( SELECT DISTINCT fingerprint, labels FROM signoz_metrics.time_series_v4_1day WHERE metric_name IN ('k8s.job.successful_pods','k8s.job.failed_pods','k8s.job.desired_successful_pods','k8s.job.max_parallel_pods') AND JSONExtractString(labels, 'k8s.cluster.name') IN $k8s.cluster.name AND JSONExtractString(labels, 'k8s.namespace.name') IN $k8s.namespace.name AND JSONExtractString(labels, 'k8s.job.name') IN $k8s.job.name ) AS ts USING fingerprint WHERE s.metric_name IN ('k8s.job.successful_pods','k8s.job.failed_pods','k8s.job.desired_successful_pods','k8s.job.max_parallel_pods') AND s.unix_milli >= $start_timestamp_ms AND s.unix_milli < $end_timestamp_ms GROUP BY `Job Name` ORDER BY max(s.unix_milli) DESC LIMIT 100"
+          }
+        ],
+        "id": "61a5dcdc-5998-4d41-8bb4-c74d009e8a9a",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "clickhouse_sql"
+      },
+      "selectedLogFields": [
+        {
+          "dataType": "string",
+          "name": "body",
+          "type": ""
+        },
+        {
+          "dataType": "string",
+          "name": "timestamp",
+          "type": ""
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "dataType": "string",
+          "id": "serviceName--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "serviceName",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "name--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "name",
+          "type": "tag"
+        },
+        {
+          "dataType": "float64",
+          "id": "durationNano--float64--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "durationNano",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "httpMethod--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "httpMethod",
+          "type": "tag"
+        },
+        {
+          "dataType": "string",
+          "id": "responseStatusCode--string--tag--true",
+          "isColumn": true,
+          "isJSON": false,
+          "key": "responseStatusCode",
+          "type": "tag"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Recent Job Run Details",
+      "yAxisUnit": "short"
+    }
+  ],
+  "layout": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 2,
+      "h": 2,
+      "i": "cronjob-active-pods-current",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 2,
+      "y": 0,
+      "w": 2,
+      "h": 2,
+      "i": "cronjob-successful-pods-current",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 4,
+      "y": 0,
+      "w": 2,
+      "h": 2,
+      "i": "cronjob-failed-pods-current",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "cronjob-desired-success-current",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 9,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "cronjob-max-parallel-current",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "w": 3,
+      "h": 2,
+      "i": "cronjob-observed-job-runs-selected-range",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "w": 3,
+      "h": 2,
+      "i": "cronjob-observed-successful-runs-selected-range",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "w": 3,
+      "h": 2,
+      "i": "cronjob-observed-failed-runs-selected-range",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 9,
+      "y": 2,
+      "w": 3,
+      "h": 2,
+      "i": "cronjob-observed-peak-active-selected-range",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 4,
+      "w": 6,
+      "h": 4,
+      "i": "cronjob-execution-state-trends",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 4,
+      "w": 6,
+      "h": 4,
+      "i": "cronjob-scheduling-constraints-trends",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 8,
+      "w": 4,
+      "h": 5,
+      "i": "cronjob-active-pods-by-job",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 4,
+      "y": 8,
+      "w": 4,
+      "h": 5,
+      "i": "cronjob-successful-pods-by-job",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 8,
+      "y": 8,
+      "w": 4,
+      "h": 5,
+      "i": "cronjob-failed-pods-by-job",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 13,
+      "w": 6,
+      "h": 5,
+      "i": "cronjob-desired-vs-parallel-by-job",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 13,
+      "w": 6,
+      "h": 5,
+      "i": "cronjob-selected-range-job-run-details",
+      "moved": false,
+      "static": false
+    }
+  ]
+}

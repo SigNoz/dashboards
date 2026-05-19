@@ -1,0 +1,582 @@
+{
+  "description": "Node-agent view for kubelet runtime operations, pod lifecycle, and storage operation latencies.",
+  "layout": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "kubelet-discovery",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "kubelet-running-pods",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "kubelet-running-containers",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 9,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "kubelet-runtime-errors",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "kubelet-goroutines",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "kubelet-runtime-ops-type",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "kubelet-runtime-errors-type",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 6,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "kubelet-pod-start-buckets",
+      "moved": false,
+      "static": false
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 5,
+      "i": "kubelet-storage-buckets",
+      "moved": false,
+      "static": false
+    }
+  ],
+  "panelMap": {},
+  "tags": [
+    "kubernetes",
+    "node",
+    "kubelet",
+    "prometheus"
+  ],
+  "title": "Kubernetes Kubelet",
+  "uploadedGrafana": false,
+  "uuid": "7533ad63-0093-478e-8a43-dfac263b4868",
+  "variables": {
+    "service_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Auto-discovered services (from metric labels).",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "service_name",
+      "key": "service_name",
+      "modificationUUID": "ed5ecbc8-eedf-4b13-8d7b-9dc72ac4d82b",
+      "multiSelect": true,
+      "name": "service_name",
+      "order": 0,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "k8s_cluster_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional cluster label selector.",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "k8s_cluster_name",
+      "key": "k8s_cluster_name",
+      "modificationUUID": "df36bd5e-7830-47c0-8dae-e05672814b09",
+      "multiSelect": true,
+      "name": "k8s_cluster_name",
+      "order": 1,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional OTel environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment_name",
+      "key": "deployment_environment_name",
+      "modificationUUID": "a4ebef75-d74b-4040-bb7c-a1e3c1813ca2",
+      "multiSelect": true,
+      "name": "deployment_environment_name",
+      "order": 2,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional legacy environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment",
+      "key": "deployment_environment",
+      "modificationUUID": "b5d4285b-13d3-47fb-b3be-36eba476bef4",
+      "multiSelect": true,
+      "name": "deployment_environment",
+      "order": 3,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "description": "",
+      "id": "kubelet-discovery",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubelet_running_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "service.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{service.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Auto-Discovered Kubelet Services",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "",
+      "id": "kubelet-running-pods",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubelet_running_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "pods",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Running Pods",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "",
+      "id": "kubelet-running-containers",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubelet_running_containers",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "containers",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Running Containers",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "",
+      "id": "kubelet-runtime-errors",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubelet_started_pods_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "started/s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Started Pods / s",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "kubelet-goroutines",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "go_goroutines",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "goroutines",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Go Routines",
+      "yAxisUnit": "short"
+    },
+    {
+      "description": "",
+      "id": "kubelet-runtime-ops-type",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubelet_runtime_operations_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "operation_type",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{operation_type}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Runtime Operations / s By Type",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "kubelet-runtime-errors-type",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubelet_runtime_operations_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "operation_type",
+                  "type": "tag"
+                },
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "le",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{operation_type}} <= {{le}}s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Runtime Operation Duration Buckets",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "kubelet-pod-start-buckets",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "kubelet_pod_start_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "le",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "<={{le}}s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Pod Start Duration Buckets",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "description": "",
+      "id": "kubelet-storage-buckets",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "storage_operation_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "le",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "<={{le}}s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service_name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Storage Operation Duration Buckets",
+      "yAxisUnit": "reqps"
+    }
+  ]
+}
