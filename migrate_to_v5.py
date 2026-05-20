@@ -265,7 +265,7 @@ def create_filter_expression(query_data):
         if gb_exists and data_source != "metrics":
             expression += " " + gb_exists
         query_data["filter"] = {"expression": expression}
-        # Keep filters for UI compatibility
+        del query_data["filters"]
         return True
     return False
 
