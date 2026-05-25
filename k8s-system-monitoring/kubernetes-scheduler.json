@@ -8,7 +8,9 @@
       "h": 2,
       "i": "scheduler-discovery",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 3,
+      "minH": 2
     },
     {
       "x": 3,
@@ -17,7 +19,9 @@
       "h": 2,
       "i": "attempts-rate",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 2,
+      "minH": 2
     },
     {
       "x": 6,
@@ -26,7 +30,9 @@
       "h": 2,
       "i": "pending-pods",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 2,
+      "minH": 2
     },
     {
       "x": 9,
@@ -35,7 +41,9 @@
       "h": 2,
       "i": "scheduler-goroutines",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 2,
+      "minH": 2
     },
     {
       "x": 0,
@@ -44,7 +52,9 @@
       "h": 5,
       "i": "scheduler-rss",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 2,
+      "minH": 2
     },
     {
       "x": 6,
@@ -53,7 +63,9 @@
       "h": 5,
       "i": "attempts-result",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 4,
+      "minH": 5
     },
     {
       "x": 0,
@@ -62,7 +74,9 @@
       "h": 5,
       "i": "e2e-buckets",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 4,
+      "minH": 5
     },
     {
       "x": 6,
@@ -71,7 +85,9 @@
       "h": 5,
       "i": "framework-buckets",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 4,
+      "minH": 5
     },
     {
       "x": 0,
@@ -80,7 +96,9 @@
       "h": 5,
       "i": "scheduler-workqueue-depth",
       "moved": false,
-      "static": false
+      "static": false,
+      "minW": 4,
+      "minH": 5
     }
   ],
   "panelMap": {},
@@ -479,27 +497,68 @@
                 {
                   "metricName": "scheduler_scheduling_attempt_duration_seconds.bucket",
                   "reduceTo": "avg",
-                  "spaceAggregation": "sum",
+                  "spaceAggregation": "p50",
                   "temporality": null,
-                  "timeAggregation": "rate"
+                  "timeAggregation": ""
                 }
               ],
               "dataSource": "metrics",
               "disabled": false,
               "expression": "A",
-              "groupBy": [
-                {
-                  "dataType": "string",
-                  "isColumn": false,
-                  "key": "le",
-                  "type": ""
-                }
-              ],
+              "groupBy": [],
               "having": {
                 "expression": ""
               },
-              "legend": "<={{le}}s",
+              "legend": "p50",
               "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_scheduling_attempt_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p90",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p90",
+              "queryName": "B",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_scheduling_attempt_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p99",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p99",
+              "queryName": "C",
               "stepInterval": 60,
               "filter": {
                 "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
@@ -511,7 +570,7 @@
         "queryType": "builder"
       },
       "timePreferance": "GLOBAL_TIME",
-      "title": "E2E Scheduling Duration Buckets",
+      "title": "E2E Scheduling Duration (p50/p90/p99)",
       "yAxisUnit": "reqps",
       "thresholds": [],
       "selectedLogFields": [],
@@ -532,9 +591,9 @@
                 {
                   "metricName": "scheduler_framework_extension_point_duration_seconds.bucket",
                   "reduceTo": "avg",
-                  "spaceAggregation": "sum",
+                  "spaceAggregation": "p99",
                   "temporality": null,
-                  "timeAggregation": "rate"
+                  "timeAggregation": ""
                 }
               ],
               "dataSource": "metrics",
@@ -551,7 +610,7 @@
               "having": {
                 "expression": ""
               },
-              "legend": "{{extension_point}}",
+              "legend": "p99 {{extension_point}}",
               "queryName": "A",
               "stepInterval": 60,
               "filter": {
@@ -564,14 +623,15 @@
         "queryType": "builder"
       },
       "timePreferance": "GLOBAL_TIME",
-      "title": "Framework Extension Duration Buckets",
+      "title": "Framework Extension p99 by extension_point",
       "yAxisUnit": "reqps",
       "thresholds": [],
       "selectedLogFields": [],
       "selectedTracesFields": [],
       "contextLinks": {
         "linksData": ""
-      }
+      },
+      "legend": "p99 {{extension_point}}"
     },
     {
       "description": "",
