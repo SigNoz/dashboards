@@ -1,0 +1,1949 @@
+{
+  "description": "Monitors cert-manager health: certificate status, controller performance, ACME operations, webhook health, work queue, and resource usage. Scrape cert-manager port 9402 via OTel Collector Prometheus receiver.",
+  "layout": [
+    { "h": 1, "i": "row1", "w": 12, "x": 0, "y": 0 },
+    { "h": 3, "i": "w1", "w": 3, "x": 0, "y": 1 },
+    { "h": 3, "i": "w2", "w": 3, "x": 3, "y": 1 },
+    { "h": 3, "i": "w3", "w": 3, "x": 6, "y": 1 },
+    { "h": 3, "i": "w4", "w": 3, "x": 9, "y": 1 },
+    { "h": 7, "i": "w5", "w": 6, "x": 0, "y": 4 },
+    { "h": 7, "i": "w6", "w": 6, "x": 6, "y": 4 },
+    { "h": 1, "i": "row2", "w": 12, "x": 0, "y": 11 },
+    { "h": 7, "i": "w7", "w": 6, "x": 0, "y": 12 },
+    { "h": 7, "i": "w8", "w": 6, "x": 6, "y": 12 },
+    { "h": 1, "i": "row3", "w": 12, "x": 0, "y": 19 },
+    { "h": 7, "i": "w9", "w": 6, "x": 0, "y": 20 },
+    { "h": 7, "i": "w10", "w": 6, "x": 6, "y": 20 },
+    { "h": 7, "i": "w11", "w": 12, "x": 0, "y": 27 },
+    { "h": 1, "i": "row4", "w": 12, "x": 0, "y": 34 },
+    { "h": 7, "i": "w12", "w": 6, "x": 0, "y": 35 },
+    { "h": 7, "i": "w13", "w": 6, "x": 6, "y": 35 },
+    { "h": 1, "i": "row5", "w": 12, "x": 0, "y": 42 },
+    { "h": 7, "i": "w14", "w": 6, "x": 0, "y": 43 },
+    { "h": 7, "i": "w15", "w": 6, "x": 6, "y": 43 },
+    { "h": 1, "i": "row6", "w": 12, "x": 0, "y": 50 },
+    { "h": 7, "i": "w16", "w": 6, "x": 0, "y": 51 },
+    { "h": 7, "i": "w17", "w": 6, "x": 6, "y": 51 }
+  ],
+  "tags": ["cert-manager", "kubernetes", "tls", "pki", "prometheus"],
+  "title": "cert-manager Monitoring",
+  "uploadedGrafana": false,
+  "uuid": "019dc564-6df5-7ac7-a0e9-55eeec7d0bea",
+  "variables": {
+    "deployment_environment": {
+      "allSelected": true,
+      "description": "Deployment environment",
+      "dynamicVariablesAttribute": "deployment.environment",
+      "dynamicVariablesSource": "Metrics",
+      "id": "var_env",
+      "multiSelect": true,
+      "name": "deployment_environment",
+      "order": 2,
+      "showALLOption": true,
+      "sort": "ASC",
+      "type": "DYNAMIC"
+    },
+    "issuer_name": {
+      "allSelected": true,
+      "description": "Certificate issuer name",
+      "dynamicVariablesAttribute": "issuer_name",
+      "dynamicVariablesSource": "Metrics",
+      "id": "var_issuer",
+      "multiSelect": true,
+      "name": "issuer_name",
+      "order": 1,
+      "showALLOption": true,
+      "sort": "ASC",
+      "type": "DYNAMIC"
+    },
+    "namespace": {
+      "allSelected": true,
+      "description": "Kubernetes namespace of the certificates",
+      "dynamicVariablesAttribute": "namespace",
+      "dynamicVariablesSource": "Metrics",
+      "id": "var_ns",
+      "multiSelect": true,
+      "name": "namespace",
+      "order": 0,
+      "showALLOption": true,
+      "sort": "ASC",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "",
+      "id": "row1",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "Certificate Health"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Total certificates tracked by cert-manager. Sum of ready_status across all condition values equals total cert count (exactly one condition = 1 per cert).",
+      "id": "w1",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_certificate_ready_status",
+                  "spaceAggregation": "sum",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$namespace"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "issuer_name",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$issuer_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "b31b500e-50a4-4592-aa5a-f92ce82aa24b",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Total Certificates",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Certificates currently in Ready condition (actively serving TLS).",
+      "id": "w2",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_certificate_ready_status",
+                  "spaceAggregation": "sum",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "True"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$namespace"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "issuer_name",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$issuer_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "436ddf00-63e7-4218-9e3b-2f9e17b3ff59",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Ready Certificates",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Certificates with condition=False. Non-zero indicates issuance or renewal failure.",
+      "id": "w3",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_certificate_ready_status",
+                  "spaceAggregation": "sum",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "False"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$namespace"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "issuer_name",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$issuer_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "7dfe9f84-5b18-435a-ac36-fee372023441",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "thresholds": [
+        {
+          "index": "0",
+          "selectedGraph": "graph",
+          "thresholdColor": "#e02f44",
+          "thresholdLabel": "Alert",
+          "thresholdOperator": ">=",
+          "thresholdValue": 1
+        }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Not Ready Certificates",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Current number of admission requests being processed by the cert-manager webhook.",
+      "id": "w4",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_webhook_requests_in_flight",
+                  "spaceAggregation": "sum",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [],
+              "orderBy": [],
+              "queryName": "A",
+              "reduceTo": "last",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "c581dc27-3469-4f7e-9731-63a530b297a6",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Webhook Requests In-Flight",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Ready condition value per certificate over time (1=ready, 0=not ready). Drops indicate issuance or renewal failures.",
+      "id": "w5",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_certificate_ready_status",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "True"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$namespace"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "issuer_name",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$issuer_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                { "dataType": "string", "key": "name", "type": "tag" },
+                { "dataType": "string", "key": "namespace", "type": "tag" }
+              ],
+              "legend": "{{name}} ({{namespace}})",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "25c32587-6c08-4f67-aeda-0c6ab45f6bd5",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Certificate Ready Status per Cert",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Count of not-ready certificates grouped by namespace. Growing values indicate systemic issuance problems.",
+      "id": "w6",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_certificate_ready_status",
+                  "spaceAggregation": "sum",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "condition",
+                      "type": "tag"
+                    },
+                    "op": "=",
+                    "value": "False"
+                  },
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "namespace",
+                      "type": "tag"
+                    },
+                    "op": "IN",
+                    "value": "$namespace"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                { "dataType": "string", "key": "namespace", "type": "tag" }
+              ],
+              "legend": "{{namespace}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "bed8ba2d-0ff7-4a26-a722-4d10ee78585e",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Not Ready Certificates by Namespace",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "",
+      "id": "row2",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "Controller Performance"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Rate of sync() calls per controller per second. Spikes may indicate high reconciliation load.",
+      "id": "w7",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_controller_sync_call_count",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [
+                { "dataType": "string", "key": "controller", "type": "tag" }
+              ],
+              "legend": "{{controller}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "389edcae-4284-45ab-9c95-0310e13a55b2",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Controller Sync Call Rate",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Rate of sync() errors per controller per second. Sustained errors indicate reconciliation problems.",
+      "id": "w8",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_controller_sync_error_count",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [
+                { "dataType": "string", "key": "controller", "type": "tag" }
+              ],
+              "legend": "{{controller}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "244db929-581c-44f9-b3bc-0f1cf7ffb7c8",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Controller Sync Error Rate",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "",
+      "id": "row3",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "ACME Operations"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "contextLinks": { "linksData": [] },
+      "decimalPrecision": 2,
+      "description": "Rate of outbound ACME HTTP requests per action (getNonce, createOrder, finalizeOrder, etc.).",
+      "fillSpans": true,
+      "id": "w9",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_http_acme_client_request_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": { "expression": "" },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "action--string--tag",
+                  "key": "action",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{action}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "id": "f47187d6-b655-4937-bc66-8e3710cfa63f",
+        "promql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "ACME Request Rate by Action",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Rate of ACME requests returning non-2xx HTTP status codes per action. Persistent errors indicate ACME provider issues.",
+      "fillMode": "none",
+      "fillSpans": true,
+      "id": "w10",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_http_acme_client_request_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "filter": { "expression": "status NOT LIKE '2%'" },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "action--string--tag",
+                  "key": "action",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "{{action}}",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "id": "637b0e69-ac3b-4db2-a142-7387e21286ad",
+        "promql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "ACME Error Rate (non-2xx) by Action",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Average ACME HTTP request duration per action. Computed from Summary .sum / .count rate.",
+      "fillMode": "none",
+      "fillSpans": true,
+      "id": "w11",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_http_acme_client_request_duration_seconds.sum",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filter": { "expression": "" },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "action--string--tag",
+                  "key": "action",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "certmanager_http_acme_client_request_duration_seconds.count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "filter": { "expression": "" },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "action--string--tag",
+                  "key": "action",
+                  "type": "tag"
+                }
+              ],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "disabled": false,
+              "expression": "A/B",
+              "legend": "{{action}}",
+              "queryName": "F1"
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "id": "08394d5a-e869-4742-80c4-bb53f5cdce49",
+        "promql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "ACME Average Request Duration by Action",
+      "yAxisUnit": "s"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "",
+      "id": "row4",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "Webhook Health"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Rate of admission webhook requests grouped by HTTP response status code.",
+      "id": "w12",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_webhook_requests_total",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [
+                { "dataType": "string", "key": "code", "type": "tag" }
+              ],
+              "legend": "HTTP {{code}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "5bd5f145-5bef-4c19-b24c-ac6d2fd46aa5",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Webhook Request Rate by Status Code",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": { "linksData": [] },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "Average admission webhook processing latency computed from histogram .sum / .count rates.",
+      "fillMode": "none",
+      "fillSpans": true,
+      "id": "w13",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_webhook_latency_seconds.sum",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filter": { "expression": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_webhook_latency_seconds.count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "filter": { "expression": "" },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "disabled": false,
+              "expression": "A/B",
+              "legend": "avg latency",
+              "queryName": "F1"
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "id": "6d5b8630-af54-4824-915b-f68a2066b64a",
+        "promql": [
+          { "disabled": false, "legend": "", "name": "A", "query": "" }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Webhook Average Admission Latency",
+      "yAxisUnit": "s"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "",
+      "id": "row5",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "Work Queue"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Current item count in each controller work queue. Growing depth indicates processing backlog.",
+      "id": "w14",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "workqueue_depth",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [
+                { "dataType": "string", "key": "name", "type": "tag" }
+              ],
+              "legend": "{{name}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "15fed450-86a2-4a64-b7c3-10b6bd050f90",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Work Queue Depth by Controller",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Rate of items enqueued per controller queue per second.",
+      "id": "w15",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "workqueue_adds_total",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": { "items": [], "op": "AND" },
+              "functions": [],
+              "groupBy": [
+                { "dataType": "string", "key": "name", "type": "tag" }
+              ],
+              "legend": "{{name}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "14b93372-5478-4d24-80dc-30890da3a5a5",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Work Queue Add Rate by Controller",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "",
+      "id": "row6",
+      "panelTypes": "row",
+      "query": {
+        "builder": { "queryData": [], "queryFormulas": [] },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": null,
+      "softMin": null,
+      "title": "Resource Usage"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "CPU core utilization rate per cert-manager component (controller, webhook, cainjector).",
+      "id": "w16",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "process_cpu_seconds_total",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "service.name",
+                      "type": "resource"
+                    },
+                    "op": "LIKE",
+                    "value": "cert-manager%"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "key": "service.name",
+                  "type": "resource"
+                }
+              ],
+              "legend": "{{service.name}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "48823f94-cee1-4aaf-a2b7-5c4fde784667",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "CPU Usage by Component",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": { "linksData": [] },
+      "description": "Resident set size (RSS) memory per cert-manager component in bytes.",
+      "id": "w17",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "process_resident_memory_bytes",
+                  "spaceAggregation": "sum",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "dataType": "string",
+                      "key": "service.name",
+                      "type": "resource"
+                    },
+                    "op": "LIKE",
+                    "value": "cert-manager%"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "key": "service.name",
+                  "type": "resource"
+                }
+              ],
+              "legend": "{{service.name}}",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "b77214de-7cc6-4cc9-9c7a-4360f6d1f45e",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        { "fieldContext": "span", "name": "duration_nano", "signal": "traces" }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Memory Usage by Component",
+      "yAxisUnit": "bytes"
+    }
+  ]
+}

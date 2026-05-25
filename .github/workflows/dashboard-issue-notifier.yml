@@ -47,7 +47,7 @@ jobs:
           echo "${{ steps.changed-files.outputs.added_files }}"
 
       - name: Validate configuration
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           if [ -z "${{ vars.TARGET_REPO_OWNER }}" ] || [ -z "${{ vars.TARGET_REPO_NAME }}" ]; then
             echo "❌ Error: TARGET_REPO_OWNER and TARGET_REPO_NAME variables must be set"
@@ -79,7 +79,7 @@ jobs:
 
       - name: Find existing issue in signoz.io
         id: find-issue
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           # Search for existing issue in signoz.io
           ISSUE_NUMBER=$(gh issue list \
@@ -100,7 +100,7 @@ jobs:
 
       - name: Generate issue content
         id: issue-content
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           # Create issue body
           {
@@ -134,7 +134,7 @@ jobs:
           cat issue_content.md
 
       - name: Create or update issue in signoz.io
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.CROSS_REPO_TOKEN }}
@@ -202,7 +202,12 @@ jobs:
               comment += `- [\`${file}\`](${fileUrl})\n`;
             }
 
-            comment += `\n✅ An issue has been created in [\`SigNoz/signoz.io\`](https://github.com/SigNoz/signoz.io/issues) to track these dashboard changes.`;
+            const isInternal = context.payload.pull_request.head.repo.full_name === context.repo.owner + '/' + context.repo.repo;
+            if (isInternal) {
+              comment += `\n✅ An issue has been created in [\`SigNoz/signoz.io\`](https://github.com/SigNoz/signoz.io/issues) to track these dashboard changes.`;
+            } else {
+              comment += `\nℹ️ Issue creation in \`SigNoz/signoz.io\` is skipped for fork PRs. It will run automatically on merge.`;
+            }
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
