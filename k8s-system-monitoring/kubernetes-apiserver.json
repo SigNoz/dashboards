@@ -1,0 +1,690 @@
+{
+  "description": "Standard control-plane view for kube-apiserver using Prometheus/OpenTelemetry metrics.",
+  "layout": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "apiserver-discovery",
+      "moved": false,
+      "static": false,
+      "minW": 3,
+      "minH": 2
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "req-rate",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 6,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "inflight",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 9,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "longrunning",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "goroutines",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "req-verb",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "req-code",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "x": 6,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "req-lat-buckets",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 5,
+      "i": "workqueue-depth",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    }
+  ],
+  "panelMap": {},
+  "tags": [
+    "kubernetes",
+    "control-plane",
+    "apiserver",
+    "prometheus"
+  ],
+  "title": "Kubernetes API Server",
+  "uploadedGrafana": false,
+  "uuid": "d6a4a386-c887-4237-8c42-dfb7ded01068",
+  "variables": {
+    "service.name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Auto-discovered services (from metric labels).",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "service.name",
+      "key": "service.name",
+      "modificationUUID": "2467d8ee-845d-47b3-95d5-1e5a059b107b",
+      "multiSelect": true,
+      "name": "service.name",
+      "order": 0,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "k8s.cluster.name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional cluster label selector.",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "k8s.cluster.name",
+      "key": "k8s.cluster.name",
+      "modificationUUID": "35b3ec30-8060-4260-b9a5-f9de490fcf49",
+      "multiSelect": true,
+      "name": "k8s.cluster.name",
+      "order": 1,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional OTel environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment_name",
+      "key": "deployment_environment_name",
+      "modificationUUID": "8c8553da-16ce-42b0-a7d0-6f02cfef1266",
+      "multiSelect": true,
+      "name": "deployment_environment_name",
+      "order": 2,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional legacy environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment",
+      "key": "deployment_environment",
+      "modificationUUID": "e2895253-5e5b-4d9c-8844-d2aff99d8520",
+      "multiSelect": true,
+      "name": "deployment_environment",
+      "order": 3,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "description": "",
+      "id": "apiserver-discovery",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_request_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "service.name",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{service.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Auto-Discovered API Services",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "req-rate",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_request_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "req/s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "API Requests / s",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "inflight",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_current_inflight_requests",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "inflight",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Inflight Requests",
+      "yAxisUnit": "short",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "longrunning",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_longrunning_requests",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "long-running",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Long Running Requests",
+      "yAxisUnit": "short",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "goroutines",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "go_goroutines",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "goroutines",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Go Routines",
+      "yAxisUnit": "short",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "req-verb",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_request_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "verb",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{verb}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate By Verb",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "req-code",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_request_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "code",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{code}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request Rate By Status Code",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "req-lat-buckets",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_request_sli_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p50",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p50",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_request_sli_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p90",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p90",
+              "queryName": "B",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "apiserver_request_sli_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p99",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p99",
+              "queryName": "C",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Request SLI Duration (p50/p90/p99)",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "workqueue-depth",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "workqueue_depth",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "name",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Workqueue Depth",
+      "yAxisUnit": "short",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    }
+  ],
+  "dotMigrated": true
+}
