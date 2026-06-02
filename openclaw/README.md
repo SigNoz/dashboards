@@ -104,6 +104,51 @@ This dashboard tracks the rate of session lifecycle state transitions to show ho
 
 <img width="508" height="211" alt="Screenshot 2026-03-10 at 12 04 59 PM" src="https://github.com/user-attachments/assets/3c354d5f-e86c-43fb-99dd-faaffcdfb90f" />
 
+### Error Monitoring
+
+This section surfaces failures across OpenClaw agent runs, helping you quickly spot error spikes, identify which models, channels, or operations are most affected, and drill into individual failed runs.
+
+#### Total Agent Run Errors
+
+Count of `openclaw-gateway` spans with an error in the selected range. A single-value view of overall failure volume.
+
+#### Run Error Rate (%)
+
+Errored spans as a percentage of all `openclaw-gateway` spans, giving a normalized view of reliability independent of traffic volume.
+
+#### Total Agent Runs
+
+All `openclaw-gateway` spans (run/message volume) in range, providing the baseline against which errors are measured.
+
+#### Messages Processed (by outcome)
+
+`openclaw.message.processed` counter total, grouped by outcome. Non-completed outcomes indicate failed or aborted message runs, making it easy to see the share of unsuccessful processing at a glance.
+
+#### Agent Run Errors Over Time
+
+Time series of errored `openclaw-gateway` spans. Watch for spikes that signal incidents or regressions.
+
+#### Run Error Rate % Over Time
+
+Errored spans divided by total spans per interval, expressed as a percentage, so you can track reliability trends over time.
+
+#### Errors by Model
+
+Errored spans grouped by `openclaw.model`, surfacing which model is associated with the most failed runs.
+
+#### Errors by Channel & Provider
+
+Errored spans grouped by `openclaw.channel` and `openclaw.provider`, helping you isolate failures to specific integrations or upstream providers.
+
+#### Slowest Operations (p95 duration)
+
+p95 span duration grouped by operation name. Slow operations often precede timeouts and errors, so this panel helps catch performance degradation early.
+
+#### Recent Errored Spans (detail)
+
+Detailed list of the most recent errored `openclaw-gateway` spans. Drill into individual failed runs by session, message, and model for root-cause investigation.
+
+
 
 
 
