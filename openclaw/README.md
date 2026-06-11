@@ -148,6 +148,38 @@ p95 span duration grouped by operation name. Slow operations often precede timeo
 
 Detailed list of the most recent errored `openclaw-gateway` spans. Drill into individual failed runs by session, message, and model for root-cause investigation.
 
+### Tool Calls
+
+This section breaks down OpenClaw tool usage, showing which tools are invoked most often and where tool execution time is spent.
+
+#### Tool Call Distribution
+
+Count of spans grouped by `openclaw.toolName`, showing which tools are invoked most frequently. Useful for understanding which capabilities agents rely on the most.
+
+#### Tool Calls Time Distribution
+
+Total span duration grouped by `openclaw.toolName`, showing where tool execution time is actually spent. A tool that is called rarely but dominates this chart is a prime optimization target.
+
+### Steps Per Thread
+
+This section tracks harness run activity, showing how many steps (items) threads work through and how tool and model calls are distributed across individual traces.
+
+#### Items Started vs Completed vs Active
+
+Average `openclaw.harness.items.started`, `openclaw.harness.items.completed`, and `openclaw.harness.items.active` per `openclaw.harness.run` span over time. A growing gap between started and completed indicates threads are falling behind or stalling.
+
+#### Steps Per Thread: Current Avg Completed
+
+Average `openclaw.harness.items.completed` per harness run over the selected range, giving a single-value view of how many steps a typical thread completes.
+
+#### Tool Executions Per Trace
+
+Table of `openclaw.tool.execution` span counts grouped by trace ID, surfacing the traces with the heaviest tool usage so you can drill into the busiest runs.
+
+#### Model Calls (Turns) Per Trace
+
+Table of `openclaw.model.call` span counts grouped by trace ID, showing how many model turns each trace required. Traces with unusually high turn counts may indicate loops or inefficient agent behavior.
+
 
 
 
