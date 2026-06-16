@@ -1,1 +1,2981 @@
-{"description":"Key BEAM runtime health indicators. First stop for on-call triage — process/port saturation, memory pressure, scheduler backlog, GC activity. Generic for any Elixir/Erlang project using prometheus_ex.","name":"BEAM / Erlang VM - Overview","tags":["beam","erlang","elixir","overview"],"image":"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0Ljk0OTQgMTMuOTQyQzE2LjIzMTggMTIuNDI1OCAxNy4zMjY4IDkuNzAyMiAxNi4xOTU2IDYuNTc0ODdDMTUuNjQ0MyA1LjA1MjQ1IDE1LjAyMTkgNC4yMDI0OSAxNC4yOTY5IDMuNjYyNTJDMTMuODU1NyAzLjMzMzc5IDEyLjA5MzMgMi41MDYzMyA5Ljc1OTY1IDIuODY3NTZDOC4wNTM0OSAzLjEzMjU1IDUuNzc0ODcgNC4yMDg3NCA0LjI5MzY5IDUuOTU5OUMyLjg1NzUyIDcuNjYxMDYgMS43NDg4MyA5LjAwNDc0IDEuNjk3NTggMTAuMzA5N0MxLjYzMTMzIDExLjk4ODMgMi44OTYyNyAxMy40MzA4IDMuMDUwMDEgMTMuNjY0NUMzLjMyMzc0IDE0LjA3OTUgNS4xOTExNSAxNi40NTE4IDguNjk5NzEgMTYuNTczMUMxMS43OTcgMTYuNjc5MyAxMy44MTQ0IDE1LjI4NDQgMTQuOTQ5NCAxMy45NDJaIiBmaWxsPSIjNDAzRDNFIi8+CjxwYXRoIGQ9Ik00LjU1MzYzIDIuNzM3NDdDMi45Mzc0NiAzLjg5MTE2IDEuMTIxMzEgNi4yNTEwMyAxLjQ0NzU0IDkuNTYwODZDMS42MDYyOCAxMS4xNzIgMi4wMDI1MSAxMi4xNDk1IDIuNTcxMjMgMTIuODUwN0MyLjkxNzQ2IDEzLjI3ODIgNC40MTk4OCAxNC41NDkzIDYuNzczNTEgMTQuNzM2OEM5LjE0NTg4IDE0LjkyNTYgMTAuOTQ5NSAxNC4zOTQ0IDEyLjgzMzIgMTMuMDg0NEMxNi42NjE3IDEwLjQyMDggMTYuMDk4IDYuMzkzNTMgMTUuOTM0MyA1LjkyNDhDMTUuNzcwNSA1LjQ1NjA3IDE0LjU0NDQgMi42OTYyMiAxMS4xNzMzIDEuNzE1MDJDOC4xOTg0NCAwLjg1MDA2OCA1Ljk4MzU1IDEuNzE1MDIgNC41NTM2MyAyLjczNzQ3WiIgZmlsbD0iIzVFNjM2NyIvPgo8cGF0aCBkPSJNNy4zOTM1MyAyLjk2MTA5QzUuNjE3MzcgMi44OTczNCAzLjkxOTk2IDQuMjg4NTIgMy43NTYyMiA2LjAwNTkzQzMuNTkyNDggNy43MjIwOSA0LjY1NDkyIDkuMDI5NTIgNi4zMDk4MyA5LjI5NTc2QzcuOTY0NzUgOS41NjA3NCA5Ljg3ODM5IDguNTU1OCAxMC4yNjM0IDYuNDUwOTFDMTAuNjYwOSA0LjI4MjI3IDkuMDg5NjkgMy4wMjIzNCA3LjM5MzUzIDIuOTYxMDlaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNy45NDIxNyA1LjkwMTE1QzcuOTQyMTcgNS45MDExNSA4LjM2OTY1IDUuODEyNCA4LjQ1NDY1IDUuMTgyNDRDOC41MzgzOSA0LjU2MjQ3IDguMjMwOTEgNC4wMzM3NSA3LjUxMzQ1IDMuODQzNzZDNi43MzM0OSAzLjYzNzUyIDYuMjA0NzcgNC4wNjYyNSA2LjA2NzI3IDQuNTE3NDdDNS44NzYwMyA1LjE0NDk0IDYuMTU4NTIgNS40NDM2NyA2LjE1ODUyIDUuNDQzNjdDNi4xNTg1MiA1LjQ0MzY3IDUuMzkzNTYgNS42Mjc0MSA1LjMzMjMxIDYuNTI5ODdDNS4yNzQ4MSA3LjM4MTA3IDUuODU2MDMgNy44Mzg1NSA2LjQzOTc1IDcuOTc4NTRDNy4xNjA5NiA4LjE1MjI4IDcuOTc4NDIgNy45NTQ3OSA4LjE3ODQxIDcuMDM0ODRDOC4zNDQ2NSA2LjI3NzM4IDcuOTQyMTcgNS45MDExNSA3Ljk0MjE3IDUuOTAxMTVaIiBmaWxsPSIjMzAzMDMwIi8+CjxwYXRoIGQ9Ik02LjczOTgzIDQuNzUzNjJDNi42NzEwOSA1LjAxMjM1IDYuODA4NTggNS4yNjIzNCA3LjA3ODU3IDUuMzMxMDlDNy4zNjk4IDUuNDA0ODMgNy42MzQ3OSA1LjMwODU5IDcuNzA2MDMgNS4wMTExQzcuNzY4NTMgNC43NDczNyA3LjY0MzU0IDQuNTE0ODggNy4zMzYwNSA0LjQzOTg4QzcuMDgzNTcgNC4zNzczOSA2LjgxNDgzIDQuNDcxMTMgNi43Mzk4MyA0Ljc1MzYyWiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTYuOTU5NzggNi4wMzk3NEM2LjYzMjMgNS45Mzg0OSA2LjE5OTgyIDYuMDY0NzMgNi4xMzEwNyA2LjUwNDcxQzYuMDYyMzMgNi45NDQ2OSA2LjMyNjA2IDcuMTY5NjggNi42NzEwNCA3LjIzMjE3QzcuMDE2MDMgNy4yOTQ2NyA3LjM0MjI2IDcuMTEzNDMgNy40MDYwMSA2Ljc2MDk1QzcuNDY4NSA2LjQwOTcyIDcuMjg2MDEgNi4xMzk3MyA2Ljk1OTc4IDYuMDM5NzRaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K","variables":{"environment":{"allSelected":true,"description":"Deployment environment filter","dynamicVariablesAttribute":"deployment.environment","dynamicVariablesSource":"Metrics","id":"var-environment","multiSelect":true,"name":"environment","order":0,"showALLOption":true,"sort":"ASC","type":"DYNAMIC"},"k8s_cluster":{"allSelected":true,"description":"Kubernetes cluster name filter","dynamicVariablesAttribute":"k8s.cluster.name","dynamicVariablesSource":"Metrics","id":"var-k8s-cluster","multiSelect":true,"name":"k8s_cluster","order":1,"showALLOption":true,"sort":"ASC","type":"DYNAMIC"},"k8s_pod":{"allSelected":true,"description":"Pod name filter — select specific pods to scope all panels to one application","dynamicVariablesAttribute":"k8s.pod.name","dynamicVariablesSource":"Metrics","haveCustomValuesSelected":false,"id":"var-k8s-pod","multiSelect":true,"name":"k8s_pod","order":2,"showALLOption":true,"sort":"ASC","type":"DYNAMIC"}},"widgets":[{"bucketCount":30,"bucketWidth":0,"columnUnits":{},"contextLinks":{"linksData":[]},"customLegendColors":{},"decimalPrecision":2,"description":"% of process limit in use. >85% is critical — node will crash at 100%.","fillMode":"none","fillSpans":false,"id":"w1","isLogScale":false,"legendPosition":"bottom","lineInterpolation":"spline","lineStyle":"solid","mergeAllActiveQueries":false,"nullZeroValues":"zero","opacity":"1","panelTypes":"value","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_process_count","reduceTo":"avg","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"A","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[],"having":[],"legend":"","limit":null,"orderBy":[],"queryName":"A","selectColumns":[],"source":"","stepInterval":60},{"aggregations":[{"metricName":"erlang_vm_process_limit","reduceTo":"avg","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"B","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[],"having":[],"legend":"","limit":null,"orderBy":[],"queryName":"B","selectColumns":[],"source":"","stepInterval":60}],"queryFormulas":[{"aggregations":[],"dataSource":"metrics","disabled":false,"expression":"A / B * 100","filters":{"items":[],"op":"AND"},"functions":[],"groupBy":[],"legend":"","orderBy":[],"queryName":"F1","selectColumns":[],"stepInterval":null}]},"clickhouse_sql":[{"disabled":false,"legend":"","name":"A","query":""}],"id":"c9912465-de59-4645-b89d-8c6625222c29","promql":[{"disabled":false,"legend":"","name":"A","query":""}],"queryType":"builder","unit":""},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"showPoints":false,"softMax":100,"softMin":0,"spanGaps":true,"stackedBarChart":false,"thresholds":[{"index":"0","thresholdColor":"#FFA500","thresholdFormat":"Background","thresholdLabel":"Warning","thresholdOperator":">","thresholdValue":70},{"index":"1","keyIndex":1,"thresholdColor":"#FF0000","thresholdFormat":"Background","thresholdLabel":"Critical","thresholdOperator":">","thresholdValue":85}],"timePreferance":"GLOBAL_TIME","title":"Process Utilization","yAxisUnit":"percent"},{"bucketCount":30,"bucketWidth":0,"columnUnits":{},"contextLinks":{"linksData":[]},"customLegendColors":{},"decimalPrecision":2,"description":"% of port limit in use. Ports = sockets, files, NIFs.","fillMode":"none","fillSpans":false,"id":"w2","isLogScale":false,"legendPosition":"bottom","lineInterpolation":"spline","lineStyle":"solid","mergeAllActiveQueries":false,"nullZeroValues":"zero","opacity":"1","panelTypes":"value","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_port_count","reduceTo":"avg","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"A","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[],"having":[],"legend":"","limit":null,"orderBy":[],"queryName":"A","selectColumns":[],"source":"","stepInterval":60},{"aggregations":[{"metricName":"erlang_vm_port_limit","reduceTo":"avg","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"B","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[],"having":[],"legend":"","limit":null,"orderBy":[],"queryName":"B","selectColumns":[],"source":"","stepInterval":60}],"queryFormulas":[{"aggregations":[],"dataSource":"metrics","disabled":false,"expression":"A / B * 100","filters":{"items":[],"op":"AND"},"functions":[],"groupBy":[],"legend":"","orderBy":[],"queryName":"F1","selectColumns":[],"stepInterval":null}]},"clickhouse_sql":[{"disabled":false,"legend":"","name":"A","query":""}],"id":"4e912e40-34ac-43e1-abec-0059a1d54bd2","promql":[{"disabled":false,"legend":"","name":"A","query":""}],"queryType":"builder","unit":""},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"showPoints":false,"softMax":100,"softMin":0,"spanGaps":true,"stackedBarChart":false,"thresholds":[{"index":"0","thresholdColor":"#FFA500","thresholdFormat":"Background","thresholdLabel":"Warning","thresholdOperator":">","thresholdValue":70},{"index":"1","keyIndex":1,"thresholdColor":"#FF0000","thresholdFormat":"Background","thresholdLabel":"Critical","thresholdOperator":">","thresholdValue":85}],"timePreferance":"GLOBAL_TIME","title":"Port Utilization","yAxisUnit":"percent"},{"bucketCount":30,"bucketWidth":0,"columnUnits":{},"contextLinks":{"linksData":[]},"customLegendColors":{},"decimalPrecision":2,"description":"% of atom table used. Atom table never shrinks — runaway growth = leak.","fillMode":"none","fillSpans":false,"id":"w3","isLogScale":false,"legendPosition":"bottom","lineInterpolation":"spline","lineStyle":"solid","mergeAllActiveQueries":false,"nullZeroValues":"zero","opacity":"1","panelTypes":"value","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_atom_count","reduceTo":"avg","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"A","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[],"having":[],"legend":"","limit":null,"orderBy":[],"queryName":"A","selectColumns":[],"source":"","stepInterval":60},{"aggregations":[{"metricName":"erlang_vm_atom_limit","reduceTo":"avg","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"B","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[],"having":[],"legend":"","limit":null,"orderBy":[],"queryName":"B","selectColumns":[],"source":"","stepInterval":60}],"queryFormulas":[{"aggregations":[],"dataSource":"metrics","disabled":false,"expression":"A / B * 100","filters":{"items":[],"op":"AND"},"functions":[],"groupBy":[],"legend":"","orderBy":[],"queryName":"F1","selectColumns":[],"stepInterval":null}]},"clickhouse_sql":[{"disabled":false,"legend":"","name":"A","query":""}],"id":"42aacb5f-0752-4d92-a370-412be4a007ec","promql":[{"disabled":false,"legend":"","name":"A","query":""}],"queryType":"builder","unit":""},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"showPoints":false,"softMax":100,"softMin":0,"spanGaps":true,"stackedBarChart":false,"thresholds":[{"index":"0","thresholdColor":"#FFA500","thresholdFormat":"Background","thresholdLabel":"Warning","thresholdOperator":">","thresholdValue":70},{"index":"1","keyIndex":1,"thresholdColor":"#FF0000","thresholdFormat":"Background","thresholdLabel":"Critical","thresholdOperator":">","thresholdValue":85}],"timePreferance":"GLOBAL_TIME","title":"Atom Utilization","yAxisUnit":"percent"},{"contextLinks":{"linksData":[]},"description":"Number of ETS tables currently open.","id":"w4","nullZeroValues":"zero","opacity":"1","panelTypes":"value","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_memory_ets_tables","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"31a03bbe-951d-4804-b963-6467fbf4cfa3","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"ETS Tables","yAxisUnit":"short"},{"contextLinks":{"linksData":[]},"description":"CPU scheduler threads available to the BEAM.","id":"w5","nullZeroValues":"zero","opacity":"1","panelTypes":"value","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_schedulers_online","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"1818e786-b85d-486e-a178-2e74f3787812","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Schedulers Online","yAxisUnit":"short"},{"contextLinks":{"linksData":[]},"description":"Total BEAM memory allocation (processes + system).","id":"w6","nullZeroValues":"zero","opacity":"1","panelTypes":"value","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_memory_bytes_total","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"034d759b-9272-4b5d-acbc-a8ecbcca65da","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Total Memory","yAxisUnit":"bytes"},{"contextLinks":{"linksData":[]},"description":"","id":"w7","panelTypes":"row","query":{"builder":{"queryData":[],"queryFormulas":[]},"id":"","queryType":"builder"},"selectedLogFields":[],"selectedTracesFields":[],"softMax":null,"softMin":null,"title":"Memory"},{"contextLinks":{"linksData":[]},"description":"","id":"w8","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_memory_bytes_total","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Total","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"a9d086d8-f2fe-471e-acf9-4e98882a5639","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Total Memory","yAxisUnit":"bytes"},{"contextLinks":{"linksData":[]},"description":"Stacked composition of BEAM memory — watch for any segment growing unbounded.","id":"w9","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_memory_processes_bytes_total","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Processes","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60},{"aggregations":[{"metricName":"erlang_vm_memory_system_bytes_total","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"B","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"System","orderBy":[],"queryName":"B","selectColumns":[],"stepInterval":60},{"aggregations":[{"metricName":"erlang_vm_memory_atom_bytes_total","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"C","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Atom","orderBy":[],"queryName":"C","selectColumns":[],"stepInterval":60},{"aggregations":[{"metricName":"beam_memory_binary_bytes","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"D","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Binary","orderBy":[],"queryName":"D","selectColumns":[],"stepInterval":60},{"aggregations":[{"metricName":"beam_memory_ets_bytes","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"E","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"ETS","orderBy":[],"queryName":"E","selectColumns":[],"stepInterval":60},{"aggregations":[{"metricName":"beam_memory_code_bytes","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"F","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Code","orderBy":[],"queryName":"F","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"deeddc90-b07a-46cd-839d-f21ac488d28d","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Memory Breakdown","yAxisUnit":"bytes"},{"contextLinks":{"linksData":[]},"description":"Steady monotonic growth indicates a binary leak (unreferenced binaries not GC'd).","id":"w10","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"beam_memory_binary_bytes","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Binary","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"718c7582-29a1-4453-b16e-8949bb23f0ff","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Binary Memory (off-heap)","yAxisUnit":"bytes"},{"contextLinks":{"linksData":[]},"description":"","id":"w11","panelTypes":"row","query":{"builder":{"queryData":[],"queryFormulas":[]},"id":"","queryType":"builder"},"selectedLogFields":[],"selectedTracesFields":[],"softMax":null,"softMin":null,"title":"Schedulers & Run Queues"},{"contextLinks":{"linksData":[]},"description":"Normal scheduler run queue. Sustained > 0 = CPU saturation.","id":"w12","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_statistics_run_queues_length","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Run Queue","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"51a166ed-a243-48ac-8470-bda62852a44d","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Run Queue Length","yAxisUnit":"short"},{"contextLinks":{"linksData":[]},"description":"Dirty CPU = long-running NIF pressure. Dirty IO = file/socket I/O pressure.","id":"w13","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_statistics_dirty_cpu_run_queue_length","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Dirty CPU","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60},{"aggregations":[{"metricName":"erlang_vm_statistics_dirty_io_run_queue_length","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"B","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Dirty IO","orderBy":[],"queryName":"B","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"9b84336d-4a49-4741-8415-f0234a989666","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Dirty CPU / IO Run Queues","yAxisUnit":"short"},{"contextLinks":{"linksData":[]},"description":"Total Erlang processes. Runaway growth = process leak (missing termination or gen_server loop).","id":"w14","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_process_count","spaceAggregation":"avg","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Processes","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"da910f90-465d-4865-b6cb-02a7e33de9d9","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Live Processes","yAxisUnit":"short"},{"contextLinks":{"linksData":[]},"description":"","id":"w15","panelTypes":"row","query":{"builder":{"queryData":[],"queryFormulas":[]},"id":"","queryType":"builder"},"selectedLogFields":[],"selectedTracesFields":[],"softMax":null,"softMin":null,"title":"GC & Reductions"},{"contextLinks":{"linksData":[]},"description":"Garbage collections per second. Spikes indicate sudden allocation pressure.","id":"w16","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_statistics_garbage_collection_number_of_gcs","spaceAggregation":"sum","temporality":"cumulative","timeAggregation":"rate"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"GCs/s","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"42d2abba-afb3-437b-bcd4-2ca0584f1126","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"GC Rate","yAxisUnit":"reqps"},{"contextLinks":{"linksData":[]},"description":"Bytes reclaimed per second by the garbage collector.","id":"w17","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_statistics_garbage_collection_bytes_reclaimed","spaceAggregation":"sum","temporality":"cumulative","timeAggregation":"rate"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Bytes/s","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"f3225155-7370-4922-b824-8c259bdcf563","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"GC Bytes Reclaimed","yAxisUnit":"binBps"},{"contextLinks":{"linksData":[]},"description":"Scheduler context switches per second. High rate = many short-lived processes.","id":"w18","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_statistics_context_switches","spaceAggregation":"sum","temporality":"cumulative","timeAggregation":"rate"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Switches/s","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"7c57ba19-7d01-4843-b418-72abab7d6201","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Context Switch Rate","yAxisUnit":"reqps"},{"contextLinks":{"linksData":[]},"description":"BEAM reductions per second — proxy for total CPU work across all processes.","id":"w19","legendPosition":"bottom","nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_statistics_reductions_total","spaceAggregation":"sum","temporality":"cumulative","timeAggregation":"rate"}],"dataSource":"metrics","expression":"A","filters":{"items":[{"id":"fv1","key":{"dataType":"string","id":"deployment.environment--string--resource","isColumn":false,"key":"deployment.environment","type":"resource"},"op":"IN","value":"$environment"},{"id":"fv2","key":{"dataType":"string","id":"k8s.cluster.name--string--resource","isColumn":false,"key":"k8s.cluster.name","type":"resource"},"op":"IN","value":"$k8s_cluster"},{"id":"fv3","key":{"dataType":"string","id":"k8s.pod.name--string--resource","isColumn":false,"key":"k8s.pod.name","type":"resource"},"op":"IN","value":"$k8s_pod"}],"op":"AND"},"functions":[],"groupBy":[],"legend":"Reductions/s","orderBy":[],"queryName":"A","selectColumns":[],"stepInterval":60}],"queryFormulas":[]},"id":"6a213747-fccf-44b6-b393-abae8e3a856e","queryType":"builder"},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"softMax":0,"softMin":0,"timePreferance":"GLOBAL_TIME","title":"Reductions Rate","yAxisUnit":"short"},{"bucketCount":30,"bucketWidth":0,"columnUnits":{},"contextLinks":{"linksData":[]},"customLegendColors":{},"decimalPrecision":2,"description":">85% is critical — BEAM refuses to spawn new processes at the limit.","fillMode":"none","fillSpans":false,"id":"d0d18ace-cca9-4d5a-8440-86be0469022d","isLogScale":false,"legendPosition":"bottom","lineInterpolation":"spline","lineStyle":"solid","mergeAllActiveQueries":false,"nullZeroValues":"zero","opacity":"1","panelTypes":"graph","query":{"builder":{"queryData":[{"aggregations":[{"metricName":"erlang_vm_process_count","reduceTo":"avg","spaceAggregation":"max","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"A","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[{"dataType":"string","id":"k8s.pod.name--string--tag","isColumn":false,"isJSON":false,"key":"k8s.pod.name","type":"tag"}],"having":{"expression":""},"legend":"","limit":null,"orderBy":[],"queryName":"A","selectColumns":[],"source":"","stepInterval":60},{"aggregations":[{"metricName":"erlang_vm_process_limit","reduceTo":"avg","spaceAggregation":"max","temporality":"unspecified","timeAggregation":"latest"}],"dataSource":"metrics","disabled":true,"expression":"B","filter":{"expression":"deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"},"functions":[],"groupBy":[{"dataType":"string","id":"k8s.pod.name--string--tag","isColumn":false,"isJSON":false,"key":"k8s.pod.name","type":"tag"}],"having":{"expression":""},"legend":"","limit":null,"orderBy":[],"queryName":"B","selectColumns":[],"source":"","stepInterval":60}],"queryFormulas":[{"disabled":false,"expression":"A / B * 100","legend":"{{k8s.pod.name}}","queryName":"F1"}]},"clickhouse_sql":[{"disabled":false,"legend":"","name":"A","query":""}],"id":"6fb58024-22cd-42d0-9865-f89351f3fbbe","promql":[{"disabled":false,"legend":"","name":"A","query":""}],"queryType":"builder","unit":""},"selectedLogFields":[{"fieldContext":"log","name":"timestamp","signal":"logs","type":"log"},{"fieldContext":"log","name":"body","signal":"logs","type":"log"}],"selectedTracesFields":[{"fieldContext":"resource","fieldDataType":"string","name":"service.name","signal":"traces"},{"fieldContext":"span","fieldDataType":"string","name":"name","signal":"traces"},{"fieldContext":"span","name":"duration_nano","signal":"traces"}],"showPoints":false,"softMax":0,"softMin":0,"spanGaps":true,"stackedBarChart":false,"thresholds":[],"timePreferance":"GLOBAL_TIME","title":"Process Utilization %","yAxisUnit":"%"}],"layout":[{"h":3,"i":"w1","moved":false,"static":false,"w":2,"x":0,"y":0},{"h":3,"i":"w2","moved":false,"static":false,"w":2,"x":2,"y":0},{"h":3,"i":"w3","moved":false,"static":false,"w":2,"x":4,"y":0},{"h":3,"i":"w4","moved":false,"static":false,"w":2,"x":6,"y":0},{"h":3,"i":"w5","moved":false,"static":false,"w":2,"x":8,"y":0},{"h":3,"i":"w6","moved":false,"static":false,"w":2,"x":10,"y":0},{"h":1,"i":"w7","moved":false,"static":false,"w":12,"x":0,"y":3},{"h":7,"i":"w8","moved":false,"static":false,"w":4,"x":0,"y":4},{"h":7,"i":"w9","moved":false,"static":false,"w":4,"x":4,"y":4},{"h":7,"i":"w10","moved":false,"static":false,"w":4,"x":8,"y":4},{"h":1,"i":"w11","moved":false,"static":false,"w":12,"x":0,"y":11},{"h":7,"i":"w12","moved":false,"static":false,"w":6,"x":0,"y":12},{"h":7,"i":"w13","moved":false,"static":false,"w":6,"x":6,"y":12},{"h":7,"i":"d0d18ace-cca9-4d5a-8440-86be0469022d","moved":false,"static":false,"w":6,"x":0,"y":19},{"h":7,"i":"w14","moved":false,"static":false,"w":6,"x":6,"y":19},{"h":1,"i":"w15","moved":false,"static":false,"w":12,"x":0,"y":26},{"h":7,"i":"w16","moved":false,"static":false,"w":3,"x":0,"y":27},{"h":7,"i":"w17","moved":false,"static":false,"w":3,"x":3,"y":27},{"h":7,"i":"w18","moved":false,"static":false,"w":3,"x":6,"y":27},{"h":7,"i":"w19","moved":false,"static":false,"w":3,"x":9,"y":27}],"panelMap":{"w11":{"collapsed":false,"widgets":[{"h":7,"i":"w12","moved":false,"static":false,"w":6,"x":0,"y":12},{"h":7,"i":"w13","moved":false,"static":false,"w":6,"x":6,"y":12},{"h":7,"i":"w14","moved":false,"static":false,"w":12,"x":0,"y":19},{"h":1,"i":"w15","moved":false,"static":false,"w":12,"x":0,"y":26},{"h":7,"i":"w16","moved":false,"static":false,"w":3,"x":0,"y":27},{"h":7,"i":"w17","moved":false,"static":false,"w":3,"x":3,"y":27},{"h":7,"i":"w18","moved":false,"static":false,"w":3,"x":6,"y":27},{"h":7,"i":"w19","moved":false,"static":false,"w":3,"x":9,"y":27}]},"w7":{"collapsed":false,"widgets":[{"h":7,"i":"w8","moved":false,"static":false,"w":4,"x":0,"y":4},{"h":7,"i":"w9","moved":false,"static":false,"w":4,"x":4,"y":4},{"h":7,"i":"w10","moved":false,"static":false,"w":4,"x":8,"y":4},{"h":1,"i":"w11","moved":false,"static":false,"w":12,"x":0,"y":11},{"h":7,"i":"w12","moved":false,"static":false,"w":6,"x":0,"y":12},{"h":7,"i":"w13","moved":false,"static":false,"w":6,"x":6,"y":12},{"h":7,"i":"w14","moved":false,"static":false,"w":12,"x":0,"y":19},{"h":1,"i":"w15","moved":false,"static":false,"w":12,"x":0,"y":26},{"h":7,"i":"w16","moved":false,"static":false,"w":3,"x":0,"y":27},{"h":7,"i":"w17","moved":false,"static":false,"w":3,"x":3,"y":27},{"h":7,"i":"w18","moved":false,"static":false,"w":3,"x":6,"y":27},{"h":7,"i":"w19","moved":false,"static":false,"w":3,"x":9,"y":27}]}},"version":"v5","title":"BEAM / Erlang VM - Overview"}
+{
+  "description": "Key BEAM runtime health indicators. First stop for on-call triage — process/port saturation, memory pressure, scheduler backlog, GC activity. Generic for any Elixir/Erlang project using prometheus_ex.",
+  "layout": [
+    {
+      "h": 3,
+      "i": "w1",
+      "moved": false,
+      "static": false,
+      "w": 2,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "w2",
+      "moved": false,
+      "static": false,
+      "w": 2,
+      "x": 2,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "w3",
+      "moved": false,
+      "static": false,
+      "w": 2,
+      "x": 4,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "w4",
+      "moved": false,
+      "static": false,
+      "w": 2,
+      "x": 6,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "w5",
+      "moved": false,
+      "static": false,
+      "w": 2,
+      "x": 8,
+      "y": 0
+    },
+    {
+      "h": 3,
+      "i": "w6",
+      "moved": false,
+      "static": false,
+      "w": 2,
+      "x": 10,
+      "y": 0
+    },
+    {
+      "h": 1,
+      "i": "w7",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 3
+    },
+    {
+      "h": 7,
+      "i": "w8",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 0,
+      "y": 4
+    },
+    {
+      "h": 7,
+      "i": "w9",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 4,
+      "y": 4
+    },
+    {
+      "h": 7,
+      "i": "w10",
+      "moved": false,
+      "static": false,
+      "w": 4,
+      "x": 8,
+      "y": 4
+    },
+    {
+      "h": 1,
+      "i": "w11",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 11
+    },
+    {
+      "h": 7,
+      "i": "w12",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 47
+    },
+    {
+      "h": 7,
+      "i": "w13",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 47
+    },
+    {
+      "h": 7,
+      "i": "d0d18ace-cca9-4d5a-8440-86be0469022d",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 0,
+      "y": 54
+    },
+    {
+      "h": 7,
+      "i": "w14",
+      "moved": false,
+      "static": false,
+      "w": 6,
+      "x": 6,
+      "y": 54
+    },
+    {
+      "h": 1,
+      "i": "w15",
+      "moved": false,
+      "static": false,
+      "w": 12,
+      "x": 0,
+      "y": 61
+    }
+  ],
+  "panelMap": {
+    "w11": {
+      "collapsed": false,
+      "widgets": [
+        {
+          "h": 7,
+          "i": "w12",
+          "moved": false,
+          "static": false,
+          "w": 6,
+          "x": 0,
+          "y": 47
+        },
+        {
+          "h": 7,
+          "i": "w13",
+          "moved": false,
+          "static": false,
+          "w": 6,
+          "x": 6,
+          "y": 47
+        },
+        {
+          "h": 7,
+          "i": "d0d18ace-cca9-4d5a-8440-86be0469022d",
+          "moved": false,
+          "static": false,
+          "w": 6,
+          "x": 0,
+          "y": 54
+        },
+        {
+          "h": 7,
+          "i": "w14",
+          "moved": false,
+          "static": false,
+          "w": 6,
+          "x": 6,
+          "y": 54
+        }
+      ]
+    },
+    "w15": {
+      "collapsed": true,
+      "widgets": [
+        {
+          "h": 7,
+          "i": "w16",
+          "moved": false,
+          "static": false,
+          "w": 3,
+          "x": 0,
+          "y": 209
+        },
+        {
+          "h": 7,
+          "i": "w17",
+          "moved": false,
+          "static": false,
+          "w": 3,
+          "x": 3,
+          "y": 209
+        },
+        {
+          "h": 7,
+          "i": "w18",
+          "moved": false,
+          "static": false,
+          "w": 3,
+          "x": 6,
+          "y": 209
+        },
+        {
+          "h": 7,
+          "i": "w19",
+          "moved": false,
+          "static": false,
+          "w": 3,
+          "x": 9,
+          "y": 209
+        }
+      ]
+    },
+    "w7": {
+      "collapsed": false,
+      "widgets": [
+        {
+          "h": 7,
+          "i": "w8",
+          "moved": false,
+          "static": false,
+          "w": 4,
+          "x": 0,
+          "y": 4
+        },
+        {
+          "h": 7,
+          "i": "w9",
+          "moved": false,
+          "static": false,
+          "w": 4,
+          "x": 4,
+          "y": 4
+        },
+        {
+          "h": 7,
+          "i": "w10",
+          "moved": false,
+          "static": false,
+          "w": 4,
+          "x": 8,
+          "y": 4
+        }
+      ]
+    }
+  },
+  "tags": [
+    "beam",
+    "erlang",
+    "elixir",
+    "overview"
+  ],
+  "title": "BEAM / Erlang VM - Overview",
+  "variables": {
+    "environment": {
+      "allSelected": true,
+      "description": "Deployment environment filter",
+      "dynamicVariablesAttribute": "deployment.environment",
+      "dynamicVariablesSource": "Metrics",
+      "id": "var-environment",
+      "multiSelect": true,
+      "name": "environment",
+      "order": 0,
+      "showALLOption": true,
+      "sort": "ASC",
+      "type": "DYNAMIC"
+    },
+    "k8s_cluster": {
+      "allSelected": true,
+      "description": "Kubernetes cluster name filter",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "Metrics",
+      "id": "var-k8s-cluster",
+      "multiSelect": true,
+      "name": "k8s_cluster",
+      "order": 1,
+      "showALLOption": true,
+      "sort": "ASC",
+      "type": "DYNAMIC"
+    },
+    "k8s_pod": {
+      "allSelected": true,
+      "description": "Pod name filter — select specific pods to scope all panels to one application",
+      "dynamicVariablesAttribute": "k8s.pod.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "var-k8s-pod",
+      "multiSelect": true,
+      "name": "k8s_pod",
+      "order": 2,
+      "showALLOption": true,
+      "sort": "ASC",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "% of process limit in use. >85% is critical — node will crash at 100%.",
+      "fillMode": "none",
+      "fillSpans": false,
+      "id": "w1",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_process_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_process_limit",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "aggregations": [],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A / B * 100",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "",
+              "orderBy": [],
+              "queryName": "F1",
+              "selectColumns": [],
+              "stepInterval": null
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "c9912465-de59-4645-b89d-8c6625222c29",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "showPoints": false,
+      "softMax": 100,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [
+        {
+          "index": "0",
+          "thresholdColor": "#FFA500",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Warning",
+          "thresholdOperator": ">",
+          "thresholdValue": 70
+        },
+        {
+          "index": "1",
+          "keyIndex": 1,
+          "thresholdColor": "#FF0000",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Critical",
+          "thresholdOperator": ">",
+          "thresholdValue": 85
+        }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Process Utilization",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "% of port limit in use. Ports = sockets, files, NIFs.",
+      "fillMode": "none",
+      "fillSpans": false,
+      "id": "w2",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_port_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_port_limit",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "aggregations": [],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A / B * 100",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "",
+              "orderBy": [],
+              "queryName": "F1",
+              "selectColumns": [],
+              "stepInterval": null
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "4e912e40-34ac-43e1-abec-0059a1d54bd2",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "showPoints": false,
+      "softMax": 100,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [
+        {
+          "index": "0",
+          "thresholdColor": "#FFA500",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Warning",
+          "thresholdOperator": ">",
+          "thresholdValue": 70
+        },
+        {
+          "index": "1",
+          "keyIndex": 1,
+          "thresholdColor": "#FF0000",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Critical",
+          "thresholdOperator": ">",
+          "thresholdValue": 85
+        }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Port Utilization",
+      "yAxisUnit": "percent"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": "% of atom table used. Atom table never shrinks — runaway growth = leak.",
+      "fillMode": "none",
+      "fillSpans": false,
+      "id": "w3",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_atom_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_atom_limit",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [],
+              "having": [],
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "aggregations": [],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A / B * 100",
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "",
+              "orderBy": [],
+              "queryName": "F1",
+              "selectColumns": [],
+              "stepInterval": null
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "42aacb5f-0752-4d92-a370-412be4a007ec",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "showPoints": false,
+      "softMax": 100,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [
+        {
+          "index": "0",
+          "thresholdColor": "#FFA500",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Warning",
+          "thresholdOperator": ">",
+          "thresholdValue": 70
+        },
+        {
+          "index": "1",
+          "keyIndex": 1,
+          "thresholdColor": "#FF0000",
+          "thresholdFormat": "Background",
+          "thresholdLabel": "Critical",
+          "thresholdOperator": ">",
+          "thresholdValue": 85
+        }
+      ],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Atom Utilization",
+      "yAxisUnit": "percent"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Number of ETS tables currently open.",
+      "id": "w4",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_memory_ets_tables",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "31a03bbe-951d-4804-b963-6467fbf4cfa3",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "ETS Tables",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "CPU scheduler threads available to the BEAM.",
+      "id": "w5",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_schedulers_online",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "1818e786-b85d-486e-a178-2e74f3787812",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Schedulers Online",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Total BEAM memory allocation (processes + system).",
+      "id": "w6",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_memory_bytes_total",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "034d759b-9272-4b5d-acbc-a8ecbcca65da",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Total Memory",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "",
+      "id": "w7",
+      "panelTypes": "row",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": null,
+      "softMin": null,
+      "title": "Memory"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "",
+      "id": "w8",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_memory_bytes_total",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Total",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "a9d086d8-f2fe-471e-acf9-4e98882a5639",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Total Memory",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Stacked composition of BEAM memory — watch for any segment growing unbounded.",
+      "id": "w9",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_memory_processes_bytes_total",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Processes",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_memory_system_bytes_total",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "System",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_memory_atom_bytes_total",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "C",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Atom",
+              "orderBy": [],
+              "queryName": "C",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "beam_memory_binary_bytes",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "D",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Binary",
+              "orderBy": [],
+              "queryName": "D",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "beam_memory_ets_bytes",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "E",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "ETS",
+              "orderBy": [],
+              "queryName": "E",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "beam_memory_code_bytes",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "F",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Code",
+              "orderBy": [],
+              "queryName": "F",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "deeddc90-b07a-46cd-839d-f21ac488d28d",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Memory Breakdown",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Steady monotonic growth indicates a binary leak (unreferenced binaries not GC'd).",
+      "id": "w10",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "beam_memory_binary_bytes",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Binary",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "718c7582-29a1-4453-b16e-8949bb23f0ff",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Binary Memory (off-heap)",
+      "yAxisUnit": "bytes"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "",
+      "id": "w11",
+      "panelTypes": "row",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": null,
+      "softMin": null,
+      "title": "Schedulers & Run Queues"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Normal scheduler run queue. Sustained > 0 = CPU saturation.",
+      "id": "w12",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_statistics_run_queues_length",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Run Queue",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "51a166ed-a243-48ac-8470-bda62852a44d",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Run Queue Length",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Dirty CPU = long-running NIF pressure. Dirty IO = file/socket I/O pressure.",
+      "id": "w13",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_statistics_dirty_cpu_run_queue_length",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Dirty CPU",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_statistics_dirty_io_run_queue_length",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "B",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Dirty IO",
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "9b84336d-4a49-4741-8415-f0234a989666",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Dirty CPU / IO Run Queues",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Total Erlang processes. Runaway growth = process leak (missing termination or gen_server loop).",
+      "id": "w14",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_process_count",
+                  "spaceAggregation": "avg",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Processes",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "da910f90-465d-4865-b6cb-02a7e33de9d9",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Live Processes",
+      "yAxisUnit": "short"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "",
+      "id": "w15",
+      "panelTypes": "row",
+      "query": {
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "id": "",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "softMax": null,
+      "softMin": null,
+      "title": "GC & Reductions"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Garbage collections per second. Spikes indicate sudden allocation pressure.",
+      "id": "w16",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_statistics_garbage_collection_number_of_gcs",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "GCs/s",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "42d2abba-afb3-437b-bcd4-2ca0584f1126",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "GC Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Bytes reclaimed per second by the garbage collector.",
+      "id": "w17",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_statistics_garbage_collection_bytes_reclaimed",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Bytes/s",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "f3225155-7370-4922-b824-8c259bdcf563",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "GC Bytes Reclaimed",
+      "yAxisUnit": "binBps"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "Scheduler context switches per second. High rate = many short-lived processes.",
+      "id": "w18",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_statistics_context_switches",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Switches/s",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "7c57ba19-7d01-4843-b418-72abab7d6201",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Context Switch Rate",
+      "yAxisUnit": "reqps"
+    },
+    {
+      "contextLinks": {
+        "linksData": []
+      },
+      "description": "BEAM reductions per second — proxy for total CPU work across all processes.",
+      "id": "w19",
+      "legendPosition": "bottom",
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_statistics_reductions_total",
+                  "spaceAggregation": "sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "expression": "A",
+              "filters": {
+                "items": [
+                  {
+                    "id": "fv1",
+                    "key": {
+                      "dataType": "string",
+                      "id": "deployment.environment--string--resource",
+                      "isColumn": false,
+                      "key": "deployment.environment",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$environment"
+                  },
+                  {
+                    "id": "fv2",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.cluster.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.cluster.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_cluster"
+                  },
+                  {
+                    "id": "fv3",
+                    "key": {
+                      "dataType": "string",
+                      "id": "k8s.pod.name--string--resource",
+                      "isColumn": false,
+                      "key": "k8s.pod.name",
+                      "type": "resource"
+                    },
+                    "op": "IN",
+                    "value": "$k8s_pod"
+                  }
+                ],
+                "op": "AND"
+              },
+              "functions": [],
+              "groupBy": [],
+              "legend": "Reductions/s",
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": []
+        },
+        "id": "6a213747-fccf-44b6-b393-abae8e3a856e",
+        "queryType": "builder"
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "softMax": 0,
+      "softMin": 0,
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Reductions Rate",
+      "yAxisUnit": "short"
+    },
+    {
+      "bucketCount": 30,
+      "bucketWidth": 0,
+      "columnUnits": {},
+      "contextLinks": {
+        "linksData": []
+      },
+      "customLegendColors": {},
+      "decimalPrecision": 2,
+      "description": ">85% is critical — BEAM refuses to spawn new processes at the limit.",
+      "fillMode": "none",
+      "fillSpans": false,
+      "id": "d0d18ace-cca9-4d5a-8440-86be0469022d",
+      "isLogScale": false,
+      "legendPosition": "bottom",
+      "lineInterpolation": "spline",
+      "lineStyle": "solid",
+      "mergeAllActiveQueries": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_process_count",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "max",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "A",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "k8s.pod.name--string--tag",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "k8s.pod.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "A",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "erlang_vm_process_limit",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "max",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": true,
+              "expression": "B",
+              "filter": {
+                "expression": "deployment.environment in $environment AND k8s.cluster.name in $k8s_cluster AND k8s.pod.name in $k8s_pod"
+              },
+              "functions": [],
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "id": "k8s.pod.name--string--tag",
+                  "isColumn": false,
+                  "isJSON": false,
+                  "key": "k8s.pod.name",
+                  "type": "tag"
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "",
+              "limit": null,
+              "orderBy": [],
+              "queryName": "B",
+              "selectColumns": [],
+              "source": "",
+              "stepInterval": 60
+            }
+          ],
+          "queryFormulas": [
+            {
+              "disabled": false,
+              "expression": "A / B * 100",
+              "legend": "{{k8s.pod.name}}",
+              "queryName": "F1"
+            }
+          ]
+        },
+        "clickhouse_sql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "id": "6fb58024-22cd-42d0-9865-f89351f3fbbe",
+        "promql": [
+          {
+            "disabled": false,
+            "legend": "",
+            "name": "A",
+            "query": ""
+          }
+        ],
+        "queryType": "builder",
+        "unit": ""
+      },
+      "selectedLogFields": [
+        {
+          "fieldContext": "log",
+          "name": "timestamp",
+          "signal": "logs",
+          "type": "log"
+        },
+        {
+          "fieldContext": "log",
+          "name": "body",
+          "signal": "logs",
+          "type": "log"
+        }
+      ],
+      "selectedTracesFields": [
+        {
+          "fieldContext": "resource",
+          "fieldDataType": "string",
+          "name": "service.name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "fieldDataType": "string",
+          "name": "name",
+          "signal": "traces"
+        },
+        {
+          "fieldContext": "span",
+          "name": "duration_nano",
+          "signal": "traces"
+        }
+      ],
+      "showPoints": false,
+      "softMax": 0,
+      "softMin": 0,
+      "spanGaps": true,
+      "stackedBarChart": false,
+      "thresholds": [],
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Process Utilization %",
+      "yAxisUnit": "%"
+    }
+  ]
+}
