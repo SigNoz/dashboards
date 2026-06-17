@@ -1,0 +1,590 @@
+{
+  "id": "k8s-sre-incident-response",
+  "title": "K8s SRE Incident Response",
+  "description": "On-call triage view. Not for capacity planning — for when something is already broken. Covers the 8 signals that actually matter during an incident.",
+  "tags": ["kubernetes", "sre", "incident-response", "on-call", "reliability", "opentelemetry"],
+  "layout": [],
+  "variables": [
+    {
+      "name": "k8s_cluster_name",
+      "description": "Kubernetes Cluster",
+      "type": "QUERY",
+      "sort": 0,
+      "multiSelect": false,
+      "showALLOption": false,
+      "queryValue": "SELECT JSONExtractString(labels, 'k8s.cluster.name') AS `k8s.cluster.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'k8s.node.cpu.time' GROUP BY `k8s.cluster.name`",
+      "customValue": "",
+      "selectedValue": ""
+    },
+    {
+      "name": "k8s_namespace_name",
+      "description": "Namespace",
+      "type": "QUERY",
+      "sort": 0,
+      "multiSelect": true,
+      "showALLOption": true,
+      "queryValue": "SELECT JSONExtractString(labels, 'k8s.namespace.name') AS `k8s.namespace.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'k8s.pod.cpu.time' AND JSONExtractString(labels, 'k8s.cluster.name') = $k8s_cluster_name GROUP BY `k8s.namespace.name`",
+      "customValue": "",
+      "selectedValue": ""
+    }
+  ],
+  "panels": [
+    {
+      "id": "pod-restart-rate",
+      "type": "graph",
+      "title": "Pod Restart Rate",
+      "description": "Watch for spikes. Steady climb = crash loop. Check OOMKill count next.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "short",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "rate",
+              "aggregateAttribute": {
+                "key": "k8s.pod.cpu.time",
+                "dataType": "float64",
+                "type": "Sum",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "key": "k8s.cluster.name",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "=",
+                    "value": "$k8s_cluster_name"
+                  },
+                  {
+                    "key": {
+                      "key": "k8s.namespace.name",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "in",
+                    "value": "$k8s_namespace_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [
+                {
+                  "key": "k8s.pod.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{k8s.pod.name}}",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "columnUnits": {},
+      "softMin": 0,
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "id": "node-cpu-pressure",
+      "type": "gauge",
+      "title": "Node CPU Pressure (%)",
+      "description": ">80% = scheduling risk. >90% = something is about to fall over.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "percent",
+      "panelTypes": "gauge",
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "rate",
+              "aggregateAttribute": {
+                "key": "k8s.node.cpu.time",
+                "dataType": "float64",
+                "type": "Sum",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "key": "k8s.cluster.name",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "=",
+                    "value": "$k8s_cluster_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [
+                {
+                  "key": "k8s.node.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{k8s.node.name}}",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [
+        { "index": 0, "value": 0, "color": "#1D9E75" },
+        { "index": 1, "value": 80, "color": "#EF9F27" },
+        { "index": 2, "value": 90, "color": "#E24B4A" }
+      ],
+      "columnUnits": {},
+      "softMin": 0,
+      "softMax": 100,
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 8 }
+    },
+    {
+      "id": "node-memory-pressure",
+      "type": "gauge",
+      "title": "Node Memory Pressure (%)",
+      "description": ">85% = OOM risk. Check which pods are the heaviest consumers before it pages you.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "percent",
+      "panelTypes": "gauge",
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "k8s.node.memory.working_set",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "key": "k8s.cluster.name",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "=",
+                    "value": "$k8s_cluster_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [
+                {
+                  "key": "k8s.node.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{k8s.node.name}}",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [
+        { "index": 0, "value": 0, "color": "#1D9E75" },
+        { "index": 1, "value": 85, "color": "#EF9F27" },
+        { "index": 2, "value": 95, "color": "#E24B4A" }
+      ],
+      "columnUnits": {},
+      "softMin": 0,
+      "softMax": 100,
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 8 }
+    },
+    {
+      "id": "pending-pods",
+      "type": "value",
+      "title": "Pending Pods",
+      "description": "Should always be 0. Anything else = scheduling failure. Check resources, taints, or PVC binding.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "short",
+      "panelTypes": "value",
+      "query": {
+        "queryType": "clickhouse_sql",
+        "promql": [],
+        "builder": {
+          "queryData": [],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": [
+          {
+            "name": "A",
+            "query": "SELECT countIf(last_phase = 1) AS pending_pods FROM (SELECT `k8s.pod.name`, anyLast(`value`) AS last_phase FROM signoz_metrics.distributed_samples_v4 INNER JOIN (SELECT DISTINCT JSONExtractString(labels, 'k8s.pod.name') AS `k8s.pod.name`, JSONExtractString(labels, 'k8s.cluster.name') AS `k8s.cluster.name`, fingerprint FROM signoz_metrics.time_series_v4_1day WHERE (metric_name = 'k8s.pod.phase') AND JSONExtractString(labels, 'k8s.cluster.name') = $k8s_cluster_name) AS filtered_time_series USING fingerprint WHERE (metric_name = 'k8s.pod.phase') AND (unix_milli >= $start_timestamp_ms) AND (unix_milli < $end_timestamp_ms) GROUP BY `k8s.pod.name`)",
+            "legend": "Pending Pods",
+            "disabled": false
+          }
+        ]
+      },
+      "thresholds": [
+        { "index": 0, "value": 0, "color": "#1D9E75" },
+        { "index": 1, "value": 1, "color": "#EF9F27" },
+        { "index": 2, "value": 5, "color": "#E24B4A" }
+      ],
+      "columnUnits": {},
+      "gridPos": { "x": 0, "y": 8, "w": 6, "h": 6 }
+    },
+    {
+      "id": "oomkill-events",
+      "type": "value",
+      "title": "Container OOMKill Events",
+      "description": "Non-zero here with pod restarts = memory leak or limits set too low. Don't just restart — fix it.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "short",
+      "panelTypes": "value",
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "sum",
+              "aggregateAttribute": {
+                "key": "k8s.container.restarts",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "key": "k8s.cluster.name",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "=",
+                    "value": "$k8s_cluster_name"
+                  },
+                  {
+                    "key": {
+                      "key": "k8s.namespace.name",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "in",
+                    "value": "$k8s_namespace_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [],
+              "legend": "OOMKill / Restarts",
+              "reduceTo": "sum",
+              "spaceAggregation": "sum"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "thresholds": [
+        { "index": 0, "value": 0, "color": "#1D9E75" },
+        { "index": 1, "value": 1, "color": "#EF9F27" },
+        { "index": 2, "value": 3, "color": "#E24B4A" }
+      ],
+      "columnUnits": {},
+      "gridPos": { "x": 6, "y": 8, "w": 6, "h": 6 }
+    },
+    {
+      "id": "p99-latency",
+      "type": "graph",
+      "title": "p99 Latency — Service SLI (ms)",
+      "description": "Primary SLI. Set a threshold at your SLO value. If this is breaching, error budget is burning.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "ms",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "p99",
+              "aggregateAttribute": {
+                "key": "signoz_latency",
+                "dataType": "float64",
+                "type": "Histogram",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.name}} p99",
+              "reduceTo": "avg",
+              "spaceAggregation": "p99"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "columnUnits": {},
+      "softMin": 0,
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "id": "5xx-error-rate",
+      "type": "graph",
+      "title": "5XX Error Rate (% of total requests)",
+      "description": "Correlate with p99 — if both spike together, downstream service is failing. If only errors spike, check your own app logs.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "percentunit",
+      "panelTypes": "graph",
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "rate",
+              "aggregateAttribute": {
+                "key": "signoz_calls_total",
+                "dataType": "float64",
+                "type": "Sum",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "key": "status_code",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "=",
+                    "value": "STATUS_CODE_ERROR"
+                  }
+                ],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{service.name}} errors",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum"
+            },
+            {
+              "dataSource": "metrics",
+              "queryName": "B",
+              "aggregateOperator": "rate",
+              "aggregateAttribute": {
+                "key": "signoz_calls_total",
+                "dataType": "float64",
+                "type": "Sum",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [],
+                "op": "AND"
+              },
+              "expression": "B",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [
+                {
+                  "key": "service.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "",
+              "reduceTo": "avg",
+              "spaceAggregation": "sum"
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A/B",
+              "disabled": false,
+              "legend": "{{service.name}} error rate"
+            }
+          ]
+        },
+        "clickhouse_sql": []
+      },
+      "columnUnits": {},
+      "softMin": 0,
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 8 }
+    },
+    {
+      "id": "pvc-usage",
+      "type": "table",
+      "title": "PVC Storage Usage",
+      "description": "The silent killer. PVCs don't alert until they're full — by then pods are crashing. Anything >80% needs action now.",
+      "isStacked": false,
+      "nullZeroValues": "zero",
+      "opacity": "1",
+      "yAxisUnit": "bytes",
+      "panelTypes": "table",
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "builder": {
+          "queryData": [
+            {
+              "dataSource": "metrics",
+              "queryName": "A",
+              "aggregateOperator": "avg",
+              "aggregateAttribute": {
+                "key": "k8s.volume.available",
+                "dataType": "float64",
+                "type": "Gauge",
+                "isColumn": true,
+                "isJSON": false
+              },
+              "filters": {
+                "items": [
+                  {
+                    "key": {
+                      "key": "k8s.cluster.name",
+                      "dataType": "string",
+                      "type": "tag",
+                      "isColumn": false
+                    },
+                    "op": "=",
+                    "value": "$k8s_cluster_name"
+                  }
+                ],
+                "op": "AND"
+              },
+              "expression": "A",
+              "disabled": false,
+              "stepInterval": 60,
+              "having": [],
+              "groupBy": [
+                {
+                  "key": "k8s.persistentvolumeclaim.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                },
+                {
+                  "key": "k8s.namespace.name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "isColumn": false
+                }
+              ],
+              "legend": "{{k8s.namespace.name}} / {{k8s.persistentvolumeclaim.name}}",
+              "reduceTo": "avg",
+              "spaceAggregation": "avg"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "clickhouse_sql": []
+      },
+      "columnUnits": {},
+      "gridPos": { "x": 12, "y": 14, "w": 12, "h": 8 }
+    }
+  ]
+}
