@@ -1,0 +1,1171 @@
+{
+  "title": "PlanetScale PostgreSQL",
+  "description": "Track PlanetScale Postgres connections, session states, PgBouncer pools, commits, locks, WAL archiving, storage, and pod resources. Use branch and role filters.",
+  "tags": ["planetscale", "postgres", "database", "metrics"],
+  "version": "v5",
+  "dotMigrated": true,
+  "variables": {
+    "var_branch": {
+      "id": "var_branch",
+      "name": "branch",
+      "key": "branch",
+      "description": "Filter panels by PlanetScale database branch (planetscale_database_branch_id).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "planetscale_database_branch_id",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 0
+    },
+    "var_role": {
+      "id": "var_role",
+      "name": "role",
+      "key": "role",
+      "description": "Filter panels by instance role, such as primary or replica (planetscale_role).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "planetscale_role",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 1
+    }
+  },
+  "layout": [
+    { "i": "row_overview", "x": 0, "y": 0, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "v_open_conn", "x": 0, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_conn_util", "x": 2, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_commit_rate", "x": 4, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_replica_lag", "x": 6, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_storage_used", "x": 8, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_cpu", "x": 10, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+
+    { "i": "row_connections", "x": 0, "y": 4, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_conn_state", "x": 0, "y": 5, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_conn_vs_max", "x": 6, "y": 5, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_conn_role", "x": 0, "y": 12, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_xact_commit", "x": 6, "y": 12, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_conn_util_pod", "x": 0, "y": 19, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_pgbouncer", "x": 0, "y": 26, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_pgb_client", "x": 0, "y": 27, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_pgb_server", "x": 6, "y": 27, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_pgb_pools_client", "x": 0, "y": 34, "w": 4, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_pgb_pools_server", "x": 4, "y": 34, "w": 4, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_pgb_maxwait", "x": 8, "y": 34, "w": 4, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_pgb_cpu", "x": 0, "y": 41, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_pgb_peers", "x": 6, "y": 41, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_locks", "x": 0, "y": 48, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_locks", "x": 0, "y": 49, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_wal", "x": 0, "y": 56, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_wal_size", "x": 0, "y": 57, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_wal_lag", "x": 6, "y": 57, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_wal_archiver", "x": 0, "y": 64, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_wal_age", "x": 6, "y": 64, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_replica_lag", "x": 0, "y": 71, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_storage", "x": 0, "y": 78, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_vol_used", "x": 0, "y": 79, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vol_bytes", "x": 6, "y": 79, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_resources", "x": 0, "y": 86, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_cpu", "x": 0, "y": 87, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_mem", "x": 6, "y": 87, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_mem_rss", "x": 0, "y": 94, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_iops", "x": 6, "y": 94, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "t_pod_status", "x": 0, "y": 101, "w": 12, "h": 6, "minW": 4, "minH": 5 }
+  ],
+  "widgets": [
+    {
+      "id": "row_overview",
+      "panelTypes": "row",
+      "title": "Overview"
+    },
+    {
+      "id": "v_open_conn",
+      "panelTypes": "value",
+      "title": "Open Connections",
+      "description": "Current backend connections across all session states, summed from planetscale_postgres_connection_state.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_connection_state", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_conn_util",
+      "panelTypes": "value",
+      "title": "Connection Utilization",
+      "description": "Open connections divided by max_connections.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 90, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_connection_state", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_settings_max_connections", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "A / B * 100" }
+          ]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_commit_rate",
+      "panelTypes": "value",
+      "title": "Commit Throughput",
+      "description": "Committed transactions per second from planetscale_postgres_database_xact_commit_total.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_database_xact_commit_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_replica_lag",
+      "panelTypes": "value",
+      "title": "WAL Archive Lag",
+      "description": "WAL bytes waiting for archive, measured as current LSN minus last archived LSN. Rising values mean archiving has fallen behind.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_wal_archiver_lag_bytes", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_storage_used",
+      "panelTypes": "value",
+      "title": "Storage Used",
+      "description": "Used volume percentage, calculated as (capacity - available) / capacity.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 85, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_volume_capacity_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_volume_available_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "(A - B) / A * 100" }
+          ]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_cpu",
+      "panelTypes": "value",
+      "title": "CPU Utilization",
+      "description": "Peak pod CPU utilization from planetscale_pods_cpu_util_percentages.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pods_cpu_util_percentages", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "row_connections",
+      "panelTypes": "row",
+      "title": "Connections & Sessions"
+    },
+    {
+      "id": "g_conn_state",
+      "panelTypes": "graph",
+      "title": "Connections by State",
+      "description": "Backend connection count by session state.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_connection_state", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_connection_state", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_connection_state}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_conn_vs_max",
+      "panelTypes": "graph",
+      "title": "Open Connections vs max_connections",
+      "description": "Total open connections compared with configured max_connections.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_connection_state", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Open connections"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_settings_max_connections", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "max_connections"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_conn_role",
+      "panelTypes": "graph",
+      "title": "Connections by Role",
+      "description": "Open connections by instance role.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_connection_state", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_role", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_role}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_xact_commit",
+      "panelTypes": "graph",
+      "title": "Commit Rate by Database",
+      "description": "Committed transactions per second by database.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_database_xact_commit_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_database_name", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_database_name}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_conn_util_pod",
+      "panelTypes": "graph",
+      "title": "Connection Utilization % by Pod",
+      "description": "Per-pod connection utilization from connection_state / settings_max_connections * 100. Use it to find a saturated pod hidden by fleet totals.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 90, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_connection_state", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }]
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_settings_max_connections", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }]
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "A / B * 100", "legend": "{{planetscale_pod}}" }
+          ]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "row_pgbouncer",
+      "panelTypes": "row",
+      "title": "PgBouncer Connection Pool"
+    },
+    {
+      "id": "g_pgb_client",
+      "panelTypes": "graph",
+      "title": "PgBouncer Client Connections",
+      "description": "Client connections into PgBouncer.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_current_client_connections", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_pgb_server",
+      "panelTypes": "graph",
+      "title": "PgBouncer → Postgres Connections",
+      "description": "PgBouncer connections into Postgres.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_current_connections", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_pgb_pools_client",
+      "panelTypes": "graph",
+      "title": "Client Pool by State",
+      "description": "PgBouncer client connections by pool state.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_pools_client", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pgbouncer_pool", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pgbouncer_pool}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_pgb_pools_server",
+      "panelTypes": "graph",
+      "title": "Server Pool by State",
+      "description": "PgBouncer server connections by pool state.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_pools_server", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pgbouncer_pool", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pgbouncer_pool}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_pgb_maxwait",
+      "panelTypes": "graph",
+      "title": "Max Client Wait",
+      "description": "Longest client wait for a PgBouncer connection.",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_pools_client_maxwait_seconds", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Max wait"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_pgb_cpu",
+      "panelTypes": "graph",
+      "title": "PgBouncer CPU per Peer",
+      "description": "CPU utilization for PgBouncer peer processes.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_cpu_util_per_peer_percentages", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_pgb_peers",
+      "panelTypes": "graph",
+      "title": "PgBouncer Peers vs Max Client Conn",
+      "description": "Peered PgBouncer processes compared with max_client_conn.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_total_peers", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Total peers"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pgbouncer_settings_max_client_conn", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "max_client_conn"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "row_locks",
+      "panelTypes": "row",
+      "title": "Locks"
+    },
+    {
+      "id": "g_locks",
+      "panelTypes": "graph",
+      "title": "Locks by Mode",
+      "description": "Active locks by mode. Check ExclusiveLock and AccessExclusiveLock growth during contention.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_locks", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_lock_mode", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_lock_mode}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "row_wal",
+      "panelTypes": "row",
+      "title": "Write-Ahead Log (WAL)"
+    },
+    {
+      "id": "g_wal_size",
+      "panelTypes": "graph",
+      "title": "WAL Pending Archive Size",
+      "description": "WAL bytes waiting for archive compared with max_wal_size.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_wal_size_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "WAL pending"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_settings_max_wal_size_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "max_wal_size"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_wal_lag",
+      "panelTypes": "graph",
+      "title": "WAL Archiver Lag",
+      "description": "WAL bytes waiting for archive, measured as current LSN minus last archived LSN.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_wal_archiver_lag_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Archive lag"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_wal_archiver",
+      "panelTypes": "graph",
+      "title": "WAL Archiver Outcomes",
+      "description": "Successful and failed WAL archive operations.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_wal_archiver_succeeded", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Succeeded"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_wal_archiver_failed", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Failed"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_wal_age",
+      "panelTypes": "graph",
+      "title": "Last Successful Archive Age",
+      "description": "Age of the latest successful WAL archive. A rising line means archiving has stalled.",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_wal_archiver_last_age_succeeded", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Archive age"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_replica_lag",
+      "panelTypes": "graph",
+      "title": "Connection Utilization % over time",
+      "description": "Open connection utilization from sum(connection_state) / max_connections * 100.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 90, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_connection_state", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_postgres_settings_max_connections", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "A / B * 100", "legend": "Utilization %" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "row_storage",
+      "panelTypes": "row",
+      "title": "Storage"
+    },
+    {
+      "id": "g_vol_used",
+      "panelTypes": "graph",
+      "title": "Volume Used %",
+      "description": "Used storage percentage from (capacity - available) / capacity * 100.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 85, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_volume_capacity_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_volume_available_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" }
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "(A - B) / A * 100", "legend": "Used %" }
+          ]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vol_bytes",
+      "panelTypes": "graph",
+      "title": "Volume Available vs Capacity",
+      "description": "Available and provisioned volume bytes.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_volume_available_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Available"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_volume_capacity_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "legend": "Capacity"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "row_resources",
+      "panelTypes": "row",
+      "title": "Pod Resources"
+    },
+    {
+      "id": "g_cpu",
+      "panelTypes": "graph",
+      "title": "CPU Utilization by Pod",
+      "description": "CPU utilization by pod.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pods_cpu_util_percentages", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "avg" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_mem",
+      "panelTypes": "graph",
+      "title": "Memory Utilization by Pod",
+      "description": "Memory utilization by pod.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pods_mem_util_percentages", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "avg" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_mem_rss",
+      "panelTypes": "graph",
+      "title": "Memory RSS by Pod",
+      "description": "Resident memory by pod, in bytes.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pods_mem_rss_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_iops",
+      "panelTypes": "graph",
+      "title": "Disk IOPS by Pod",
+      "description": "I/O operations per second by pod.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pods_iops_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "t_pod_status",
+      "panelTypes": "table",
+      "title": "Pods by Status Phase",
+      "description": "Pod count by Kubernetes status phase. Check non-zero Pending or Failed pods.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                { "metricName": "planetscale_pods_status_phase", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }
+              ],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_role IN $role" },
+              "groupBy": [{ "key": "planetscale_phase", "dataType": "string", "type": "tag", "isColumn": true }],
+              "legend": "Pods"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    }
+  ]
+}
