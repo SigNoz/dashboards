@@ -1,0 +1,894 @@
+{
+  "title": "OpenTelemetry Collector",
+  "description": "Pipeline health for the OTel Collector: receiver throughput, processor drops, exporter delivery, queue depth, and process resources.",
+  "tags": ["opentelemetry", "otel", "collector", "metrics", "infrastructure"],
+  "version": "v5",
+  "dotMigrated": true,
+  "variables": {
+    "var_service_name": {
+      "id": "var_service_name",
+      "name": "service_name",
+      "key": "service_name",
+      "description": "Filter by collector service (service.name).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 0
+    }
+  },
+  "layout": [
+    { "i": "row_overview",           "x": 0,  "y": 0,  "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "v_recv_spans",           "x": 0,  "y": 1,  "w": 2,  "h": 3, "minW": 2,  "minH": 2 },
+    { "i": "v_recv_metrics",         "x": 2,  "y": 1,  "w": 2,  "h": 3, "minW": 2,  "minH": 2 },
+    { "i": "v_recv_logs",            "x": 4,  "y": 1,  "w": 2,  "h": 3, "minW": 2,  "minH": 2 },
+    { "i": "v_exp_spans",            "x": 6,  "y": 1,  "w": 2,  "h": 3, "minW": 2,  "minH": 2 },
+    { "i": "v_exp_metrics",          "x": 8,  "y": 1,  "w": 2,  "h": 3, "minW": 2,  "minH": 2 },
+    { "i": "v_exp_logs",             "x": 10, "y": 1,  "w": 2,  "h": 3, "minW": 2,  "minH": 2 },
+
+    { "i": "row_receivers",          "x": 0,  "y": 4,  "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_recv_spans",           "x": 0,  "y": 5,  "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_recv_spans_refused",   "x": 6,  "y": 5,  "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_recv_metrics",         "x": 0,  "y": 12, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_recv_metrics_refused", "x": 6,  "y": 12, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_recv_logs",            "x": 0,  "y": 19, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_recv_logs_refused",    "x": 6,  "y": 19, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+
+    { "i": "row_processors",         "x": 0,  "y": 26, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_proc_incoming",        "x": 0,  "y": 27, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_proc_outgoing",        "x": 6,  "y": 27, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_batch_size",           "x": 0,  "y": 34, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_batch_trigger",        "x": 6,  "y": 34, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+
+    { "i": "row_exporters",          "x": 0,  "y": 41, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_exp_spans",            "x": 0,  "y": 42, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_spans_failed",     "x": 6,  "y": 42, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_metrics",          "x": 0,  "y": 49, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_metrics_failed",   "x": 6,  "y": 49, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_logs",             "x": 0,  "y": 56, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_logs_failed",      "x": 6,  "y": 56, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_queue_size",       "x": 0,  "y": 63, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_queue_util",       "x": 6,  "y": 63, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_exp_in_flight",        "x": 0,  "y": 70, "w": 12, "h": 7, "minW": 4,  "minH": 5 },
+
+    { "i": "row_process",            "x": 0,  "y": 77, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_heap_mem",             "x": 0,  "y": 78, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_rss_mem",              "x": 6,  "y": 78, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_cpu",                  "x": 0,  "y": 85, "w": 6,  "h": 7, "minW": 4,  "minH": 5 },
+    { "i": "g_alloc_rate",           "x": 6,  "y": 85, "w": 6,  "h": 7, "minW": 4,  "minH": 5 }
+  ],
+  "panelMap": {
+    "row_overview":    ["v_recv_spans", "v_recv_metrics", "v_recv_logs", "v_exp_spans", "v_exp_metrics", "v_exp_logs"],
+    "row_receivers":   ["g_recv_spans", "g_recv_spans_refused", "g_recv_metrics", "g_recv_metrics_refused", "g_recv_logs", "g_recv_logs_refused"],
+    "row_processors":  ["g_proc_incoming", "g_proc_outgoing", "g_batch_size", "g_batch_trigger"],
+    "row_exporters":   ["g_exp_spans", "g_exp_spans_failed", "g_exp_metrics", "g_exp_metrics_failed", "g_exp_logs", "g_exp_logs_failed", "g_exp_queue_size", "g_exp_queue_util", "g_exp_in_flight"],
+    "row_process":     ["g_heap_mem", "g_rss_mem", "g_cpu", "g_alloc_rate"]
+  },
+  "widgets": [
+
+    { "id": "row_overview",   "panelTypes": "row", "title": "Overview" },
+    { "id": "row_receivers",  "panelTypes": "row", "title": "Receivers" },
+    { "id": "row_processors", "panelTypes": "row", "title": "Processors" },
+    { "id": "row_exporters",  "panelTypes": "row", "title": "Exporters" },
+    { "id": "row_process",    "panelTypes": "row", "title": "Process Resources" },
+
+    {
+      "id": "v_recv_spans",
+      "panelTypes": "value",
+      "title": "Spans Received /s",
+      "description": "Spans pushed into the pipeline per second, summed across all receivers.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_accepted_spans", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "v_recv_metrics",
+      "panelTypes": "value",
+      "title": "Metric Points Received /s",
+      "description": "Metric points pushed into the pipeline per second, summed across all receivers.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_accepted_metric_points", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "v_recv_logs",
+      "panelTypes": "value",
+      "title": "Log Records Received /s",
+      "description": "Log records pushed into the pipeline per second, summed across all receivers.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_accepted_log_records", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "v_exp_spans",
+      "panelTypes": "value",
+      "title": "Spans Sent /s",
+      "description": "Spans delivered to the backend per second, summed across all exporters.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_sent_spans", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "v_exp_metrics",
+      "panelTypes": "value",
+      "title": "Metric Points Sent /s",
+      "description": "Metric points delivered to the backend per second, summed across all exporters.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_sent_metric_points", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "v_exp_logs",
+      "panelTypes": "value",
+      "title": "Log Records Sent /s",
+      "description": "Log records delivered to the backend per second, summed across all exporters.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_sent_log_records", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_recv_spans",
+      "panelTypes": "graph",
+      "title": "Accepted Spans /s by Receiver",
+      "description": "Spans entering the pipeline per second, by receiver.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_accepted_spans", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "{{receiver}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_recv_spans_refused",
+      "panelTypes": "graph",
+      "title": "Refused & Failed Spans /s by Receiver",
+      "description": "Refused = pipeline back-pressure (downstream can't accept). Failed = internal receiver error. Both cause span loss.",
+      "yAxisUnit": "none",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }
+      ],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_refused_spans", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "refused: {{receiver}}" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_failed_spans", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "failed: {{receiver}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_recv_metrics",
+      "panelTypes": "graph",
+      "title": "Accepted Metric Points /s by Receiver",
+      "description": "Metric points entering the pipeline per second, by receiver.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_accepted_metric_points", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "{{receiver}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_recv_metrics_refused",
+      "panelTypes": "graph",
+      "title": "Refused & Failed Metric Points /s by Receiver",
+      "description": "Refused = pipeline back-pressure. Failed = internal receiver error. Both cause metric point loss.",
+      "yAxisUnit": "none",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }
+      ],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_refused_metric_points", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "refused: {{receiver}}" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_failed_metric_points", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "failed: {{receiver}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_recv_logs",
+      "panelTypes": "graph",
+      "title": "Accepted Log Records /s by Receiver",
+      "description": "Log records entering the pipeline per second, by receiver.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_accepted_log_records", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "{{receiver}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_recv_logs_refused",
+      "panelTypes": "graph",
+      "title": "Refused & Failed Log Records /s by Receiver",
+      "description": "Refused = pipeline back-pressure. Failed = internal receiver error. Both cause log record loss.",
+      "yAxisUnit": "none",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }
+      ],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_refused_log_records", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "refused: {{receiver}}" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_receiver_failed_log_records", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "receiver", "dataType": "string", "type": "tag" }],
+              "legend": "failed: {{receiver}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_proc_incoming",
+      "panelTypes": "graph",
+      "title": "Items Incoming /s by Processor",
+      "description": "Items entering each processor per second. Covers spans, metric points, and log records combined.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_processor_incoming_items", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "processor", "dataType": "string", "type": "tag" }],
+              "legend": "{{processor}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_proc_outgoing",
+      "panelTypes": "graph",
+      "title": "Items Outgoing /s by Processor",
+      "description": "Items leaving each processor per second. A rate below incoming means the processor dropped or filtered data.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_processor_outgoing_items", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "processor", "dataType": "string", "type": "tag" }],
+              "legend": "{{processor}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_batch_size",
+      "panelTypes": "graph",
+      "title": "Batch Send Size (p50 / p95 / p99)",
+      "description": "Items per batch at p50, p95, and p99. A large gap between p50 and p99 points to bursty traffic.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_processor_batch_batch_send_size.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p50" }],
+              "filter": { "expression": "service.name IN $service_name" }, "legend": "p50" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_processor_batch_batch_send_size.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p95" }],
+              "filter": { "expression": "service.name IN $service_name" }, "legend": "p95" },
+            { "queryName": "C", "dataSource": "metrics", "expression": "C", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_processor_batch_batch_send_size.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p99" }],
+              "filter": { "expression": "service.name IN $service_name" }, "legend": "p99" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_batch_trigger",
+      "panelTypes": "graph",
+      "title": "Batch Timeout Trigger Sends /s by Processor",
+      "description": "Batches flushed by timeout per second, by processor. High rate with small batch sizes means the collector is under-loaded relative to the configured batch size.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_processor_batch_timeout_trigger_send", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "processor", "dataType": "string", "type": "tag" }],
+              "legend": "{{processor}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_spans",
+      "panelTypes": "graph",
+      "title": "Spans Sent /s by Exporter",
+      "description": "Spans delivered to the backend per second, by exporter.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_sent_spans", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "{{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_spans_failed",
+      "panelTypes": "graph",
+      "title": "Span Send Failures /s by Exporter",
+      "description": "Spans the exporter failed to deliver per second. Any non-zero value needs investigation.",
+      "yAxisUnit": "none",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }
+      ],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_send_failed_spans", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "{{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_metrics",
+      "panelTypes": "graph",
+      "title": "Metric Points Sent /s by Exporter",
+      "description": "Metric points delivered to the backend per second, by exporter.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_sent_metric_points", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "{{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_metrics_failed",
+      "panelTypes": "graph",
+      "title": "Metric Point Send Failures /s by Exporter",
+      "description": "Metric points the exporter failed to deliver per second.",
+      "yAxisUnit": "none",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }
+      ],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_send_failed_metric_points", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "{{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_logs",
+      "panelTypes": "graph",
+      "title": "Log Records Sent /s by Exporter",
+      "description": "Log records delivered to the backend per second, by exporter.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_sent_log_records", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "{{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_logs_failed",
+      "panelTypes": "graph",
+      "title": "Log Record Send Failures /s by Exporter",
+      "description": "Log records the exporter failed to deliver per second.",
+      "yAxisUnit": "none",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }
+      ],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_send_failed_log_records", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "{{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_queue_size",
+      "panelTypes": "graph",
+      "title": "Exporter Queue Size vs Capacity",
+      "description": "Queue depth vs. capacity per exporter. Size approaching capacity means the exporter can't keep up with incoming data.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_queue_size", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "size: {{exporter}}" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_queue_capacity", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "capacity: {{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_queue_util",
+      "panelTypes": "graph",
+      "title": "Exporter Queue Utilization %",
+      "description": "Queue fill as a percentage per exporter. Above 80%, the exporter risks dropping data under sustained load.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 80, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "Saturation" }
+      ],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_queue_size", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }] },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_queue_capacity", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }] }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "A / B * 100", "legend": "{{exporter}}" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_exp_in_flight",
+      "panelTypes": "graph",
+      "title": "Exporter In-Flight Requests by Exporter",
+      "description": "Export requests currently active, including retries. High values with a slow-draining queue point to backend latency or connectivity issues.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_exporter_in_flight_requests", "temporality": "cumulative", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "exporter", "dataType": "string", "type": "tag" }],
+              "legend": "{{exporter}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_heap_mem",
+      "panelTypes": "graph",
+      "title": "Heap Memory Allocated",
+      "description": "Heap bytes held by live objects, per collector instance. Sustained growth between GC cycles points to a memory leak.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_process_runtime_heap_alloc_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "service.instance.id", "dataType": "string", "type": "resource" }],
+              "legend": "instance: {{service.instance.id}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_rss_mem",
+      "panelTypes": "graph",
+      "title": "Process RSS Memory",
+      "description": "Physical memory used by each collector instance, including Go runtime overhead.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_process_memory_rss", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "service.instance.id", "dataType": "string", "type": "resource" }],
+              "legend": "instance: {{service.instance.id}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_cpu",
+      "panelTypes": "graph",
+      "title": "CPU Usage (user + system)",
+      "description": "CPU seconds consumed per second, per collector instance. Values near the number of available cores mean the collector is CPU-saturated.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_process_cpu_seconds", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "service.instance.id", "dataType": "string", "type": "resource" }],
+              "legend": "instance: {{service.instance.id}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_alloc_rate",
+      "panelTypes": "graph",
+      "title": "Memory Allocation Rate",
+      "description": "Heap allocation throughput in bytes per second, per collector instance. High rates drive GC pressure and CPU overhead.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "otelcol_process_runtime_total_alloc_bytes", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "service.name IN $service_name" },
+              "groupBy": [{ "key": "service.instance.id", "dataType": "string", "type": "resource" }],
+              "legend": "instance: {{service.instance.id}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    }
+
+  ]
+}
