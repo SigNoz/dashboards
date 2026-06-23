@@ -4,4 +4,4 @@ This dashboard provides detailed insights into your CloudNativePG clusters, moni
 
 It is built entirely on the native `cnpg_*` metrics that each CloudNativePG instance exposes on its metrics endpoint (`:9187/metrics`), scraped via the OpenTelemetry Collector Prometheus receiver.
 
-For setup instructions and more details, please visit the [SigNoz CloudNativePG Integration Documentation](https://signoz.io/docs/metrics-management/cloudnative-pg/).
+For setup instructions and more details, please visit the [SigNoz CloudNativePG Integration Documentation](https://signoz.io/docs/metrics-management/opentelemetry-cloudnative-pg/).
