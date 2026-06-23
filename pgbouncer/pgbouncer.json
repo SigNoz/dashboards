@@ -1,0 +1,1936 @@
+{
+  "title": "PgBouncer",
+  "description": "PgBouncer connection pooler health: client/server pool states, query and transaction throughput, wait times, network, prepared statements, and per-database connections. Built on the prometheus-community pgbouncer_exporter metrics.",
+  "tags": ["pgbouncer", "postgresql", "database", "connection-pool", "metrics"],
+  "version": "v5",
+  "dotMigrated": true,
+  "variables": {
+    "var_service_name": {
+      "id": "var_service_name",
+      "name": "service_name",
+      "key": "service_name",
+      "description": "Filter by PgBouncer instance (service.name resource attribute).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 0
+    },
+    "var_database": {
+      "id": "var_database",
+      "name": "database",
+      "key": "database",
+      "description": "Filter per-database panels by pooled database (database label).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "database",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 1
+    }
+  },
+  "layout": [
+    {
+      "i": "row_overview",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    { "i": "v_up", "x": 0, "y": 1, "w": 3, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_qps", "x": 3, "y": 1, "w": 3, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_tps", "x": 6, "y": 1, "w": 3, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_avgquery", "x": 9, "y": 1, "w": 3, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_maxwait", "x": 0, "y": 4, "w": 3, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_pools", "x": 3, "y": 4, "w": 3, "h": 3, "minW": 2, "minH": 2 },
+    {
+      "i": "v_maxclient",
+      "x": 6,
+      "y": 4,
+      "w": 3,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    { "i": "v_maxuser", "x": 9, "y": 4, "w": 3, "h": 3, "minW": 2, "minH": 2 },
+
+    {
+      "i": "row_connections",
+      "x": 0,
+      "y": 7,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    { "i": "g_clients", "x": 0, "y": 8, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_servers", "x": 6, "y": 8, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    {
+      "i": "g_client_states",
+      "x": 0,
+      "y": 15,
+      "w": 6,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "i": "g_client_db",
+      "x": 6,
+      "y": 15,
+      "w": 6,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+
+    {
+      "i": "row_pools",
+      "x": 0,
+      "y": 22,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    {
+      "i": "g_pool_cli_active",
+      "x": 0,
+      "y": 23,
+      "w": 6,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "i": "g_pool_cli_wait",
+      "x": 6,
+      "y": 23,
+      "w": 6,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "i": "g_pool_srv_states",
+      "x": 0,
+      "y": 30,
+      "w": 6,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+    { "i": "g_maxwait", "x": 6, "y": 30, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    {
+      "i": "row_throughput",
+      "x": 0,
+      "y": 37,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    { "i": "g_queries", "x": 0, "y": 38, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_txns", "x": 6, "y": 38, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    {
+      "i": "g_avgquery",
+      "x": 0,
+      "y": 45,
+      "w": 6,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+    { "i": "g_avgtxn", "x": 6, "y": 45, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    {
+      "i": "g_clientwait",
+      "x": 0,
+      "y": 52,
+      "w": 12,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+
+    {
+      "i": "row_network",
+      "x": 0,
+      "y": 59,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    { "i": "g_network", "x": 0, "y": 60, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    {
+      "i": "g_assignments",
+      "x": 6,
+      "y": 60,
+      "w": 6,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "i": "g_prepared",
+      "x": 0,
+      "y": 67,
+      "w": 12,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    },
+
+    {
+      "i": "row_databases",
+      "x": 0,
+      "y": 74,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    {
+      "i": "t_databases",
+      "x": 0,
+      "y": 75,
+      "w": 12,
+      "h": 5,
+      "minW": 4,
+      "minH": 4
+    },
+    { "i": "g_db_conn", "x": 0, "y": 80, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_dns", "x": 6, "y": 80, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    {
+      "i": "g_db_state",
+      "x": 0,
+      "y": 87,
+      "w": 12,
+      "h": 7,
+      "minW": 4,
+      "minH": 5
+    }
+  ],
+  "panelMap": {
+    "row_overview": [
+      "v_up",
+      "v_qps",
+      "v_tps",
+      "v_avgquery",
+      "v_maxwait",
+      "v_pools",
+      "v_maxclient",
+      "v_maxuser"
+    ],
+    "row_connections": [
+      "g_clients",
+      "g_servers",
+      "g_client_states",
+      "g_client_db"
+    ],
+    "row_pools": [
+      "g_pool_cli_active",
+      "g_pool_cli_wait",
+      "g_pool_srv_states",
+      "g_maxwait"
+    ],
+    "row_throughput": [
+      "g_queries",
+      "g_txns",
+      "g_avgquery",
+      "g_avgtxn",
+      "g_clientwait"
+    ],
+    "row_network": ["g_network", "g_assignments", "g_prepared"],
+    "row_databases": ["t_databases", "g_db_conn", "g_dns", "g_db_state"]
+  },
+  "widgets": [
+    { "id": "row_overview", "panelTypes": "row", "title": "Overview" },
+    { "id": "row_connections", "panelTypes": "row", "title": "Connections" },
+    { "id": "row_pools", "panelTypes": "row", "title": "Pools" },
+    {
+      "id": "row_throughput",
+      "panelTypes": "row",
+      "title": "Throughput & Latency"
+    },
+    {
+      "id": "row_network",
+      "panelTypes": "row",
+      "title": "Network & Prepared Statements"
+    },
+    {
+      "id": "row_databases",
+      "panelTypes": "row",
+      "title": "Databases & Config"
+    },
+
+    {
+      "id": "v_up",
+      "panelTypes": "value",
+      "title": "PgBouncer Up",
+      "description": "Exporter scrape status. 1 means PgBouncer is reachable and responding.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [
+        {
+          "index": "t0",
+          "thresholdValue": 1,
+          "thresholdFormat": "Background",
+          "thresholdOperator": "<",
+          "thresholdColor": "#e53935",
+          "thresholdUnit": "none",
+          "thresholdLabel": ""
+        }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_up",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "v_qps",
+      "panelTypes": "value",
+      "title": "Queries /s",
+      "description": "SQL queries pooled per second across all databases.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_queries_pooled_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "v_tps",
+      "panelTypes": "value",
+      "title": "Transactions /s",
+      "description": "SQL transactions pooled per second across all databases.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_sql_transactions_pooled_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "v_avgquery",
+      "panelTypes": "value",
+      "title": "Avg Query Duration",
+      "description": "Mean query execution time from rate(queries_duration_seconds) / rate(queries_pooled).",
+      "yAxisUnit": "s",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_queries_duration_seconds_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_queries_pooled_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            }
+          ],
+          "queryFormulas": [
+            { "queryName": "F1", "expression": "A / B", "legend": "Avg query" }
+          ]
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "v_maxwait",
+      "panelTypes": "value",
+      "title": "Max Client Wait",
+      "description": "Age of the oldest unserved client connection. Non-zero means clients are queuing for a server connection.",
+      "yAxisUnit": "s",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [
+        {
+          "index": "t0",
+          "thresholdValue": 1,
+          "thresholdFormat": "Background",
+          "thresholdOperator": ">",
+          "thresholdColor": "#e53935",
+          "thresholdUnit": "s",
+          "thresholdLabel": ""
+        }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_client_maxwait_seconds",
+                  "temporality": "unspecified",
+                  "timeAggregation": "max",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "v_pools",
+      "panelTypes": "value",
+      "title": "Active Pools",
+      "description": "Number of distinct (database, user) connection pools.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_clients",
+      "panelTypes": "graph",
+      "title": "Client Connections (pooler-wide)",
+      "description": "Free, used, and login client connection slots across the whole pooler.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_used_clients",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "used"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_free_clients",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "free"
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "expression": "C",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_login_clients",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "login"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_servers",
+      "panelTypes": "graph",
+      "title": "Server Connections (pooler-wide)",
+      "description": "Free and used server connection slots to PostgreSQL across the whole pooler.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_used_servers",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "used"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_free_servers",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "free"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_client_states",
+      "panelTypes": "graph",
+      "title": "Client Connections by State",
+      "description": "Client connections grouped by connection state (active, waiting, idle). The live mix depends on pool mode and load.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_client_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "state", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{state}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_client_db",
+      "panelTypes": "graph",
+      "title": "Client Connections by Database",
+      "description": "Active client connections grouped by pooled database.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_client_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_pool_cli_active",
+      "panelTypes": "graph",
+      "title": "Pool Client Active Connections by Database",
+      "description": "Client connections linked to a server and able to process queries, per database.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_client_active_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_pool_cli_wait",
+      "panelTypes": "graph",
+      "title": "Pool Client Waiting Connections by Database",
+      "description": "Client connections waiting for a server connection, per database. Sustained values above zero mean the pool is too small for demand.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [
+        {
+          "index": "t0",
+          "thresholdValue": 0,
+          "thresholdFormat": "Background",
+          "thresholdOperator": ">",
+          "thresholdColor": "#f6be00",
+          "thresholdUnit": "none",
+          "thresholdLabel": ""
+        }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_client_waiting_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_pool_srv_states",
+      "panelTypes": "graph",
+      "title": "Server Connection States",
+      "description": "Server connections by state across all pools: active (serving a client), idle (ready), used (idle past server_check_delay), testing, and logging in.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_server_active_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "active"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_server_idle_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "idle"
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "expression": "C",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_server_used_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "used"
+            },
+            {
+              "queryName": "D",
+              "dataSource": "metrics",
+              "expression": "D",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_server_testing_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "testing"
+            },
+            {
+              "queryName": "E",
+              "dataSource": "metrics",
+              "expression": "E",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_server_login_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "login"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_maxwait",
+      "panelTypes": "graph",
+      "title": "Client Max Wait by Database",
+      "description": "Age of the oldest unserved client connection per database. The single most important saturation signal — should normally be zero.",
+      "yAxisUnit": "s",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [
+        {
+          "index": "t0",
+          "thresholdValue": 1,
+          "thresholdFormat": "Background",
+          "thresholdOperator": ">",
+          "thresholdColor": "#e53935",
+          "thresholdUnit": "s",
+          "thresholdLabel": ""
+        }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_pools_client_maxwait_seconds",
+                  "temporality": "unspecified",
+                  "timeAggregation": "max",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_queries",
+      "panelTypes": "graph",
+      "title": "Queries /s by Database",
+      "description": "SQL queries pooled per second, per database.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_queries_pooled_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_txns",
+      "panelTypes": "graph",
+      "title": "Transactions /s by Database",
+      "description": "SQL transactions pooled per second, per database.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_sql_transactions_pooled_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_avgquery",
+      "panelTypes": "graph",
+      "title": "Avg Query Duration",
+      "description": "Mean query execution time from rate(queries_duration_seconds) / rate(queries_pooled), across all databases.",
+      "yAxisUnit": "s",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_queries_duration_seconds_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_queries_pooled_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / B",
+              "legend": "Avg query duration"
+            }
+          ]
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_avgtxn",
+      "panelTypes": "graph",
+      "title": "Avg Transaction Time",
+      "description": "Mean time PgBouncer holds a server connection per transaction, from rate(server_in_transaction_seconds) / rate(sql_transactions_pooled). High values keep server connections busy and reduce pool availability.",
+      "yAxisUnit": "s",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_server_in_transaction_seconds_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "disabled": true,
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_sql_transactions_pooled_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              }
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / B",
+              "legend": "Avg transaction time"
+            }
+          ]
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_clientwait",
+      "panelTypes": "graph",
+      "title": "Client Wait Time /s by Database",
+      "description": "Wait-seconds accrued by clients per second (rate of the cumulative client_wait_seconds counter), per database. Above zero means clients are queuing for a server connection; cross-check with Client Max Wait.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_client_wait_seconds_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_network",
+      "panelTypes": "graph",
+      "title": "Network Throughput",
+      "description": "Bytes per second received from and sent to clients across all databases.",
+      "yAxisUnit": "Bps",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_received_bytes_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "received"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_sent_bytes_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "sent"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_assignments",
+      "panelTypes": "graph",
+      "title": "Server Assignments /s",
+      "description": "Rate at which client connections are assigned a server connection. Indicates pool churn.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_server_assignments_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "{{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_prepared",
+      "panelTypes": "graph",
+      "title": "Prepared Statement Ops /s",
+      "description": "Rate of prepared-statement protocol messages: client Parse, server Parse (forwarded to PostgreSQL), and Bind.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_client_parses_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "client parses"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_server_parses_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "server parses"
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "expression": "C",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_stats_totals_binds_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "legend": "binds"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "t_databases",
+      "panelTypes": "table",
+      "title": "Per-Database Connections",
+      "description": "Current connections, configured pool size, and connection limit per database.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_databases_current_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "Current"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_databases_pool_size",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "Pool Size"
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "expression": "C",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_databases_max_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "Max Connections"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_db_conn",
+      "panelTypes": "graph",
+      "title": "Database Connections vs Pool Size",
+      "description": "Current backend connections compared with the configured pool size, per database. Current approaching pool size means the pool is fully utilized.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_databases_current_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "current: {{database}}"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_databases_pool_size",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "pool size: {{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_dns",
+      "panelTypes": "graph",
+      "title": "DNS Cache",
+      "description": "Cached DNS names and zones, plus in-flight DNS lookups. Spikes in in-flight queries can delay new server connections.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_cached_dns_names",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "cached names"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_cached_dns_zones",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "cached zones"
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "expression": "C",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_in_flight_dns_queries",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" },
+              "legend": "in-flight queries"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "g_db_state",
+      "panelTypes": "graph",
+      "title": "Database Paused / Disabled State",
+      "description": "Per-database paused and disabled flags (1 = paused/disabled). Any non-zero value means clients to that database are being held or rejected.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [
+        {
+          "index": "t0",
+          "thresholdValue": 0,
+          "thresholdFormat": "Background",
+          "thresholdOperator": ">",
+          "thresholdColor": "#e53935",
+          "thresholdUnit": "none",
+          "thresholdLabel": ""
+        }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_databases_paused",
+                  "temporality": "unspecified",
+                  "timeAggregation": "max",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "paused: {{database}}"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_databases_disabled",
+                  "temporality": "unspecified",
+                  "timeAggregation": "max",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND database IN $database"
+              },
+              "groupBy": [
+                { "key": "database", "dataType": "string", "type": "tag" }
+              ],
+              "legend": "disabled: {{database}}"
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "v_maxclient",
+      "panelTypes": "value",
+      "title": "Max Client Conn (config)",
+      "description": "Configured max_client_conn — the ceiling on total client connections PgBouncer will accept.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_config_max_client_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    },
+
+    {
+      "id": "v_maxuser",
+      "panelTypes": "value",
+      "title": "Max User Conn (config)",
+      "description": "Configured max_user_connections — the per-user server connection ceiling (0 = unlimited).",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": { "linksData": [] },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "pgbouncer_config_max_user_connections",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": { "expression": "service.name IN $service_name" }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ],
+        "clickhouse_sql": [
+          { "name": "A", "query": "", "legend": "", "disabled": false }
+        ]
+      }
+    }
+  ]
+}
