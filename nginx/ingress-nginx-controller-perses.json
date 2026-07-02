@@ -1,0 +1,810 @@
+{
+  "schemaVersion": "v6",
+  "name": "nginx-ingress-controller-l92dvpg0",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "nginx"
+    },
+    {
+      "key": "tag",
+      "value": "ingress"
+    },
+    {
+      "key": "tag",
+      "value": "kubernetes"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "NGINX Ingress controller",
+      "description": "Ingress-nginx controller health and performance — request volume, success rate, config reloads, CPU/memory, network I/O, and latency percentiles. Filter by namespace, controller class, controller pod, and ingress."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "controller"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'controller_pod') FROM signoz_metrics.distributed_time_series_v4\nWHERE metric_name='nginx_ingress_controller_config_hash' AND JSONExtractString(labels, 'controller_namespace')=$namespace AND JSONExtractString(labels, 'controller_class')=$controller_class AND fingerprint GLOBAL IN\n(\n    SELECT DISTINCT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE\n    metric_name='nginx_ingress_controller_config_hash' AND unix_milli\u003etoUnixTimestamp(now() - INTERVAL 5 MINUTE)*1000\n)"
+            }
+          },
+          "name": "controller"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "controller_class"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'controller_class') FROM signoz_metrics.distributed_time_series_v4\nWHERE metric_name='nginx_ingress_controller_config_hash' AND JSONExtractString(labels, 'controller_namespace')={{.namespace}} AND fingerprint GLOBAL IN\n(\n    SELECT DISTINCT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE\n    metric_name='nginx_ingress_controller_config_hash' AND unix_milli\u003etoUnixTimestamp(now() - INTERVAL 5 MINUTE)*1000\n)"
+            }
+          },
+          "name": "controller_class"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "ingress"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'ingress') FROM signoz_metrics.distributed_time_series_v4\nWHERE metric_name='nginx_ingress_controller_requests' AND JSONExtractString(labels, 'controller_namespace')={{.namespace}} AND JSONExtractString(labels, 'controller_class')={{.controller_class}} AND JSONExtractString(labels, 'controller_pod')={{.controller}} AND fingerprint GLOBAL IN\n(\n    SELECT DISTINCT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE\n    metric_name='nginx_ingress_controller_requests' AND unix_milli\u003etoUnixTimestamp(now() - INTERVAL 5 MINUTE)*1000\n)"
+            }
+          },
+          "name": "ingress"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "namespace"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT DISTINCT JSONExtractString(labels, 'controller_namespace') FROM signoz_metrics.distributed_time_series_v4\nWHERE metric_name='nginx_ingress_controller_config_hash' AND fingerprint GLOBAL IN\n(\n    SELECT DISTINCT fingerprint FROM signoz_metrics.distributed_samples_v4 WHERE\n    metric_name='nginx_ingress_controller_config_hash' AND unix_milli\u003etoUnixTimestamp(now() - INTERVAL 5 MINUTE)*1000\n)"
+            }
+          },
+          "name": "namespace"
+        }
+      }
+    ],
+    "panels": {
+      "3dd819bf-4489-430b-9ebf-4cf0bef9b821": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Last Config Failed"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "count(nginx_ingress_controller_config_last_reload_successful{controller_pod=~\"{{.controller}}\",controller_namespace=~\"{{.namespace}}\"} == 0)",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "45b71da7-7857-4a73-9c44-bea57efc881d": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Average Memory Usage"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "avg(nginx_ingress_controller_nginx_process_resident_memory_bytes{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\"}) ",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false,
+                    "legend": "nginx"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "4bb83a06-e236-4290-8ac3-3c68350894b4": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Controller Request Volume"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "cps",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "round(sum(irate(nginx_ingress_controller_requests{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\"}[2m])), 0.001)",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "74a885d7-7193-41dc-9b60-9f867813790c": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Ingress Percentile Response Times"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "histogram_quantile(0.80, sum(rate({\"nginx_ingress_controller_request_duration_seconds.bucket\",ingress!=\"\",controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",ingress=~\"{{.ingress}}\"}[2m])) by (le))",
+                          "disabled": false,
+                          "step": 0,
+                          "stats": false,
+                          "legend": "p80"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "histogram_quantile(0.90, sum(rate({\"nginx_ingress_controller_request_duration_seconds.bucket\",ingress!=\"\",controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",ingress=~\"{{.ingress}}\"}[2m])) by (le))",
+                          "disabled": false,
+                          "step": 0,
+                          "stats": false,
+                          "legend": "p90"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "C",
+                          "query": "histogram_quantile(0.99, sum(rate({\"nginx_ingress_controller_request_duration_seconds.bucket\",ingress!=\"\",controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",ingress=~\"{{.ingress}}\"}[2m])) by (le))",
+                          "disabled": false,
+                          "step": 0,
+                          "stats": false,
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "7b96e1e6-c023-4a28-82d3-6b0b0a1d5ab1": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Ingress Success Rate (non-4|5xx responses)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum(rate(nginx_ingress_controller_requests{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",ingress=~\"{{.ingress}}\",status!~\"[4-5].*\"}[2m])) by (ingress) / sum(rate(nginx_ingress_controller_requests{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",ingress=~\"{{.ingress}}\"}[2m])) by (ingress)",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false,
+                    "legend": "{{ingress}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "825743aa-cf68-4abd-a495-9407e2a7f0a9": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Average CPU Usage"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "avg (rate (nginx_ingress_controller_nginx_process_cpu_seconds_total{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\"}[2m]))",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false,
+                    "legend": "cores"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "961a6967-750d-4db9-ac40-7e09fbec201e": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Network I/O pressure"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "binBps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "sum (irate ({\"nginx_ingress_controller_request_size.sum\",controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\"}[2m]))",
+                          "disabled": false,
+                          "step": 0,
+                          "stats": false,
+                          "legend": "received"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "- sum (irate ({\"nginx_ingress_controller_response_size.sum\",controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\"}[2m]))",
+                          "disabled": false,
+                          "step": 0,
+                          "stats": false,
+                          "legend": "sent"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb6cc04a-4a94-4555-bf8b-3d9fb627d86b": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Config Reloads"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "avg(irate(nginx_ingress_controller_success{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\"}[2m])) * 60",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dca45281-13e4-45c0-ad7c-1ebfed8ee29b": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Ingress Request Volume"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "cps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "round(sum(irate(nginx_ingress_controller_requests{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",ingress=~\"{{.ingress}}\"}[2m])) by (ingress), 0.001)",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false,
+                    "legend": "{{ingress}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "e8948683-4d6d-4fe6-a4ba-be193975af6b": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Controller Connections"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum(avg_over_time(nginx_ingress_controller_nginx_process_connections{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",state=\"active\"}[2m]))",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "f54bf801-5e62-4138-883a-eb2a96b3d952": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Controller Success Rate (non-4|5xx responses)"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum(rate(nginx_ingress_controller_requests{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\",status!~\"[4-5].*\"}[2m])) / sum(rate(nginx_ingress_controller_requests{controller_pod=~\"{{.controller}}\",controller_class=~\"{{.controller_class}}\",controller_namespace=~\"{{.namespace}}\"}[2m]))",
+                    "disabled": false,
+                    "step": 0,
+                    "stats": false
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/4bb83a06-e236-4290-8ac3-3c68350894b4"
+              }
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/e8948683-4d6d-4fe6-a4ba-be193975af6b"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/f54bf801-5e62-4138-883a-eb2a96b3d952"
+              }
+            },
+            {
+              "x": 7,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/bb6cc04a-4a94-4555-bf8b-3d9fb627d86b"
+              }
+            },
+            {
+              "x": 10,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/3dd819bf-4489-430b-9ebf-4cf0bef9b821"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/dca45281-13e4-45c0-ad7c-1ebfed8ee29b"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/7b96e1e6-c023-4a28-82d3-6b0b0a1d5ab1"
+              }
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/961a6967-750d-4db9-ac40-7e09fbec201e"
+              }
+            },
+            {
+              "x": 6,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/45b71da7-7857-4a73-9c44-bea57efc881d"
+              }
+            },
+            {
+              "x": 0,
+              "y": 15,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/825743aa-cf68-4abd-a495-9407e2a7f0a9"
+              }
+            },
+            {
+              "x": 6,
+              "y": 15,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/74a885d7-7193-41dc-9b60-9f867813790c"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
