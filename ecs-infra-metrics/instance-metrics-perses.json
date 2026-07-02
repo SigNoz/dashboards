@@ -1,0 +1,1314 @@
+{
+  "schemaVersion": "v6",
+  "name": "instance-metrics-ecs-fp0dn65a",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "ecs"
+    },
+    {
+      "key": "tag",
+      "value": "daemon"
+    },
+    {
+      "key": "tag",
+      "value": "ec2"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Instance Metrics - ECS",
+      "description": "Instance Metrics Dashboard of ECS EC2"
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "ClusterName"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT JSONExtractString(labels, 'ClusterName') as ClusterName\nFROM signoz_metrics.time_series_v4_1day\nWHERE metric_name = 'instance_cpu_utilization'\nGROUP BY ClusterName"
+            }
+          },
+          "name": "ClusterName"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "AutoScalingGroupName"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT JSONExtractString(labels, 'AutoScalingGroupName') as AutoScalingGroupName\nFROM signoz_metrics.time_series_v4_1day\nWHERE metric_name = 'instance_cpu_utilization' AND JSONExtractString(labels, 'ClusterName') = {{ .ClusterName }}\nGROUP BY AutoScalingGroupName"
+            }
+          },
+          "name": "AutoScalingGroupName"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "InstanceId"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT JSONExtractString(labels, 'InstanceId') as InstanceId\nFROM signoz_metrics.time_series_v4_1day\nWHERE metric_name = 'instance_cpu_utilization' AND JSONExtractString(labels, 'AutoScalingGroupName') = {{ .AutoScalingGroupName }}\nGROUP BY InstanceId"
+            }
+          },
+          "name": "InstanceId"
+        }
+      }
+    ],
+    "panels": {
+      "26f347f9-985a-4974-a8aa-a4dcfb25ff9e": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Disk IO (write)"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "binBps",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_diskio_io_service_bytes_write",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "4d53b06f-5550-4ded-a0d4-81022d091fa5": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "File System Utilization"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_filesystem_utilization",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId AND device != '/dev/shm')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "4e394fa0-33f2-4a35-9c70-3a1af4ed06a6": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Limit"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_cpu_limit",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "59fe68b9-386d-4c74-91bb-36d78173bd53": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Network IO"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "binBps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_network_rx_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "receive"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_network_tx_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "transmit"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "670ce961-dd1b-4dd2-a1f4-54e4b9a13d99": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Utilization"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_memory_utilization",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "692edb22-625f-42f1-9b03-ef8a57afe41f": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Filesystem Capacity"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_filesystem_capacity",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "758694a1-1f6c-4a6c-94b1-4fbe2cf84252": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Limit"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_memory_limit",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "863c88ed-8ce3-4050-821f-5acec3b3f5df": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Usage"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_memory_usage",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(ClusterName = $ClusterName AND AutoScalingGroupName = $AutoScalingGroupName AND InstanceId = $InstanceId)"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "InstanceId",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{InstanceId}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "90d2ceb4-4243-4ab5-991e-6bbd12f7e2b3": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Disk IO"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "binBps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_diskio_io_service_bytes_read",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "device",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "read: {{device}}"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_diskio_io_service_bytes_write",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "device",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "write: {{device}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "b9d9dc18-7e35-429b-a314-6d8ef9a3c26a": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Disk IO (read)"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "binBps",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_diskio_io_service_bytes_read",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dc56afd2-8423-4ac9-9c23-4858d207a5b4": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "File System Usage"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_filesystem_usage",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId AND device NOT IN '/dev/shm')"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "device",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{device}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "e04f4189-a1df-4083-b413-f214c04a936f": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Usage"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_cpu_usage_system",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "system"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_cpu_usage_user",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "user"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_cpu_usage_total",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "InstanceId",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "{{InstanceId}}"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "D",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_cpu_reserved_capacity",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "reserved"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ea5cc94a-8cde-4433-bd4f-5784d7615fa8": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Network Interface IO"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "binBps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_interface_network_rx_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "interface",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "{{interface}}-receive"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 30,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "instance_interface_network_tx_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(AutoScalingGroupName = $AutoScalingGroupName AND ClusterName = $ClusterName AND InstanceId = $InstanceId)"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "interface",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "{{interface}}-transmit"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "edc9ccd6-0c9e-42a5-a717-83b824525dee": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Utilization"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 30,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "instance_cpu_utilization",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/758694a1-1f6c-4a6c-94b1-4fbe2cf84252"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/670ce961-dd1b-4dd2-a1f4-54e4b9a13d99"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/4e394fa0-33f2-4a35-9c70-3a1af4ed06a6"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/edc9ccd6-0c9e-42a5-a717-83b824525dee"
+              }
+            },
+            {
+              "x": 0,
+              "y": 4,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/692edb22-625f-42f1-9b03-ef8a57afe41f"
+              }
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/4d53b06f-5550-4ded-a0d4-81022d091fa5"
+              }
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/b9d9dc18-7e35-429b-a314-6d8ef9a3c26a"
+              }
+            },
+            {
+              "x": 9,
+              "y": 4,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/26f347f9-985a-4974-a8aa-a4dcfb25ff9e"
+              }
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "width": 6,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/863c88ed-8ce3-4050-821f-5acec3b3f5df"
+              }
+            },
+            {
+              "x": 6,
+              "y": 8,
+              "width": 6,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/e04f4189-a1df-4083-b413-f214c04a936f"
+              }
+            },
+            {
+              "x": 0,
+              "y": 12,
+              "width": 6,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/90d2ceb4-4243-4ab5-991e-6bbd12f7e2b3"
+              }
+            },
+            {
+              "x": 6,
+              "y": 12,
+              "width": 6,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/dc56afd2-8423-4ac9-9c23-4858d207a5b4"
+              }
+            },
+            {
+              "x": 0,
+              "y": 16,
+              "width": 6,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/59fe68b9-386d-4c74-91bb-36d78173bd53"
+              }
+            },
+            {
+              "x": 6,
+              "y": 16,
+              "width": 6,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/ea5cc94a-8cde-4433-bd4f-5784d7615fa8"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

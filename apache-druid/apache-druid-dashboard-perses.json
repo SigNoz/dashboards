@@ -1,0 +1,1589 @@
+{
+  "schemaVersion": "v6",
+  "name": "apache-druid-q5b6n7xp",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "druid"
+    },
+    {
+      "key": "tag",
+      "value": "apache"
+    },
+    {
+      "key": "tag",
+      "value": "database"
+    },
+    {
+      "key": "tag",
+      "value": "metrics"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Apache Druid",
+      "description": "Broker and coordinator metrics — query performance, JVM health, GC activity, and HTTP thread pool saturation."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "service",
+            "description": "Filter by service.name"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "metrics"
+            }
+          },
+          "name": "service"
+        }
+      }
+    ],
+    "panels": {
+      "druid-broker-gc-count": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker GC Count",
+            "description": "Number of G1 GC cycles per interval for old and young generations. Frequent old-gen GC indicates heap pressure."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jvm.gc.count.[old].[g1]",
+                              "temporality": "delta",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Old Gen"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jvm.gc.count.[young].[g1]",
+                              "temporality": "delta",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Young Gen"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-gc-cpu": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker GC CPU Time (ns)",
+            "description": "CPU time consumed by G1 GC per interval (reported by Druid in nanoseconds). Rising old-gen values mean GC is stealing significant CPU from query processing."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jvm.gc.cpu.[old].[g1]",
+                              "temporality": "delta",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Old Gen"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jvm.gc.cpu.[young].[g1]",
+                              "temporality": "delta",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Young Gen"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-heartbeat": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker Heartbeat",
+            "description": "Broker service heartbeat count — confirms the broker is alive and emitting metrics"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "druid.broker.service.heartbeat",
+                        "temporality": "delta",
+                        "timeAggregation": "sum",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = $service"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-jvm-heap": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker JVM Heap Memory",
+            "description": "Broker JVM heap used vs committed vs max. Used approaching max signals GC pressure or an undersized heap."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "decbytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jvm.mem.used.heap",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Used"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jvm.mem.committed.heap",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Committed"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jvm.mem.max.heap",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Max"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-open-conn": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker Open Connections",
+            "description": "Current number of open Jetty connections on the broker"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "druid.broker.jetty.numOpenConnections",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = $service"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-query-cpu": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker Query CPU Time (µs)",
+            "description": "CPU time consumed by scan queries on the broker (reported by Druid in microseconds). High CPU with low query time points to CPU-bound processing."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": true
+              },
+              "formatting": {
+                "unit": "µs",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "druid.broker.query.cpu.time.[].scan",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = $service"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "CPU Time"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-query-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker Query Time (ms)",
+            "description": "Average time to execute scan queries on the broker. Spikes indicate slow historical nodes or large scan ranges."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": true
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "druid.broker.query.time.[].scan",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = $service"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Query Time"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-thread-pool": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker Jetty Thread Pool",
+            "description": "Broker HTTP thread pool — busy, idle, and total threads. Busy approaching total means the broker is close to rejecting requests."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jetty.threadPool.busy",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Busy"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jetty.threadPool.idle",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Idle"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.broker.jetty.threadPool.total",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Total"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-broker-thread-util": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Broker Thread Pool Utilization",
+            "description": "Fraction of broker Jetty threads in use (0–1). Values near 1 indicate saturation."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 0.8,
+                  "operator": "above",
+                  "unit": "percentunit",
+                  "color": "#F2495C",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "druid.broker.jetty.threadPool.utilizationRate",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = $service"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-coord-duty-kpi": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Coordinator Duty Time",
+            "description": "Latest time the coordinator spent running its management duty cycle (ms)"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "druid.coordinator.coordinator.time",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = $service"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-coord-duty-times": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Coordinator Global Duty Times",
+            "description": "Time each coordinator duty group takes to complete — Historical management, Indexing service, and Metadata store. Sustained spikes may indicate segment assignment backlog."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": true
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.coordinator.global.time.HistoricalManagementDuties",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Historical Mgmt"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.coordinator.global.time.IndexingServiceDuties",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Indexing Service"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.coordinator.global.time.MetadataStoreManagementDuties",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Metadata Store"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-coord-gc-count": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Coordinator GC Count",
+            "description": "G1 GC cycles per interval on the coordinator — old and young generation. Elevated old-gen on the coordinator often precedes segment assignment slowdowns."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jvm.gc.count.[old].[g1]",
+                              "temporality": "delta",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Old Gen"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jvm.gc.count.[young].[g1]",
+                              "temporality": "delta",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Young Gen"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-coord-jvm-heap": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Coordinator JVM Heap Memory",
+            "description": "Coordinator JVM heap used vs committed vs max. The coordinator is long-running; a growing used/max ratio over time suggests a memory leak."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "decbytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jvm.mem.used.heap",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Used"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jvm.mem.committed.heap",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Committed"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jvm.mem.max.heap",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Max"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "druid-coord-thread-pool": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Coordinator Jetty Thread Pool",
+            "description": "Coordinator HTTP thread pool — busy, idle, and total. Useful for spotting coordinator API saturation during high segment load."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jetty.threadPool.busy",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Busy"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jetty.threadPool.idle",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Idle"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "druid.coordinator.jetty.threadPool.total",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = $service"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Total"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Broker Overview",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-heartbeat"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-open-conn"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-thread-util"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Broker Query Performance",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-query-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-query-cpu"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Broker JVM \u0026 Runtime",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-jvm-heap"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-gc-count"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-thread-pool"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-broker-gc-cpu"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Coordinator Operations",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-coord-duty-kpi"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 9,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-coord-duty-times"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-coord-jvm-heap"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-coord-thread-pool"
+              }
+            },
+            {
+              "x": 0,
+              "y": 14,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/druid-coord-gc-count"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

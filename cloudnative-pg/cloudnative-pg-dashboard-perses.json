@@ -1,0 +1,3932 @@
+{
+  "schemaVersion": "v6",
+  "name": "cloudnativepg-3vuy5e9q",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "cloudnative-pg"
+    },
+    {
+      "key": "tag",
+      "value": "cnpg"
+    },
+    {
+      "key": "tag",
+      "value": "postgresql"
+    },
+    {
+      "key": "tag",
+      "value": "database"
+    },
+    {
+      "key": "tag",
+      "value": "metrics"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "CloudNativePG",
+      "description": "CloudNativePG cluster health from the native cnpg_* instance metrics: connections, throughput, cache, replication, WAL \u0026 archiving, checkpoints, storage, and the metrics collector itself."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "pod",
+            "description": "Filter by CloudNativePG instance pod."
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "pod",
+              "signal": "metrics"
+            }
+          },
+          "name": "pod"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "datname",
+            "description": "Filter per-database panels by database name (datname label)."
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "datname",
+              "signal": "metrics"
+            }
+          },
+          "name": "datname"
+        }
+      }
+    ],
+    "panels": {
+      "g_archive_age": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Time Since Last Archive / Failure",
+            "description": "Seconds since the last successful archival and since the last failure, per instance. The success age sawtooths as WAL is archived; a steadily climbing value means archiving stalled."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_archiver_seconds_since_last_archival",
+                              "temporality": "unspecified",
+                              "timeAggregation": "max",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "pod",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "legend": "since archival: {{pod}}"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_archiver_seconds_since_last_failure",
+                              "temporality": "unspecified",
+                              "timeAggregation": "max",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "pod",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "legend": "since failure: {{pod}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_archive_status": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "WAL Archive Status",
+            "description": "WAL segments waiting to be archived (ready) vs. archived (done). A growing ready count means archiving is falling behind."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_collector_pg_wal_archive_status",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND value = 'ready'"
+                          },
+                          "legend": "ready"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_collector_pg_wal_archive_status",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND value = 'done'"
+                          },
+                          "legend": "done"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_archiver_ops": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "WAL Archiver Ops /s",
+            "description": "Successful vs. failed WAL archive operations per second. Any sustained failure rate needs investigation."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_archiver_archived_count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "archived"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_archiver_failed_count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "failed"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_backends_db": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Backends by Database",
+            "description": "Backend connections grouped by database."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_backends_total",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datname",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_backends_state": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Backends by State",
+            "description": "Backend connections grouped by state (active, idle, idle in transaction, …)."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_backends_total",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "state",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{state}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_backends_wait": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Backends Waiting on Locks",
+            "description": "Backends blocked waiting on other queries. Sustained values point to lock contention."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_backends_waiting_total",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "pod",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{pod}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_blk_time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Block I/O Time /s",
+            "description": "Milliseconds per second spent reading and writing data blocks (requires track_io_timing). Rising read time points to disk pressure."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_blk_read_time",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "read time"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_blk_write_time",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "write time"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_blocks": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Block I/O /s",
+            "description": "Buffer cache hits vs. disk block reads per second."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_blks_hit",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "cache hit"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_blks_read",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "disk read"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_cache_ratio": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Buffer Cache Hit Ratio",
+            "description": "Shared-buffer cache hit ratio from blks_hit / (blks_hit + blks_read) * 100. Below ~99% on an OLTP workload suggests undersized shared_buffers."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_blks_hit",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          }
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_blks_read",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          }
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / (A + B) * 100",
+                          "legend": "Cache hit %"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_checkpoint_buffers": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Buffers Written /s",
+            "description": "Buffers written per second by the checkpointer (during checkpoints) and the background writer, plus buffers allocated."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_checkpointer_buffers_written",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "checkpointer"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_bgwriter_buffers_clean",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "bgwriter"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_bgwriter_buffers_alloc",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "allocated"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_checkpoint_time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Checkpoint Write / Sync Time /s",
+            "description": "Milliseconds per second spent writing and syncing buffers during checkpoints."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_checkpointer_write_time",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "write time"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_checkpointer_sync_time",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "sync time"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_checkpoints": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Checkpoints /s",
+            "description": "Timed (scheduled) vs. requested checkpoints per second. A high requested rate means checkpoints are being forced by WAL volume — consider raising max_wal_size."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_checkpointer_checkpoints_timed",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "timed"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_checkpointer_checkpoints_req",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "legend": "requested"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_collection_dur": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Metrics Collection Duration",
+            "description": "Time the CNPG exporter takes to collect metrics from PostgreSQL, by collector. Rising duration can indicate database pressure."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_collection_duration_seconds",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "pod",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{pod}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_collections": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Metrics Collections /s",
+            "description": "Rate of PostgreSQL metric collection cycles per instance."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_collections_total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "pod",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{pod}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_dbsize": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Database Size",
+            "description": "Disk space consumed per database."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_database_size_bytes",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datname",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_deadlocks": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Deadlocks \u0026 Conflicts /s",
+            "description": "Deadlocks detected and queries canceled due to recovery conflicts (standby) per second. Any sustained value needs investigation."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_deadlocks",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                          },
+                          "legend": "deadlocks"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_conflicts",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                          },
+                          "legend": "conflicts"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_maxtx": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Longest Transaction by Database",
+            "description": "Maximum transaction duration per database."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_backends_max_tx_duration_seconds",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datname",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_mxid_age": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "MultiXact ID Age",
+            "description": "Multixact age from the frozen multixact ID per database. Like transaction-ID age, climbing values risk multixact wraparound; vacuum keeps it bounded."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_database_mxid_age",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datname",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_repl_lag": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Replication Lag (standby)",
+            "description": "Replica lag behind the primary in seconds, per standby instance."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_replication_lag",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "pod",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{pod}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_repl_lag_detail": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Write / Flush / Replay Lag (primary view)",
+            "description": "Per-replica write, flush, and replay lag in seconds as seen by the primary, grouped by replica application name."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_replication_write_lag_seconds",
+                              "temporality": "unspecified",
+                              "timeAggregation": "max",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "application_name",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "legend": "write: {{application_name}}"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_replication_flush_lag_seconds",
+                              "temporality": "unspecified",
+                              "timeAggregation": "max",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "application_name",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "legend": "flush: {{application_name}}"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_replication_replay_lag_seconds",
+                              "temporality": "unspecified",
+                              "timeAggregation": "max",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "application_name",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "legend": "replay: {{application_name}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_repl_slots": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Replication Slot Lag",
+            "description": "WAL retained per replication slot in bytes (restart-LSN diff). Growing lag on an inactive slot risks unbounded WAL accumulation."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_replication_slots_pg_wal_lsn_diff",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "slot_name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{slot_name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_repl_status": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Replication Status",
+            "description": "Per-instance recovery state (1 = standby) and WAL receiver up (1 = streaming) flags."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_replication_in_recovery",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "pod",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "legend": "in recovery: {{pod}}"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_replication_is_wal_receiver_up",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "max"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "pod",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "legend": "wal receiver up: {{pod}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_temp_bytes": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Temp File Bytes /s",
+            "description": "Temporary file bytes written per second, by database. High values mean queries are spilling to disk (raise work_mem)."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "Bps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_stat_database_temp_bytes",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datname",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_temp_files": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Temp Files /s",
+            "description": "Temporary files created per second, by database."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_stat_database_temp_files",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datname",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_tuples": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tuple Activity /s",
+            "description": "Rows returned, fetched, inserted, updated, and deleted per second."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_tup_returned",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "returned"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_tup_fetched",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "fetched"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_tup_inserted",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "inserted"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "D",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_tup_updated",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "updated"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "E",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_tup_deleted",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "deleted"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_txns": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Transactions /s",
+            "description": "Committed and rolled-back transactions per second across selected databases."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_xact_commit",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "commit"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "cnpg_pg_stat_database_xact_rollback",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "pod IN $pod AND datname IN $datname"
+                          },
+                          "legend": "rollback"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_wal_count": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "WAL Segment Count",
+            "description": "Number of WAL segments in pg_wal, per instance."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_pg_wal",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND value = 'count'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "pod",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{pod}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_wal_size": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "WAL Directory Size",
+            "description": "Total size of the pg_wal directory in bytes, per instance."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_pg_wal",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND value = 'size'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "pod",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{pod}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "g_xid_age": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Transaction ID Age",
+            "description": "Transactions since the frozen XID per database. Climbing toward ~2.1 billion risks transaction-ID wraparound — vacuum should keep this well below."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_database_xid_age",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname AND datname != ''"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datname",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_archive_age": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "WAL Archive Age",
+            "description": "Seconds since the last successful WAL archival. A rising value means archiving has stalled."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 300,
+                  "operator": "above",
+                  "unit": "s",
+                  "color": "#e53935",
+                  "format": "background"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_stat_archiver_seconds_since_last_archival",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_backends": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Backends",
+            "description": "Total backend connections across selected instances, all states. The Backends by State panel breaks this down."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_backends_total",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_collerr": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Collection Errors",
+            "description": "1 if the last metrics collection on any instance ended with an error."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 0,
+                  "operator": "above",
+                  "unit": "none",
+                  "color": "#e53935",
+                  "format": "background"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_last_collection_error",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_dbsize": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total DB Size",
+            "description": "Sum of all database sizes on the primary."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_database_size_bytes",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod AND datname IN $datname"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_fencing": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Fencing",
+            "description": "1 if any instance is fenced (isolated from the cluster for maintenance/recovery). Should normally be 0."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 0,
+                  "operator": "above",
+                  "unit": "none",
+                  "color": "#e53935",
+                  "format": "background"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_fencing_on",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_maxtx": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Longest Transaction",
+            "description": "Duration of the longest-running transaction. Long transactions hold locks and block vacuum."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 300,
+                  "operator": "above",
+                  "unit": "s",
+                  "color": "#e53935",
+                  "format": "background"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_backends_max_tx_duration_seconds",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_nodes": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Nodes Used",
+            "description": "Distinct Kubernetes nodes hosting the cluster's instances. A value of 1 with multiple instances means no high-availability node spread."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_nodes_used",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_replica_mode": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Replica Mode",
+            "description": "1 if the cluster is a designated replica cluster (replicating from an external primary), 0 for a standalone primary cluster."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_replica_mode",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_replicas": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Streaming Replicas",
+            "description": "Number of streaming replicas connected to the primary."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_pg_replication_streaming_replicas",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_switchover": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Switchover Required",
+            "description": "1 if a manual switchover is required (the operator cannot promote automatically). Should normally be 0."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 0,
+                  "operator": "above",
+                  "unit": "none",
+                  "color": "#e53935",
+                  "format": "background"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_manual_switchover_required",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_up": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cluster Up",
+            "description": "1 if all selected PostgreSQL instances are up. Uses the minimum across pods, so any down instance drops it to 0."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 1,
+                  "operator": "below",
+                  "unit": "none",
+                  "color": "#e53935",
+                  "format": "background"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_up",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "min"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "v_version": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "PostgreSQL Version",
+            "description": "Major.minor PostgreSQL version reported by the cluster."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "cnpg_collector_postgres_version",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "max"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "pod IN $pod"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Cluster Health",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_up"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_version"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_replicas"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_backends"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_maxtx"
+              }
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_dbsize"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_archive_age"
+              }
+            },
+            {
+              "x": 9,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_collerr"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_replica_mode"
+              }
+            },
+            {
+              "x": 3,
+              "y": 6,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_fencing"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_switchover"
+              }
+            },
+            {
+              "x": 9,
+              "y": 6,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/v_nodes"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Connections \u0026 Backends",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_backends_state"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_backends_db"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_backends_wait"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_maxtx"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Throughput",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_txns"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_tuples"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_deadlocks"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_temp_bytes"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Cache \u0026 Block I/O",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_cache_ratio"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_blocks"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_blk_time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_temp_files"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Replication",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_repl_lag"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_repl_lag_detail"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_repl_status"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_repl_slots"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "WAL \u0026 Archiving",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_wal_size"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_wal_count"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_archive_status"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_archiver_ops"
+              }
+            },
+            {
+              "x": 0,
+              "y": 14,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_archive_age"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Checkpoints",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_checkpoints"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_checkpoint_time"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_checkpoint_buffers"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Storage \u0026 Collector",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_dbsize"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_xid_age"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_mxid_age"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_collection_dur"
+              }
+            },
+            {
+              "x": 0,
+              "y": 14,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/g_collections"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

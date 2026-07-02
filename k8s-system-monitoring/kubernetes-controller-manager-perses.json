@@ -1,0 +1,919 @@
+{
+  "schemaVersion": "v6",
+  "name": "kubernetes-controller-manager-49u6rkhj",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "kubernetes"
+    },
+    {
+      "key": "tag",
+      "value": "control-plane"
+    },
+    {
+      "key": "tag",
+      "value": "controller-manager"
+    },
+    {
+      "key": "tag",
+      "value": "prometheus"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Kubernetes Controller Manager",
+      "description": "Standard control-plane view for kube-controller-manager workqueues, retries, and client request pressure."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "service.name",
+            "description": "Auto-discovered services (from metric labels)."
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "metrics"
+            }
+          },
+          "name": "service.name"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "k8s.cluster.name",
+            "description": "Optional cluster label selector."
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "k8s.cluster.name",
+              "signal": "metrics"
+            }
+          },
+          "name": "k8s.cluster.name"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "deployment_environment_name",
+            "description": "Optional OTel environment label selector."
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "deployment.environment.name",
+              "signal": "metrics"
+            }
+          },
+          "name": "deployment_environment_name"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "deployment_environment",
+            "description": "Optional legacy environment label selector."
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "deployment.environment",
+              "signal": "metrics"
+            }
+          },
+          "name": "deployment_environment"
+        }
+      }
+    ],
+    "panels": {
+      "cm-goroutines": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Go Routines"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "go_goroutines",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "goroutines"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cm-queue-depth": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Workqueue Depth By Queue"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "workqueue_depth",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "name",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cm-queue-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Workqueue Queue Duration (p50/p90/p99)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "workqueue_queue_duration_seconds.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "workqueue_queue_duration_seconds.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p90",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p90"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "workqueue_queue_duration_seconds.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cm-rest-client": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "REST Client Requests By Code"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "rest_client_requests_total",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "code",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{code}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cm-rss": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Process RSS"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "By",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "process_resident_memory_bytes",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "rss"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cm-work-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Workqueue Work Duration (p50/p90/p99)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "workqueue_work_duration_seconds.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "workqueue_work_duration_seconds.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p90",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p90"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "workqueue_work_duration_seconds.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "controller-discovery": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Auto-Discovered Controller Services"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "workqueue_adds_total",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "service.name",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{service.name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "workqueue-adds": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Workqueue Adds / s"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "workqueue_adds_total",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "adds/s"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "workqueue-retries": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Workqueue Retries / s"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "workqueue_retries_total",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "retries/s"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 2,
+              "content": {
+                "$ref": "#/spec/panels/controller-discovery"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 2,
+              "content": {
+                "$ref": "#/spec/panels/workqueue-adds"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 2,
+              "content": {
+                "$ref": "#/spec/panels/workqueue-retries"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 2,
+              "content": {
+                "$ref": "#/spec/panels/cm-goroutines"
+              }
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/cm-rss"
+              }
+            },
+            {
+              "x": 6,
+              "y": 2,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/cm-queue-depth"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/cm-queue-duration"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/cm-work-duration"
+              }
+            },
+            {
+              "x": 0,
+              "y": 12,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/cm-rest-client"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

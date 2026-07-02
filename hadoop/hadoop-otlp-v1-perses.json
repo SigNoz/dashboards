@@ -1,0 +1,1909 @@
+{
+  "schemaVersion": "v6",
+  "name": "hadoop-dashboard-9fojua4j",
+  "tags": [],
+  "spec": {
+    "display": {
+      "name": "Hadoop Dashboard"
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "deployment_environment",
+            "description": "The deployment environment for the service."
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'deployment_environment'))\nFROM signoz_metrics.time_series_v4\nWHERE metric_name like '%hadoop_hdfs_%'"
+            }
+          },
+          "name": "deployment_environment"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "cluster",
+            "description": "Hadoop cluster"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT DISTINCT(JSONExtractString(labels, 'cluster'))\nFROM signoz_metrics.time_series_v4\nWHERE metric_name like '%hadoop_hdfs_%'"
+            }
+          },
+          "name": "cluster"
+        }
+      }
+    ],
+    "panels": {
+      "114bb452-5350-41bb-bee7-aba51ea37c23": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total blocks",
+            "description": "Total number of blocks in the system at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_nninfo_total_blocks",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "1198a093-0966-42d8-a794-46286bc792b2": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "NodeManager status",
+            "description": "Number of NodeManagers in each status at present."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_nodemanager_total",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "status",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "22198113-656b-47e5-8642-0666c29fa785": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Capacity remaining per DataNode",
+            "description": "Current capacity remaining per DataNode in bytes."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "decbytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_nninfo_live_nodes_remaining",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "datanode",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "DataNode: {{datanode}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "267c0ef8-8df2-4f09-8e5d-b0eac595f15e": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Completed",
+            "description": "Number of applications that are in Completed status at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_application_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND status = 'Completed')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "2d24cea2-264a-43e9-b4d9-6298a1e48371": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Corrupt blocks",
+            "description": "Total number of corrupt blocks at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_fsname_system_corrupt_blocks",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "46d8d065-1931-4889-9419-6ba7b8b3f1a0": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "vCore usage",
+            "description": "vCore usage"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "hadoop_yarn_resourcemanager_vcore_count",
+                              "temporality": "",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND queue = 'root' AND status = 'Allocated')"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Allocated Containers"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "hadoop_yarn_resourcemanager_vcore_count",
+                              "temporality": "",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(deployment_environment = $deployment_environment AND queue = 'root' AND status = 'Available')"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Available Containers"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "4a0971b3-f87d-4b5a-a398-7e0a64ed6df6": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Under replicated blocks",
+            "description": "Total number of blocks under replicated at present.\n"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_fsname_system_under_replicated_blocks",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "4f705a1b-6e20-4647-bcd8-f972be636460": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Volume Failures",
+            "description": "Total volume failures at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_fsname_system_state_volume_failures_total",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "5857b298-fc8a-4b65-890c-6ae90596170f": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Pending replication blocks",
+            "description": "Total number of blocks pending to be replicated at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_fsname_system_pending_replication_blocks",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "62204433-c0d4-498d-8e42-11a47b47a799": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Container by status",
+            "description": "Count of container in each status at present."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_container_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(cluster = $cluster AND deployment_environment = $deployment_environment)"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "status",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "66cb1d57-a6b4-4e75-9ffe-d3931e740d27": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Num blocks",
+            "description": "Total number of blocks in the live nodes at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_nninfo_live_nodes_num_blocks",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "70943c30-150c-4110-adbf-13cb1319c8cf": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Running",
+            "description": "Number of applications that are in Running status at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_application_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND status = 'Running')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "737fdbfe-1cc2-4faf-b6f2-5587c0a0a3a0": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Application count",
+            "description": "Total application count in each status at present."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_application_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND queue = 'root')"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "status",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "7fff698b-24e6-45ff-b5fc-457847101996": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Missing blocks",
+            "description": "Total number of missing blocks at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_fsname_system_missing_blocks",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "89bd953a-d45f-4182-8a99-6ae2fb2d13fc": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory used",
+            "description": "The total amount of memory currently used on the host."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "decmbytes",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_node_memory_used_mb",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "97b667c5-5141-4433-bca0-f1bc5711a49d": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Killed",
+            "description": "Number of applications that are in Killed status at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_application_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND status = 'Killed')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "a1011a2a-37da-47e5-ac3d-2b604e2bd1ef": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Submitted",
+            "description": "Number of applications that are in Submitted status at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_application_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND status = 'Submitted')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ad63c678-833a-4b32-ab37-5c3701593659": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total vCores",
+            "description": "Total number of vCores at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_vcore_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND queue = 'root')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "b2a1d929-8a9f-4eff-8ad4-d9932e760c62": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Live DataNodes",
+            "description": "Live DataNodes at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_fsname_system_state_num_live_data_nodes",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND state = 'Live')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bf9c2195-4079-4ed6-bde2-8ae359126c50": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory usage",
+            "description": "Memory usage"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "decmbytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "hadoop_yarn_resourcemanager_memory_in_mb",
+                              "temporality": "",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(status = 'Allocated' AND queue = 'root' AND cluster = $cluster AND deployment_environment = $deployment_environment)"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Allocated Memory"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "hadoop_yarn_resourcemanager_memory_in_mb",
+                              "temporality": "",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(status = 'Available' AND queue = 'root' AND cluster = $cluster AND deployment_environment = $deployment_environment)"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Available Memory"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cec839c9-da6d-4aba-946a-dea00cff40be": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Remaining capacity in DataNodes",
+            "description": "Current remaining capacity in DataNodes."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "hadoop_hdfs_namenode_fsname_system_capacity_bytes",
+                              "temporality": "",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "(mode = 'Remaining' AND deployment_environment = $deployment_environment AND cluster = $cluster)"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "cluster",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          }
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "hadoop_hdfs_namenode_fsname_system_capacity_bytes",
+                              "temporality": "",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "(mode = 'Total' AND deployment_environment = $deployment_environment AND cluster = $cluster)"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "cluster",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          }
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A/B * 100",
+                          "legend": "Remaining Capacity "
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "d89a4902-f040-442f-9041-cadbd1d6aea4": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total containers",
+            "description": "Total number of containers currently running on the host"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_node_containers_total",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster)"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "d91cd6a7-c1f7-4b8b-a747-1a4a2e0588e7": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Dead DataNodes",
+            "description": "Dead DataNodes at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_hdfs_namenode_fsname_system_state_num_live_data_nodes",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND state = 'Dead')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "de9eb368-f881-46b0-874e-b7fbb0de21cc": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Pending",
+            "description": "Number of applications that are in Pending status at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_application_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND status = 'Pending')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "efebd111-1cbb-4051-8501-3edef7d493be": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Failed",
+            "description": "Number of applications that are in Failed status at present."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "hadoop_yarn_resourcemanager_application_count",
+                        "temporality": "",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment_environment = $deployment_environment AND cluster = $cluster AND status = 'Failed')"
+                    },
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Applications",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/a1011a2a-37da-47e5-ac3d-2b604e2bd1ef"
+              }
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/70943c30-150c-4110-adbf-13cb1319c8cf"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/de9eb368-f881-46b0-874e-b7fbb0de21cc"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/efebd111-1cbb-4051-8501-3edef7d493be"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/97b667c5-5141-4433-bca0-f1bc5711a49d"
+              }
+            },
+            {
+              "x": 10,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/267c0ef8-8df2-4f09-8e5d-b0eac595f15e"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "HDFS",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 4,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/b2a1d929-8a9f-4eff-8ad4-d9932e760c62"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 4,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/d91cd6a7-c1f7-4b8b-a747-1a4a2e0588e7"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 4,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/4f705a1b-6e20-4647-bcd8-f972be636460"
+              }
+            },
+            {
+              "x": 0,
+              "y": 4,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/114bb452-5350-41bb-bee7-aba51ea37c23"
+              }
+            },
+            {
+              "x": 2,
+              "y": 4,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/66cb1d57-a6b4-4e75-9ffe-d3931e740d27"
+              }
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/4a0971b3-f87d-4b5a-a398-7e0a64ed6df6"
+              }
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/2d24cea2-264a-43e9-b4d9-6298a1e48371"
+              }
+            },
+            {
+              "x": 8,
+              "y": 4,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/7fff698b-24e6-45ff-b5fc-457847101996"
+              }
+            },
+            {
+              "x": 10,
+              "y": 4,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/5857b298-fc8a-4b65-890c-6ae90596170f"
+              }
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/cec839c9-da6d-4aba-946a-dea00cff40be"
+              }
+            },
+            {
+              "x": 6,
+              "y": 8,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/22198113-656b-47e5-8642-0666c29fa785"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "YARN Cluster",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 4,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/89bd953a-d45f-4182-8a99-6ae2fb2d13fc"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 4,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/ad63c678-833a-4b32-ab37-5c3701593659"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 4,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/d89a4902-f040-442f-9041-cadbd1d6aea4"
+              }
+            },
+            {
+              "x": 0,
+              "y": 4,
+              "width": 4,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/1198a093-0966-42d8-a794-46286bc792b2"
+              }
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "width": 4,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/737fdbfe-1cc2-4faf-b6f2-5587c0a0a3a0"
+              }
+            },
+            {
+              "x": 8,
+              "y": 4,
+              "width": 4,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/62204433-c0d4-498d-8e42-11a47b47a799"
+              }
+            },
+            {
+              "x": 0,
+              "y": 11,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bf9c2195-4079-4ed6-bde2-8ae359126c50"
+              }
+            },
+            {
+              "x": 6,
+              "y": 11,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/46d8d065-1931-4889-9419-6ba7b8b3f1a0"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

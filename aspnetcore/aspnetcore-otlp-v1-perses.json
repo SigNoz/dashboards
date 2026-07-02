@@ -1,0 +1,1848 @@
+{
+  "schemaVersion": "v6",
+  "name": "asp-net-core-metrics-b3xps7do",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "aspnetcore"
+    },
+    {
+      "key": "tag",
+      "value": "dotnet"
+    },
+    {
+      "key": "tag",
+      "value": "otlp"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "ASP .NET Core Metrics",
+      "description": "ASP.NET Core application metrics — request performance, process health, .NET runtime internals (GC, threading), and routing. Based on OTLP instrumentation."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "deployment.environment",
+            "description": "Deployment environment"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT JSONExtractString(labels, 'deployment.environment') AS `deployment.environment` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'http.server.request.duration.count' GROUP BY `deployment.environment`"
+            }
+          },
+          "name": "deployment.environment"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "service.name",
+            "description": "ASP.NET service name"
+          },
+          "allowAllValue": false,
+          "allowMultiple": false,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT JSONExtractString(labels, 'service.name') AS `service.name` FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'http.server.request.duration.count' AND JSONExtractString(labels, 'deployment.environment') = $deployment.environment GROUP BY `service.name`"
+            }
+          },
+          "name": "service.name"
+        }
+      }
+    ],
+    "panels": {
+      "bb000001-0000-0000-0000-000000000001": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "P99 Request Duration",
+            "description": "P99 of inbound HTTP request duration"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.bucket",
+                        "temporality": "",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p99",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "P99 Latency"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000002-0000-0000-0000-000000000002": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Rate",
+            "description": "Inbound HTTP requests per second"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.count",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Request Rate"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000003-0000-0000-0000-000000000003": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "P95 Request Duration",
+            "description": "P95 of inbound HTTP request duration"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.bucket",
+                        "temporality": "",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p95",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "P95 Latency"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000004-0000-0000-0000-000000000004": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Active Requests",
+            "description": "Number of HTTP requests currently being processed"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.active_requests",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Active Requests"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000005-0000-0000-0000-000000000005": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Duration (P50 / P95 / P99)",
+            "description": "HTTP request duration percentiles over time (P50, P95, P99)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "http.server.request.duration.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                          },
+                          "limit": 10,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "P50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "http.server.request.duration.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p95",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                          },
+                          "limit": 10,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "P95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "http.server.request.duration.bucket",
+                              "temporality": "",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                          },
+                          "limit": 10,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "P99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000006-0000-0000-0000-000000000006": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Rate by Status Code",
+            "description": "Request rate grouped by HTTP response status code"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "reqps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.count",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.response.status_code",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "int64"
+                      }
+                    ],
+                    "limit": 20,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{http.response.status_code}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000007-0000-0000-0000-000000000007": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Process Memory (Working Set)",
+            "description": "Physical memory currently mapped to the process context (working set)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.process.memory.working_set",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Working Set"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000008-0000-0000-0000-000000000008": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "GC Committed Memory",
+            "description": "Committed virtual memory for the managed GC heap"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.gc.last_collection.memory.committed_size",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Committed Memory"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000009-0000-0000-0000-000000000009": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "GC Collections Rate",
+            "description": "Rate of garbage collections grouped by GC generation"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.gc.collections",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "GC Collections"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000010-0000-0000-0000-000000000010": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "GC Heap Allocation Rate",
+            "description": "Rate of bytes allocated on the managed GC heap"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "Bps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.gc.heap.total_allocated",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Allocation Rate"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000011-0000-0000-0000-000000000011": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "GC Heap Size",
+            "description": "GC heap size (including fragmentation) as observed at last collection"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.gc.last_collection.heap.size",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "GC Heap Size"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000012-0000-0000-0000-000000000012": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "GC Pause Time Rate",
+            "description": "Rate of GC pause time (stop-the-world) in seconds per second"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.gc.pause.time",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "GC Pause Duration Rate"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000013-0000-0000-0000-000000000013": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Exceptions Rate by Type",
+            "description": "Rate of exceptions thrown in managed code"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.exceptions",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "error.type",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "limit": 20,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{error.type}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000014-0000-0000-0000-000000000014": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Thread Pool Queue Length",
+            "description": "Number of work items currently queued in the thread pool"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.thread_pool.queue.length",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Queue Length"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000015-0000-0000-0000-000000000015": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Thread Pool Thread Count",
+            "description": "Number of active thread pool threads"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.thread_pool.thread.count",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Thread Count"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000016-0000-0000-0000-000000000016": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Thread Pool Work Item Completion Rate",
+            "description": "Rate of work items completed by the thread pool"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "dotnet.thread_pool.work_item.count",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Completed Items / sec"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000017-0000-0000-0000-000000000017": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Routing Match Attempts",
+            "description": "Rate of routing match attempts grouped by match status (success/failure)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "short",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "aspnetcore.routing.match_attempts",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "aspnetcore.routing.match_status",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{aspnetcore.routing.match_status}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000018-0000-0000-0000-000000000018": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Pool Allocation Rate",
+            "description": "Rate of bytes allocated from the memory pool (allocation occurs when pooled memory is exhausted)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "Bps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "aspnetcore.memory_pool.allocated",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Allocated"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000019-0000-0000-0000-000000000019": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Pool Pooled Bytes",
+            "description": "Bytes currently pooled and available for reuse"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "aspnetcore.memory_pool.pooled",
+                        "temporality": "",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Pooled"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "bb000020-0000-0000-0000-000000000020": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Pool Rented Rate",
+            "description": "Rate of bytes rented from the memory pool"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "Bps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": "0s"
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "aspnetcore.memory_pool.rented",
+                        "temporality": "",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "(deployment.environment = $deployment.environment AND service.name = $service.name)"
+                    },
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "Rented"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Request \u0026 Response",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/bb000001-0000-0000-0000-000000000001"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/bb000002-0000-0000-0000-000000000002"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/bb000003-0000-0000-0000-000000000003"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/bb000004-0000-0000-0000-000000000004"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000005-0000-0000-0000-000000000005"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000006-0000-0000-0000-000000000006"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Process",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000007-0000-0000-0000-000000000007"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000008-0000-0000-0000-000000000008"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "GC \u0026 Memory",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000009-0000-0000-0000-000000000009"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000010-0000-0000-0000-000000000010"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000011-0000-0000-0000-000000000011"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000012-0000-0000-0000-000000000012"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Threading \u0026 Exceptions",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000013-0000-0000-0000-000000000013"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000014-0000-0000-0000-000000000014"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000015-0000-0000-0000-000000000015"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000016-0000-0000-0000-000000000016"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Routing \u0026 Memory Pool",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000017-0000-0000-0000-000000000017"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000018-0000-0000-0000-000000000018"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000019-0000-0000-0000-000000000019"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bb000020-0000-0000-0000-000000000020"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
