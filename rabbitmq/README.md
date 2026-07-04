@@ -1,10 +1,10 @@
 # RabbitMQ Dashboard
 
-Dashboard for rabbitmq metrics provided by (rabbitmqreceiver)[https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/rabbitmqreceiver]
+Dashboard for rabbitmq metrics provided by [rabbitmqreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/rabbitmqreceiver)
 
 Browse all dashboard templates in the [SigNoz docs](https://signoz.io/docs/dashboards/dashboard-templates/overview/#available-dashboard-templates).
 
-## RabbitMQ Metricsl (OTEL)
+## RabbitMQ Metrics (OTEL)
 
 **File:** `rabbitmq.json`
 

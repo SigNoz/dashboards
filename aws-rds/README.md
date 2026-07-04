@@ -8,7 +8,7 @@ Browse all dashboard templates in the [SigNoz docs](https://signoz.io/docs/dashb
 
 | File | Dashboard | Panels |
 | --- | --- | --- |
-| `mysql/db-metrics.json` | MySQL | 17 |
+| `mysql/db-metrics.json` | MySQL | 16 |
 | `mysql/overview.json` | AWS RDS MySQL | 16 |
 | `postgresql/db-metrics-overview.json` | Postgres overview | 11 |
 | `postgresql/overview.json` | AWS RDS Postgres | 17 |
@@ -29,7 +29,6 @@ Browse all dashboard templates in the [SigNoz docs](https://signoz.io/docs/dashb
 - Buffer pool pages by kind
 - Data pages by status
 - Total buffer pool page flushes
-- count of I/O wait events
 - count of table I/O wait events
 - count of table I/O wait events
 - Count by handlers

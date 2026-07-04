@@ -9,7 +9,7 @@ Browse all dashboard templates in the [SigNoz docs](https://signoz.io/docs/dashb
 | File | Dashboard | Panels |
 | --- | --- | --- |
 | `container-metrics.json` | Container Metrics - ECS | 10 |
-| `instance-metrics.json` | Instance Metrics - ECS | 15 |
+| `instance-metrics.json` | Instance Metrics - ECS | 14 |
 
 ## Container Metrics - ECS
 
@@ -49,7 +49,6 @@ Instance Metrics Dashboard of ECS EC2
 - Memory Usage
 - CPU Usage
 - Disk IO
-- File System Usage
 - File System Usage
 - Memory Utilization
 - File System Utilization
