@@ -1,0 +1,2181 @@
+{
+  "schemaVersion": "v6",
+  "name": "hermes-coding-agent-observability-pbz0zwkd",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "hermes"
+    },
+    {
+      "key": "tag",
+      "value": "agent"
+    },
+    {
+      "key": "tag",
+      "value": "llm"
+    },
+    {
+      "key": "tag",
+      "value": "observability"
+    },
+    {
+      "key": "tag",
+      "value": "traces"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Hermes Coding Agent — Observability",
+      "description": "Comprehensive monitoring for the Hermes coding agent: agent sessions/turns, LLM API calls \u0026 token usage, tool-call activity, latency, and errors. Built from OTel traces (service: hermes-agent) using gen_ai.* and hermes.* span attributes. Panels are grouped top-to-bottom: Overview (scorecards), LLM/Model, Agent/Turns, Tool Calls, Errors."
+    },
+    "variables": [],
+    "panels": {
+      "agent-api-per-turn": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg API Calls per Turn"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "avg(hermes.turn.api_call_count)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' name = 'agent'"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "avg api calls/turn"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND name = 'agent'"
+                          },
+                          "having": {
+                            "expression": ""
+                          }
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B",
+                          "disabled": true,
+                          "legend": "avg api calls/turn"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "agent-final-status": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Turn Final Status",
+            "description": "Distribution of hermes.turn.final_status"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND hermes.turn.final_status EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "hermes.turn.final_status",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{hermes.turn.final_status}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "agent-session-kind": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Sessions by Kind",
+            "description": "Grouped by hermes.session.kind"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND hermes.session.kind EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "hermes.session.kind",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{hermes.session.kind}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "agent-tools-per-turn": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg Tools per Turn",
+            "description": "Average of hermes.turn.tool_count"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "avg(hermes.turn.tool_count)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent'"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "avg tools/turn"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "agent-turn-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Agent Turn Duration (p50 / p95)",
+            "description": "End-to-end agent turn latency"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(durationNano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND name = 'agent'"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(durationNano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND name = 'agent'"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p95"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "agent-turns-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Agent Turns Over Time",
+            "description": "Root agent span count over time"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND name = 'agent'"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "agent turns"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "apicalls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM API Calls",
+            "description": "Individual gen_ai chat completions"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND llm.model_name EXISTS"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "api calls"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "errorrate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Error Spans",
+            "description": "Count of spans with hasError = true"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 0,
+                  "operator": "above",
+                  "unit": "none",
+                  "color": "Red",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND hasError = true"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "errors"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "errors-by-op": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Error Count by Operation",
+            "description": "Top failing span names"
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "A": ""
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND hasError = true"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "name",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "errors"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "errors-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Errors Over Time",
+            "description": "Spans with hasError = true over time, by span name"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND hasError = true"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "name",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-calls-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM API Calls by Model",
+            "description": "Chat completion call count grouped by requested model"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {
+                  "gpt-5.4-mini": "#e0750f",
+                  "gpt-5.5": "#8fccce"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND llm.model_name EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "llm.model_name"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{llm.model_name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-cost": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cost Proxy: Input vs Output Tokens by Model",
+            "description": "Token volume as a cost proxy by model — no native cost attribute exists; scale by your per-model pricing"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "llm.model_name",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "in {{llm.model_name}}"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.output_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "llm.model_name"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "out {{llm.model_name}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-finish": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Responses by Finish Reason",
+            "description": "Distribution of gen_ai.response.finish_reasons"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {
+                  "stop": "#bacc5f"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND llm.response.finish_reason EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "llm.response.finish_reason"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{llm.response.finish_reason}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM API Call Latency (p50 / p95 / p99)",
+            "description": "Duration percentiles of chat completion spans"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(durationNano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND llm.model_name EXISTS"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(durationNano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND llm.model_name EXISTS"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p99(durationNano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND llm.model_name EXISTS"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-tokens-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Tokens by Model",
+            "description": "Sum of total tokens grouped by model"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {
+                  "gpt-5.4-mini": "#e0750f",
+                  "gpt-5.5": "#8fccce"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.total_tokens)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "  service.name = 'hermes-agent' llm.model_name EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "llm.model_name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{llm.model_name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-tokens-stacked": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Token Usage Over Time",
+            "description": "Stacked token totals over time"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {
+                  "input tokens": "#e9c8d0"
+                }
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent'"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "input tokens"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.output_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent'"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "output tokens"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.cache_read_input_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent'"
+                          },
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "cache-read tokens"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "recent-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Recent Error Spans",
+            "description": "Latest failing spans with status message"
+          },
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "name": "name",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "statusMessage",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "hermes.tool.outcome",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "durationNano",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "number"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND hasError = true"
+                    },
+                    "limit": 25,
+                    "having": {
+                      "expression": ""
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "sessions": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Agent Turns",
+            "description": "Count of root agent spans (turns/sessions)"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND name = 'agent'"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "sessions"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-calls-by-type": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls by Type",
+            "description": "tool.* span count grouped by operation name"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND name LIKE 'tool.%'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "name",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-genai-names": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "GenAI Tool Invocations by Name",
+            "description": "Grouped by gen_ai.tool.name (model-requested tools)"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND name like 'tool%'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "tool.name"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{tool.name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Call Latency (p95) by Type",
+            "description": "p95 duration per tool"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "p95(durationNano)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND name LIKE 'tool.%'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "name",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-outcomes": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Outcomes (completed vs error)",
+            "description": "Grouped by hermes.tool.outcome"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND hermes.tool.outcome EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "hermes.tool.outcome",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{hermes.tool.outcome}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Usage Summary",
+            "description": "Count and p95 latency per tool type"
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "A": "",
+                  "B": "ns"
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND name LIKE 'tool.%'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "name",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "calls"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(durationNano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'hermes-agent' AND name LIKE 'tool.%'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "name",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p95 latency"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "toolcalls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls",
+            "description": "Count of tool.* spans"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND name LIKE 'tool.%'"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "tool calls"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "totaltokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Tokens",
+            "description": "Sum of gen_ai total tokens"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.total_tokens)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent'"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "total tokens"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "turns": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Turns",
+            "description": "Count of llm.* wrapper spans"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'hermes-agent' AND name LIKE 'llm.%'"
+                    },
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "llm turns"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/sessions"
+              }
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/turns"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/apicalls"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/toolcalls"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/totaltokens"
+              }
+            },
+            {
+              "x": 10,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/errorrate"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/llm-calls-by-model"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/llm-tokens-stacked"
+              }
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/llm-tokens-by-model"
+              }
+            },
+            {
+              "x": 6,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/agent-turn-latency"
+              }
+            },
+            {
+              "x": 0,
+              "y": 15,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/llm-latency"
+              }
+            },
+            {
+              "x": 6,
+              "y": 15,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/agent-api-per-turn"
+              }
+            },
+            {
+              "x": 0,
+              "y": 21,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/llm-cost"
+              }
+            },
+            {
+              "x": 6,
+              "y": 21,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/agent-session-kind"
+              }
+            },
+            {
+              "x": 0,
+              "y": 27,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/llm-finish"
+              }
+            },
+            {
+              "x": 6,
+              "y": 27,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-latency"
+              }
+            },
+            {
+              "x": 0,
+              "y": 33,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/agent-turns-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 33,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-genai-names"
+              }
+            },
+            {
+              "x": 0,
+              "y": 39,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/agent-tools-per-turn"
+              }
+            },
+            {
+              "x": 6,
+              "y": 39,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-outcomes"
+              }
+            },
+            {
+              "x": 0,
+              "y": 45,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/agent-final-status"
+              }
+            },
+            {
+              "x": 6,
+              "y": 45,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-calls-by-type"
+              }
+            },
+            {
+              "x": 0,
+              "y": 51,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-table"
+              }
+            },
+            {
+              "x": 0,
+              "y": 57,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/errors-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 57,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/errors-by-op"
+              }
+            },
+            {
+              "x": 0,
+              "y": 63,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/recent-errors"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
