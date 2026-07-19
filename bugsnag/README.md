@@ -26,6 +26,10 @@ Count of distinct `app.version` values producing errors in the window.
 
 ### Error Trends
 
+#### Crashes vs Handled Errors
+
+Time-series split by `bugsnag.error.unhandled` — crashes and caught errors as separate series, so a stability regression stands out from ordinary error noise.
+
 #### Error Events by Severity
 
 Time-series of event counts grouped by mapped severity (`ERROR`/`WARN`/`INFO`), revealing spikes and their character.
@@ -38,7 +42,11 @@ Time-series of event counts grouped by `app.version` — release regressions sho
 
 #### Top Exception Classes
 
-Table of `exception.type` ranked by event count, so the highest-impact bugs surface first.
+Table of `exception.type` ranked by event count and split by unhandled/handled, so the highest-impact bugs surface first. An `exception.type` dashboard variable focuses the breakdown panels and the events list on one class for drill-down.
+
+#### Errors by Context
+
+Table of `bugsnag.error.context` — the screen, activity, or route where errors concentrate.
 
 ### Devices & Platforms
 
@@ -54,4 +62,4 @@ Table of each device model's error event count, surfacing device-specific proble
 
 #### Recent Error Events
 
-List of the latest Bugsnag events, newest first. Each record carries the exception class and message plus a `bugsnag.error.url` deep link back to the issue in Bugsnag.
+List of the latest Bugsnag events, newest first, with a readable `ExceptionClass: message` body line. Opening an event shows the stacktrace (`exception.stacktrace`), the full raw payload (`bugsnag.payload`), and a `bugsnag.error.url` deep link back to the issue in Bugsnag.
