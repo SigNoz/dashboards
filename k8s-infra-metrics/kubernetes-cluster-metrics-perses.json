@@ -1,6 +1,7 @@
 {
   "schemaVersion": "v6",
-  "name": "kubernetes-cluster-metrics-ilsq8514",
+  "image": "",
+  "name": "kubernetes-cluster-metrics-3ll6bhh5",
   "tags": [
     {
       "key": "tag",
@@ -30,6 +31,8 @@
           },
           "allowAllValue": true,
           "allowMultiple": false,
+          "customAllValue": "",
+          "capturingRegexp": "",
           "plugin": {
             "kind": "signoz/DynamicVariable",
             "spec": {
@@ -49,6 +52,8 @@
           },
           "allowAllValue": true,
           "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
           "sort": "alphabetical-asc",
           "plugin": {
             "kind": "signoz/DynamicVariable",
@@ -66,7 +71,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Deployments available and desired"
+            "name": "Deployments available and desired",
+            "description": ""
           },
           "plugin": {
             "kind": "signoz/TablePanel",
@@ -96,7 +102,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "A",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -108,19 +113,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.deployment.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "available"
                         }
                       },
@@ -128,7 +137,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "B",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -140,19 +148,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.deployment.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "desired"
                         }
                       }
@@ -168,7 +180,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Pod phase by namespace"
+            "name": "Pod phase by namespace",
+            "description": ""
           },
           "plugin": {
             "kind": "signoz/TablePanel",
@@ -199,7 +212,8 @@
                   "spec": {
                     "name": "A",
                     "query": "SELECT ts.resource_attrs['k8s.namespace.name'] AS `k8s.namespace.name`, countIf(toInt32(s.last_value) = 1) AS Pending, countIf(toInt32(s.last_value) = 2) AS Running, countIf(toInt32(s.last_value) = 3) AS Succeeded, countIf(toInt32(s.last_value) = 4) AS Failed, countIf(toInt32(s.last_value) = 5) AS Unknown FROM (SELECT fingerprint, argMax(value, unix_milli) AS last_value FROM signoz_metrics.distributed_samples_v4 WHERE metric_name = 'k8s.pod.phase' AND unix_milli \u003e= $end_timestamp_ms - 600000 AND unix_milli \u003c $end_timestamp_ms GROUP BY fingerprint) AS s INNER JOIN (SELECT DISTINCT fingerprint, resource_attrs FROM signoz_metrics.distributed_time_series_v4_6hrs WHERE metric_name = 'k8s.pod.phase' AND temporality = 'Unspecified' AND resource_attrs['k8s.cluster.name'] = $k8s.cluster.name) AS ts USING fingerprint GROUP BY `k8s.namespace.name` ORDER BY Running DESC",
-                    "disabled": false
+                    "disabled": false,
+                    "legend": ""
                   }
                 }
               }
@@ -211,7 +225,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Jobs"
+            "name": "Jobs",
+            "description": ""
           },
           "plugin": {
             "kind": "signoz/TablePanel",
@@ -243,7 +258,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "A",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -255,19 +269,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.job.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "running"
                         }
                       },
@@ -275,7 +293,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "B",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -287,19 +304,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.job.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "successful"
                         }
                       },
@@ -307,7 +328,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "C",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -319,19 +339,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.job.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "failed"
                         }
                       },
@@ -339,7 +363,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "D",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -351,19 +374,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.job.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "desired successful"
                         }
                       }
@@ -379,7 +406,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Pod replicas"
+            "name": "Pod replicas",
+            "description": ""
           },
           "plugin": {
             "kind": "signoz/TablePanel",
@@ -411,7 +439,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "A",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -423,19 +450,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.hpa.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "current_replicas"
                         }
                       },
@@ -443,7 +474,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "B",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -455,19 +485,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.hpa.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "desired_replicas"
                         }
                       },
@@ -475,7 +509,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "C",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -487,19 +520,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.hpa.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "min_replicas"
                         }
                       },
@@ -507,7 +544,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "D",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -519,19 +555,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.hpa.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "max_replicas"
                         }
                       }
@@ -547,7 +587,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Statefulset pods"
+            "name": "Statefulset pods",
+            "description": ""
           },
           "plugin": {
             "kind": "signoz/TablePanel",
@@ -579,7 +620,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "A",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -591,19 +631,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.statefulset.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "current"
                         }
                       },
@@ -611,7 +655,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "B",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -623,19 +666,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.statefulset.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "desired"
                         }
                       },
@@ -643,7 +690,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "C",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -655,19 +701,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.statefulset.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "ready"
                         }
                       },
@@ -675,7 +725,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "D",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -687,19 +736,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.statefulset.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "updated"
                         }
                       }
@@ -715,7 +768,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Daemonset nodes"
+            "name": "Daemonset nodes",
+            "description": ""
           },
           "plugin": {
             "kind": "signoz/TablePanel",
@@ -746,7 +800,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "A",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -758,19 +811,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.daemonset.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "current_nodes"
                         }
                       },
@@ -778,7 +835,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "B",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -790,19 +846,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.daemonset.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "desired_nodes"
                         }
                       },
@@ -810,7 +870,6 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "C",
-                          "stepInterval": 0,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
@@ -822,19 +881,23 @@
                               "reduceTo": "last"
                             }
                           ],
+                          "disabled": false,
                           "filter": {
                             "expression": "(k8s.cluster.name IN $k8s.cluster.name AND k8s.namespace.name IN $k8s.namespace.name)"
                           },
                           "groupBy": [
                             {
                               "name": "k8s.daemonset.name",
+                              "signal": "",
                               "fieldContext": "attribute",
                               "fieldDataType": "string"
                             }
                           ],
+                          "order": [],
                           "having": {
                             "expression": ""
                           },
+                          "functions": [],
                           "legend": "ready_nodes"
                         }
                       }
@@ -909,6 +972,8 @@
           ]
         }
       }
-    ]
+    ],
+    "duration": "",
+    "refreshInterval": ""
   }
 }
