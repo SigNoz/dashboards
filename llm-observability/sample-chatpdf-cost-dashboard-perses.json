@@ -1,0 +1,449 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "name": "signoz-chatpdf-cost-dashboard-4x12ccsw",
+  "tags": [],
+  "spec": {
+    "display": {
+      "name": "SigNoz ChatPDF Cost Dashboard",
+      "description": ""
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "serviceName",
+            "description": "Service Names"
+          },
+          "defaultValue": "Signoz PDF Chat",
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "none",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT DISTINCT serviceName\nFROM signoz_traces.distributed_signoz_index_v2"
+            }
+          },
+          "name": "serviceName"
+        }
+      }
+    ],
+    "panels": {
+      "bf13c405-bcd5-4ba7-834e-8d1e6f8f4814": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cost Over Time",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "currencyUSD",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(llm.usage.prompt_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "serviceName IN $serviceName"
+                          },
+                          "groupBy": [],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(llm.usage.completion_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "serviceName IN $serviceName"
+                          },
+                          "groupBy": [],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(A * 0.02) / 1000 + (B * 0.03) / 1000",
+                          "disabled": false,
+                          "legend": "Cost"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "cc419cef-06fa-4d16-a2ea-cfa622c8e329": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Estimated Costs (Last 1 Day) GPT-4",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "last_1_day"
+              },
+              "formatting": {
+                "unit": "currencyUSD",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(llm.usage.prompt_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "serviceName IN $serviceName"
+                          },
+                          "groupBy": [],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(llm.usage.completion_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "serviceName IN $serviceName"
+                          },
+                          "groupBy": [],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(A * 0.02)/1000 + (B * 0.03)/1000",
+                          "disabled": false,
+                          "legend": ""
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "e6a347f2-b858-4a49-8566-8c9901d1e917": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Top 10 User Token Consumption",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": null,
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(llm.usage.completion_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "serviceName IN $serviceName traceloop.association.properties.user_id EXISTS"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "traceloop.association.properties.user_id",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(llm.usage.completion_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 5,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Completion Tokens"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(llm.usage.prompt_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "serviceName IN $serviceName traceloop.association.properties.user_id EXISTS"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "traceloop.association.properties.user_id",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(llm.usage.prompt_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 5,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Prompt Tokens"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(llm.usage.total_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "serviceName IN $serviceName traceloop.association.properties.user_id EXISTS"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "traceloop.association.properties.user_id",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(llm.usage.total_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 5,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "Total Tokens"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/cc419cef-06fa-4d16-a2ea-cfa622c8e329"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 12,
+              "content": {
+                "$ref": "#/spec/panels/e6a347f2-b858-4a49-8566-8c9901d1e917"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bf13c405-bcd5-4ba7-834e-8d1e6f8f4814"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "duration": "",
+    "refreshInterval": "",
+    "links": []
+  }
+}
