@@ -1,12 +1,29 @@
 {
   "schemaVersion": "v6",
-  "image": "/assets/Icons/eight-ball",
-  "name": "livekit-i4dkegma",
-  "tags": [],
+  "image": "",
+  "name": "dspy-observability-v2jfl24k",
+  "tags": [
+    {
+      "key": "tag",
+      "value": "dspy"
+    },
+    {
+      "key": "tag",
+      "value": "openinference"
+    },
+    {
+      "key": "tag",
+      "value": "llm"
+    },
+    {
+      "key": "tag",
+      "value": "ai"
+    }
+  ],
   "spec": {
     "display": {
-      "name": "LiveKit",
-      "description": ""
+      "name": "DSPy Observability",
+      "description": "Reusable DSPy observability dashboard for programs instrumented with openinference-instrumentation-dspy: module/chain/tool activity, latency, model calls, and errors. Built on DSPy-native span attributes (openinference.span.kind, llm.model_name). Use the service_name picker to filter to one or more DSPy services."
     },
     "variables": [
       {
@@ -14,96 +31,42 @@
         "spec": {
           "display": {
             "name": "service_name",
-            "description": "The service name using LiveKit"
+            "description": "Filter to one or more DSPy services"
           },
           "allowAllValue": true,
           "allowMultiple": true,
           "customAllValue": "",
           "capturingRegexp": "",
-          "sort": "none",
+          "sort": "alphabetical-asc",
           "plugin": {
             "kind": "signoz/DynamicVariable",
             "spec": {
               "name": "service.name",
-              "signal": "all"
+              "signal": "traces"
             }
           },
           "name": "service_name"
         }
-      },
-      {
-        "kind": "TextVariable",
-        "spec": {
-          "display": {
-            "name": "turns_threshold",
-            "description": "Number of turns in the conversation"
-          },
-          "value": "1",
-          "constant": false,
-          "name": "turns_threshold"
-        }
-      },
-      {
-        "kind": "ListVariable",
-        "spec": {
-          "display": {
-            "name": "language",
-            "description": "Language being used for making LiveKit calls"
-          },
-          "allowAllValue": true,
-          "allowMultiple": true,
-          "customAllValue": "",
-          "capturingRegexp": "",
-          "sort": "none",
-          "plugin": {
-            "kind": "signoz/DynamicVariable",
-            "spec": {
-              "name": "telemetry.sdk.language",
-              "signal": "all"
-            }
-          },
-          "name": "language"
-        }
-      },
-      {
-        "kind": "ListVariable",
-        "spec": {
-          "display": {
-            "name": "llm_model",
-            "description": "Model name being used in LiveKit convsersation"
-          },
-          "allowAllValue": true,
-          "allowMultiple": true,
-          "customAllValue": "",
-          "capturingRegexp": "",
-          "sort": "none",
-          "plugin": {
-            "kind": "signoz/DynamicVariable",
-            "spec": {
-              "name": "gen_ai.request.model",
-              "signal": "all"
-            }
-          },
-          "name": "llm_model"
-        }
       }
     ],
     "panels": {
-      "04247ee1-b408-457d-ac00-47ce45e64291": {
+      "06c7f532-4212-4dc4-8272-19b43ec0f299": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Input Tokens",
-            "description": ""
+            "name": "Tool usage",
+            "description": "TOOL spans grouped by tool name with call count and average latency."
           },
           "plugin": {
-            "kind": "signoz/NumberPanel",
+            "kind": "signoz/TablePanel",
             "spec": {
               "visualization": {
                 "timePreference": "global_time"
               },
               "formatting": {
-                "unit": "none",
+                "columnUnits": {
+                  "A.avg(duration_nano)": "ns"
+                },
                 "decimalPrecision": "2"
               },
               "thresholds": null
@@ -118,19 +81,33 @@
                   "kind": "signoz/BuilderQuery",
                   "spec": {
                     "name": "A",
+                    "stepInterval": 60,
                     "signal": "traces",
                     "source": "",
                     "aggregations": [
                       {
-                        "expression": "sum(gen_ai.usage.input_tokens)"
+                        "expression": "count()",
+                        "alias": "Calls"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg latency"
                       }
                     ],
                     "disabled": false,
                     "filter": {
-                      "expression": "service.name in $service_name name = 'llm_request' telemetry.sdk.language in $language gen_ai.request.model in $llm_model"
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'TOOL'"
                     },
-                    "groupBy": [],
+                    "groupBy": [
+                      {
+                        "name": "name",
+                        "signal": "",
+                        "fieldContext": "",
+                        "fieldDataType": "string"
+                      }
+                    ],
                     "order": [],
+                    "selectFields": [],
                     "having": {
                       "expression": ""
                     },
@@ -144,12 +121,12 @@
           "links": []
         }
       },
-      "05e6759b-c460-4618-86c0-5d2bf0b311c1": {
+      "092f7e91-4315-47e1-bf57-f28ff58d90c7": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Logs",
-            "description": ""
+            "name": "Errors",
+            "description": "Recent errored spans across selected DSPy services."
           },
           "plugin": {
             "kind": "signoz/ListPanel",
@@ -179,7 +156,8 @@
                   "kind": "signoz/BuilderQuery",
                   "spec": {
                     "name": "A",
-                    "signal": "logs",
+                    "stepInterval": 60,
+                    "signal": "traces",
                     "source": "",
                     "aggregations": [
                       {
@@ -188,11 +166,37 @@
                     ],
                     "disabled": false,
                     "filter": {
-                      "expression": "service.name IN $service_name telemetry.sdk.language in $language"
+                      "expression": "service.name IN $service_name AND has_error = true"
                     },
                     "groupBy": [],
                     "order": [],
-                    "limit": 10,
+                    "selectFields": [
+                      {
+                        "name": "service.name",
+                        "signal": "",
+                        "fieldContext": "resource",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "name",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "duration_nano",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": ""
+                      },
+                      {
+                        "name": "status_message",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "limit": 15,
                     "having": {
                       "expression": ""
                     },
@@ -206,12 +210,158 @@
           "links": []
         }
       },
-      "28bb5d45-046d-4980-ad5e-26b1aeecda2b": {
+      "4ab89d52-319c-4dbc-acb2-74b7f9b38882": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Token Usage",
-            "description": ""
+            "name": "DSPy operations",
+            "description": "Total instrumented DSPy spans (any span with openinference.span.kind)."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "selectFields": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "60ec8bb7-7c7c-4a33-a490-d2b6c7647241": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Recent DSPy operations",
+            "description": "Latest instrumented DSPy spans."
+          },
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "name": "timestamp",
+                  "signal": "logs",
+                  "fieldContext": "log",
+                  "fieldDataType": ""
+                },
+                {
+                  "name": "body",
+                  "signal": "logs",
+                  "fieldContext": "log",
+                  "fieldDataType": ""
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "selectFields": [
+                      {
+                        "name": "service.name",
+                        "signal": "",
+                        "fieldContext": "resource",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "name",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "openinference.span.kind",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "duration_nano",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": ""
+                      }
+                    ],
+                    "limit": 15,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "6c870c63-2977-409f-87bd-814a89c1d22b": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "DSPy operations by span kind (over time)",
+            "description": "CHAIN / LLM / TOOL activity over time."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -242,9 +392,7 @@
               "legend": {
                 "position": "bottom",
                 "mode": "list",
-                "customColors": {
-                  "F1": "#eccd03"
-                }
+                "customColors": null
               },
               "thresholds": null
             }
@@ -252,6 +400,127 @@
           "queries": [
             {
               "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "openinference.span.kind",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [],
+                    "selectFields": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{openinference.span.kind}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "6eb391c2-41db-47bf-b6c0-11e70bcece5d": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool calls",
+            "description": "Count of TOOL spans (ReAct tool invocations)."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'TOOL'"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "selectFields": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "7e2fd4df-857c-4e88-9791-b7a421801ab0": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg LLM calls / program run",
+            "description": "LLM spans divided by dspy.program.run root spans: model-call fan-out per program run."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
               "spec": {
                 "plugin": {
                   "kind": "signoz/CompositeQuery",
@@ -261,19 +530,21 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "A",
+                          "stepInterval": 60,
                           "signal": "traces",
                           "source": "",
                           "aggregations": [
                             {
-                              "expression": "sum(gen_ai.usage.input_tokens)"
+                              "expression": "count()"
                             }
                           ],
                           "disabled": true,
                           "filter": {
-                            "expression": "service.name in $service_name name = 'llm_request' telemetry.sdk.language in $language gen_ai.request.model in $llm_model"
+                            "expression": "service.name IN $service_name AND openinference.span.kind = 'LLM'"
                           },
                           "groupBy": [],
                           "order": [],
+                          "selectFields": [],
                           "having": {
                             "expression": ""
                           },
@@ -285,19 +556,21 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "B",
+                          "stepInterval": 60,
                           "signal": "traces",
                           "source": "",
                           "aggregations": [
                             {
-                              "expression": "sum(gen_ai.usage.output_tokens)"
+                              "expression": "count()"
                             }
                           ],
                           "disabled": true,
                           "filter": {
-                            "expression": "service.name in $service_name name = 'llm_request' telemetry.sdk.language in $language gen_ai.request.model in $llm_model"
+                            "expression": "service.name IN $service_name AND name = 'dspy.program.run'"
                           },
                           "groupBy": [],
                           "order": [],
+                          "selectFields": [],
                           "having": {
                             "expression": ""
                           },
@@ -309,7 +582,7 @@
                         "type": "builder_formula",
                         "spec": {
                           "name": "F1",
-                          "expression": "A + B",
+                          "expression": "A / B",
                           "disabled": false,
                           "having": {
                             "expression": ""
@@ -326,12 +599,69 @@
           "links": []
         }
       },
-      "3633c7ad-203a-4e25-99f4-8cc81bf15d65": {
+      "95ef363b-f69d-450a-9f8e-884a07f59812": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Model Distribution",
-            "description": ""
+            "name": "LLM calls",
+            "description": "Count of LM.__call__ spans (actual model requests)."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'LLM'"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "selectFields": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "bd59f7b1-b042-478d-ab4c-bfc417a2c984": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Span kind distribution",
+            "description": "Share of CHAIN / LLM / TOOL spans."
           },
           "plugin": {
             "kind": "signoz/PieChartPanel",
@@ -359,6 +689,7 @@
                   "kind": "signoz/BuilderQuery",
                   "spec": {
                     "name": "A",
+                    "stepInterval": 60,
                     "signal": "traces",
                     "source": "",
                     "aggregations": [
@@ -368,22 +699,23 @@
                     ],
                     "disabled": false,
                     "filter": {
-                      "expression": "service.name in $service_name AND gen_ai.request.model EXISTS"
+                      "expression": "service.name IN $service_name AND openinference.span.kind EXISTS"
                     },
                     "groupBy": [
                       {
-                        "name": "gen_ai.request.model",
+                        "name": "openinference.span.kind",
                         "signal": "",
                         "fieldContext": "attribute",
                         "fieldDataType": "string"
                       }
                     ],
                     "order": [],
+                    "selectFields": [],
                     "having": {
                       "expression": ""
                     },
                     "functions": [],
-                    "legend": "{{gen_ai.request.model}}"
+                    "legend": "{{openinference.span.kind}}"
                   }
                 }
               }
@@ -392,127 +724,77 @@
           "links": []
         }
       },
-      "579f8e38-9b07-4c73-ae6c-db82b65ea4b2": {
+      "bf37bb79-3247-4d9a-81b6-f63c004dac99": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Number of Conversations Below Threshold",
-            "description": ""
+            "name": "LLM latency percentiles (over time)",
+            "description": "p50 / p90 / p99 of LM.__call__ duration."
           },
           "plugin": {
-            "kind": "signoz/NumberPanel",
+            "kind": "signoz/TimeSeriesPanel",
             "spec": {
               "visualization": {
-                "timePreference": "global_time"
+                "timePreference": "global_time",
+                "fillSpans": false
               },
               "formatting": {
-                "unit": "none",
+                "unit": "ns",
                 "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
               },
               "thresholds": null
             }
           },
           "queries": [
             {
-              "kind": "scalar",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/ClickHouseSQL",
-                  "spec": {
-                    "name": "A",
-                    "query": "SELECT\n    count() AS conversations_below_threshold\nFROM (\n    SELECT\n        traceID,\n        count(*) AS turn_count\n    FROM signoz_traces.distributed_signoz_index_v3\n    WHERE serviceName IN $service_name\n      AND name = 'agent_turn'\n    GROUP BY traceID\n    HAVING turn_count \u003c toUInt64($turns_threshold)\n)\n",
-                    "disabled": false,
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "5e66cb8c-2219-47e6-ba71-8f82f9873bc8": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Errors",
-            "description": ""
-          },
-          "plugin": {
-            "kind": "signoz/ListPanel",
-            "spec": {
-              "selectFields": [
-                {
-                  "name": "timestamp",
-                  "signal": "logs",
-                  "fieldContext": "log",
-                  "fieldDataType": ""
-                },
-                {
-                  "name": "body",
-                  "signal": "logs",
-                  "fieldContext": "log",
-                  "fieldDataType": ""
-                }
-              ]
-            }
-          },
-          "queries": [
-            {
-              "kind": "raw",
+              "kind": "time_series",
               "spec": {
                 "name": "A",
                 "plugin": {
                   "kind": "signoz/BuilderQuery",
                   "spec": {
                     "name": "A",
+                    "stepInterval": 60,
                     "signal": "traces",
                     "source": "",
                     "aggregations": [
                       {
-                        "expression": "count()"
+                        "expression": "p50(duration_nano)"
+                      },
+                      {
+                        "expression": "p90(duration_nano)"
+                      },
+                      {
+                        "expression": "p99(duration_nano)"
                       }
                     ],
                     "disabled": false,
                     "filter": {
-                      "expression": "has_error = 'true' service.name IN $service_name"
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'LLM'"
                     },
                     "groupBy": [],
                     "order": [],
-                    "selectFields": [
-                      {
-                        "name": "service.name",
-                        "signal": "",
-                        "fieldContext": "resource",
-                        "fieldDataType": "string"
-                      },
-                      {
-                        "name": "name",
-                        "signal": "",
-                        "fieldContext": "span",
-                        "fieldDataType": "string"
-                      },
-                      {
-                        "name": "duration_nano",
-                        "signal": "",
-                        "fieldContext": "span",
-                        "fieldDataType": ""
-                      },
-                      {
-                        "name": "http_method",
-                        "signal": "",
-                        "fieldContext": "span",
-                        "fieldDataType": ""
-                      },
-                      {
-                        "name": "response_status_code",
-                        "signal": "",
-                        "fieldContext": "span",
-                        "fieldDataType": ""
-                      }
-                    ],
-                    "limit": 10,
+                    "selectFields": [],
                     "having": {
                       "expression": ""
                     },
@@ -526,83 +808,12 @@
           "links": []
         }
       },
-      "67a074ee-c46e-4a36-8f5c-10d981cae404": {
+      "d13f68be-cb49-4f76-97b5-73712e01b1b6": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Services and Languages",
-            "description": ""
-          },
-          "plugin": {
-            "kind": "signoz/TablePanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time"
-              },
-              "formatting": {
-                "columnUnits": {
-                  "A": ""
-                },
-                "decimalPrecision": "2"
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "scalar",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "signal": "traces",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "expression": "count()",
-                        "alias": "Count of Conversations"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "service.name IN $service_name AND telemetry.sdk.language IN $language AND name = 'job_entrypoint'"
-                    },
-                    "groupBy": [
-                      {
-                        "name": "service.name",
-                        "signal": "",
-                        "fieldContext": "resource",
-                        "fieldDataType": "string"
-                      },
-                      {
-                        "name": "telemetry.sdk.language",
-                        "signal": "",
-                        "fieldContext": "resource",
-                        "fieldDataType": "string"
-                      }
-                    ],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "74a94376-eeaf-43c1-a273-5d8b98197138": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Number of Conversations",
-            "description": ""
+            "name": "LLM calls by model (over time)",
+            "description": "LM.__call__ volume grouped by llm.model_name."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -633,10 +844,7 @@
               "legend": {
                 "position": "bottom",
                 "mode": "list",
-                "customColors": {
-                  "A": "#edce64",
-                  "count()": "#a403ff"
-                }
+                "customColors": null
               },
               "thresholds": null
             }
@@ -650,6 +858,7 @@
                   "kind": "signoz/BuilderQuery",
                   "spec": {
                     "name": "A",
+                    "stepInterval": 60,
                     "signal": "traces",
                     "source": "",
                     "aggregations": [
@@ -659,10 +868,95 @@
                     ],
                     "disabled": false,
                     "filter": {
-                      "expression": "service.name in $service_name AND name = 'job_entrypoint'"
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'LLM' AND llm.model_name EXISTS"
                     },
-                    "groupBy": [],
+                    "groupBy": [
+                      {
+                        "name": "llm.model_name",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
                     "order": [],
+                    "selectFields": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{llm.model_name}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "e0c9f6c8-26b0-4507-add5-be4526485d04": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model usage",
+            "description": "LLM spans grouped by model and provider."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "A.avg(duration_nano)": "ns"
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Calls"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg latency"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'LLM'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "llm.model_name",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "llm.provider",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [],
+                    "selectFields": [],
                     "having": {
                       "expression": ""
                     },
@@ -676,12 +970,69 @@
           "links": []
         }
       },
-      "799913e6-fb95-497e-858a-6490b5f9d10d": {
+      "ea017d3a-3dd2-4002-bf0b-c2cd7dc70fa2": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Error Rate",
-            "description": ""
+            "name": "LLM latency (p95)",
+            "description": "p95 duration of LM.__call__ spans."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'LLM'"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "selectFields": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "f1cb4cb7-a88d-413a-b53b-0c1237f5143d": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Error rate",
+            "description": "Fraction of selected DSPy services' spans with an error status."
           },
           "plugin": {
             "kind": "signoz/NumberPanel",
@@ -693,22 +1044,7 @@
                 "unit": "percentunit",
                 "decimalPrecision": "2"
               },
-              "thresholds": [
-                {
-                  "value": 10,
-                  "operator": "above",
-                  "unit": "percentunit",
-                  "color": "Red",
-                  "format": "text"
-                },
-                {
-                  "value": 5,
-                  "operator": "above",
-                  "unit": "percentunit",
-                  "color": "Orange",
-                  "format": "text"
-                }
-              ]
+              "thresholds": null
             }
           },
           "queries": [
@@ -723,6 +1059,7 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "A",
+                          "stepInterval": 60,
                           "signal": "traces",
                           "source": "",
                           "aggregations": [
@@ -732,10 +1069,11 @@
                           ],
                           "disabled": true,
                           "filter": {
-                            "expression": "has_error = 'true' service.name in $service_name"
+                            "expression": "service.name IN $service_name AND has_error = 'true'"
                           },
                           "groupBy": [],
                           "order": [],
+                          "selectFields": [],
                           "having": {
                             "expression": ""
                           },
@@ -747,6 +1085,7 @@
                         "type": "builder_query",
                         "spec": {
                           "name": "B",
+                          "stepInterval": 60,
                           "signal": "traces",
                           "source": "",
                           "aggregations": [
@@ -756,10 +1095,11 @@
                           ],
                           "disabled": true,
                           "filter": {
-                            "expression": "has_error = 'false' service.name in $service_name"
+                            "expression": "service.name IN $service_name AND has_error = 'false'"
                           },
                           "groupBy": [],
                           "order": [],
+                          "selectFields": [],
                           "having": {
                             "expression": ""
                           },
@@ -771,7 +1111,7 @@
                         "type": "builder_formula",
                         "spec": {
                           "name": "F1",
-                          "expression": "A / (A+B)",
+                          "expression": "A / (A + B)",
                           "disabled": false,
                           "having": {
                             "expression": ""
@@ -788,341 +1128,12 @@
           "links": []
         }
       },
-      "7acd2252-19fb-4734-9dd2-d1152ef6da3d": {
+      "fc5bb060-59ca-4668-b86b-48b62eb98e6d": {
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Average Turns Per Conversation",
-            "description": ""
-          },
-          "plugin": {
-            "kind": "signoz/NumberPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time"
-              },
-              "formatting": {
-                "unit": "none",
-                "decimalPrecision": "2"
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "scalar",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/ClickHouseSQL",
-                  "spec": {
-                    "name": "A",
-                    "query": "SELECT\n    avg(turn_count) AS avg_turns_per_conversation\nFROM (\n    SELECT\n        traceID,\n        count(*) AS turn_count\n    FROM signoz_traces.distributed_signoz_index_v3\n    WHERE serviceName IN $service_name\n      AND name = 'agent_turn'\n    GROUP BY traceID\n)\n",
-                    "disabled": false,
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "af79b14b-5e76-47fb-a24e-a4629c642c28": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Agent Response Latency (P95)",
-            "description": ""
-          },
-          "plugin": {
-            "kind": "signoz/TimeSeriesPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time",
-                "fillSpans": false
-              },
-              "formatting": {
-                "unit": "ns",
-                "decimalPrecision": "2"
-              },
-              "chartAppearance": {
-                "lineInterpolation": "spline",
-                "showPoints": false,
-                "lineStyle": "solid",
-                "fillMode": "none",
-                "spanGaps": {
-                  "fillOnlyBelow": false,
-                  "fillLessThan": ""
-                }
-              },
-              "axes": {
-                "softMin": 0,
-                "softMax": 0,
-                "isLogScale": false
-              },
-              "legend": {
-                "position": "bottom",
-                "mode": "list",
-                "customColors": null
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "time_series",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "signal": "traces",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "expression": "p95(duration_nano)"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "service.name in $service_name telemetry.sdk.language in $language name = 'agent_turn'"
-                    },
-                    "groupBy": [],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "bc6e3017-2b44-4152-a0d7-fe11e6b7a290": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "HTTP Request Duration",
-            "description": ""
-          },
-          "plugin": {
-            "kind": "signoz/TimeSeriesPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time",
-                "fillSpans": false
-              },
-              "formatting": {
-                "unit": "ms",
-                "decimalPrecision": "2"
-              },
-              "chartAppearance": {
-                "lineInterpolation": "spline",
-                "showPoints": false,
-                "lineStyle": "solid",
-                "fillMode": "none",
-                "spanGaps": {
-                  "fillOnlyBelow": false,
-                  "fillLessThan": ""
-                }
-              },
-              "axes": {
-                "softMin": 0,
-                "softMax": 0,
-                "isLogScale": false
-              },
-              "legend": {
-                "position": "bottom",
-                "mode": "list",
-                "customColors": {
-                  "A": "#5eddce"
-                }
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "time_series",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "signal": "metrics",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "metricName": "http.client.duration.max",
-                        "temporality": "",
-                        "timeAggregation": "avg",
-                        "spaceAggregation": "avg",
-                        "reduceTo": "avg"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "service.name IN $service_name"
-                    },
-                    "groupBy": [],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "d6cf07ab-f06e-43ce-a3fd-48ef0c3c9570": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Output Tokens",
-            "description": ""
-          },
-          "plugin": {
-            "kind": "signoz/NumberPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time"
-              },
-              "formatting": {
-                "unit": "none",
-                "decimalPrecision": "2"
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "scalar",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "signal": "traces",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "expression": "sum(gen_ai.usage.output_tokens)"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "service.name in $service_name name = 'llm_request' telemetry.sdk.language in $language gen_ai.request.model in $llm_model"
-                    },
-                    "groupBy": [],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "e9849813-832e-4661-9395-a11fd60f80d1": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "TTS Duration",
-            "description": ""
-          },
-          "plugin": {
-            "kind": "signoz/TimeSeriesPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time",
-                "fillSpans": false
-              },
-              "formatting": {
-                "unit": "ns",
-                "decimalPrecision": "2"
-              },
-              "chartAppearance": {
-                "lineInterpolation": "spline",
-                "showPoints": false,
-                "lineStyle": "solid",
-                "fillMode": "none",
-                "spanGaps": {
-                  "fillOnlyBelow": false,
-                  "fillLessThan": ""
-                }
-              },
-              "axes": {
-                "softMin": 0,
-                "softMax": 0,
-                "isLogScale": false
-              },
-              "legend": {
-                "position": "bottom",
-                "mode": "list",
-                "customColors": null
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "time_series",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "signal": "traces",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "expression": "avg(duration_nano)"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "service.name IN $service_name AND name = 'tts_node'"
-                    },
-                    "groupBy": [],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "fe46bf68-9c77-478f-958e-36d8478ebbcd": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Conversations Below Threshold",
-            "description": ""
+            "name": "DSPy module breakdown",
+            "description": "CHAIN spans grouped by module/operation name with call count and average latency."
           },
           "plugin": {
             "kind": "signoz/TablePanel",
@@ -1132,7 +1143,7 @@
               },
               "formatting": {
                 "columnUnits": {
-                  "A": ""
+                  "A.avg(duration_nano)": "ns"
                 },
                 "decimalPrecision": "2"
               },
@@ -1145,11 +1156,40 @@
               "spec": {
                 "name": "A",
                 "plugin": {
-                  "kind": "signoz/ClickHouseSQL",
+                  "kind": "signoz/BuilderQuery",
                   "spec": {
                     "name": "A",
-                    "query": "SELECT\n    traceID,\n    turn_count\nFROM (\n    SELECT\n        traceID,\n        count(*) AS turn_count\n    FROM signoz_traces.distributed_signoz_index_v3\n    WHERE serviceName IN $service_name\n      AND name = 'agent_turn'\n    GROUP BY traceID\n)\nWHERE turn_count \u003c toUInt64($turns_threshold)\nORDER BY turn_count ASC, traceID\n",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Calls"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg latency"
+                      }
+                    ],
                     "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND openinference.span.kind = 'CHAIN'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "name",
+                        "signal": "",
+                        "fieldContext": "",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [],
+                    "selectFields": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
                     "legend": ""
                   }
                 }
@@ -1168,136 +1208,136 @@
             {
               "x": 0,
               "y": 0,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/04247ee1-b408-457d-ac00-47ce45e64291"
-              }
-            },
-            {
-              "x": 3,
-              "y": 0,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/d6cf07ab-f06e-43ce-a3fd-48ef0c3c9570"
-              }
-            },
-            {
-              "x": 6,
-              "y": 0,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/799913e6-fb95-497e-858a-6490b5f9d10d"
-              }
-            },
-            {
-              "x": 9,
-              "y": 0,
-              "width": 3,
-              "height": 6,
-              "content": {
-                "$ref": "#/spec/panels/3633c7ad-203a-4e25-99f4-8cc81bf15d65"
-              }
-            },
-            {
-              "x": 0,
-              "y": 3,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/579f8e38-9b07-4c73-ae6c-db82b65ea4b2"
-              }
-            },
-            {
-              "x": 3,
-              "y": 3,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/7acd2252-19fb-4734-9dd2-d1152ef6da3d"
-              }
-            },
-            {
-              "x": 6,
-              "y": 3,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/fe46bf68-9c77-478f-958e-36d8478ebbcd"
-              }
-            },
-            {
-              "x": 0,
-              "y": 6,
-              "width": 5,
-              "height": 5,
-              "content": {
-                "$ref": "#/spec/panels/28bb5d45-046d-4980-ad5e-26b1aeecda2b"
-              }
-            },
-            {
-              "x": 5,
-              "y": 6,
-              "width": 5,
-              "height": 5,
-              "content": {
-                "$ref": "#/spec/panels/74a94376-eeaf-43c1-a273-5d8b98197138"
-              }
-            },
-            {
-              "x": 0,
-              "y": 11,
-              "width": 5,
-              "height": 5,
-              "content": {
-                "$ref": "#/spec/panels/af79b14b-5e76-47fb-a24e-a4629c642c28"
-              }
-            },
-            {
-              "x": 5,
-              "y": 11,
-              "width": 5,
+              "width": 2,
               "height": 4,
               "content": {
-                "$ref": "#/spec/panels/bc6e3017-2b44-4152-a0d7-fe11e6b7a290"
+                "$ref": "#/spec/panels/4ab89d52-319c-4dbc-acb2-74b7f9b38882"
               }
             },
             {
-              "x": 5,
-              "y": 15,
-              "width": 6,
-              "height": 3,
+              "x": 2,
+              "y": 0,
+              "width": 2,
+              "height": 4,
               "content": {
-                "$ref": "#/spec/panels/67a074ee-c46e-4a36-8f5c-10d981cae404"
+                "$ref": "#/spec/panels/95ef363b-f69d-450a-9f8e-884a07f59812"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/6eb391c2-41db-47bf-b6c0-11e70bcece5d"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/f1cb4cb7-a88d-413a-b53b-0c1237f5143d"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/7e2fd4df-857c-4e88-9791-b7a421801ab0"
+              }
+            },
+            {
+              "x": 10,
+              "y": 0,
+              "width": 2,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/ea017d3a-3dd2-4002-bf0b-c2cd7dc70fa2"
+              }
+            },
+            {
+              "x": 0,
+              "y": 4,
+              "width": 8,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/6c870c63-2977-409f-87bd-814a89c1d22b"
+              }
+            },
+            {
+              "x": 8,
+              "y": 4,
+              "width": 4,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bd59f7b1-b042-478d-ab4c-bfc417a2c984"
+              }
+            },
+            {
+              "x": 0,
+              "y": 10,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/d13f68be-cb49-4f76-97b5-73712e01b1b6"
+              }
+            },
+            {
+              "x": 6,
+              "y": 10,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/bf37bb79-3247-4d9a-81b6-f63c004dac99"
               }
             },
             {
               "x": 0,
               "y": 16,
-              "width": 5,
+              "width": 12,
               "height": 6,
               "content": {
-                "$ref": "#/spec/panels/e9849813-832e-4661-9395-a11fd60f80d1"
-              }
-            },
-            {
-              "x": 5,
-              "y": 18,
-              "width": 6,
-              "height": 7,
-              "content": {
-                "$ref": "#/spec/panels/05e6759b-c460-4618-86c0-5d2bf0b311c1"
+                "$ref": "#/spec/panels/fc5bb060-59ca-4668-b86b-48b62eb98e6d"
               }
             },
             {
               "x": 0,
               "y": 22,
-              "width": 5,
-              "height": 3,
+              "width": 6,
+              "height": 6,
               "content": {
-                "$ref": "#/spec/panels/5e66cb8c-2219-47e6-ba71-8f82f9873bc8"
+                "$ref": "#/spec/panels/e0c9f6c8-26b0-4507-add5-be4526485d04"
+              }
+            },
+            {
+              "x": 6,
+              "y": 22,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/06c7f532-4212-4dc4-8272-19b43ec0f299"
+              }
+            },
+            {
+              "x": 0,
+              "y": 28,
+              "width": 12,
+              "height": 8,
+              "content": {
+                "$ref": "#/spec/panels/60ec8bb7-7c7c-4a33-a490-d2b6c7647241"
+              }
+            },
+            {
+              "x": 0,
+              "y": 36,
+              "width": 12,
+              "height": 8,
+              "content": {
+                "$ref": "#/spec/panels/092f7e91-4315-47e1-bf57-f28ff58d90c7"
               }
             }
           ]
