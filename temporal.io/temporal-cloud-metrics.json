@@ -196,7 +196,7 @@
         "spec": {
           "display": {
             "name": "Activity start-to-close latency (p50/p95/p99)",
-            "description": "Precomputed activity start-to-close latency percentiles, split by namespace, region, and opt-in activity type when present."
+            "description": "Activity start-to-close latency percentiles. Pre-computed by Temporal, so percentiles are not re-aggregated. Series split by activity type only when the opt-in temporal_activity_type label is enabled on the scrape (params: labels=[temporal_activity_type]); without it this is a single namespace-wide series."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -285,7 +285,7 @@
                             "expression": ""
                           },
                           "functions": [],
-                          "legend": "{{temporal_namespace}} - {{region}} - {{temporal_activity_type}} - p50"
+                          "legend": "{{temporal_namespace}} - {{region}} - p50 {{temporal_activity_type}}"
                         }
                       },
                       {
@@ -333,7 +333,7 @@
                             "expression": ""
                           },
                           "functions": [],
-                          "legend": "{{temporal_namespace}} - {{region}} - {{temporal_activity_type}} - p95"
+                          "legend": "{{temporal_namespace}} - {{region}} - p95 {{temporal_activity_type}}"
                         }
                       },
                       {
@@ -381,7 +381,7 @@
                             "expression": ""
                           },
                           "functions": [],
-                          "legend": "{{temporal_namespace}} - {{region}} - {{temporal_activity_type}} - p99"
+                          "legend": "{{temporal_namespace}} - {{region}} - p99 {{temporal_activity_type}}"
                         }
                       }
                     ]
@@ -398,7 +398,7 @@
         "spec": {
           "display": {
             "name": "Activity schedule-to-close latency (p50/p95/p99)",
-            "description": "Per-namespace activity schedule-to-close latency percentiles."
+            "description": "Activity schedule-to-close latency percentiles. Pre-computed by Temporal, so percentiles are not re-aggregated. Series split by activity type only when the opt-in temporal_activity_type label is enabled on the scrape (params: labels=[temporal_activity_type]); without it this is a single namespace-wide series."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -487,7 +487,7 @@
                             "expression": ""
                           },
                           "functions": [],
-                          "legend": "{{temporal_namespace}} - {{region}} - {{temporal_activity_type}} - p50"
+                          "legend": "{{temporal_namespace}} - {{region}} - p50 {{temporal_activity_type}}"
                         }
                       },
                       {
@@ -535,7 +535,7 @@
                             "expression": ""
                           },
                           "functions": [],
-                          "legend": "{{temporal_namespace}} - {{region}} - {{temporal_activity_type}} - p95"
+                          "legend": "{{temporal_namespace}} - {{region}} - p95 {{temporal_activity_type}}"
                         }
                       },
                       {
@@ -583,7 +583,7 @@
                             "expression": ""
                           },
                           "functions": [],
-                          "legend": "{{temporal_namespace}} - {{region}} - {{temporal_activity_type}} - p99"
+                          "legend": "{{temporal_namespace}} - {{region}} - p99 {{temporal_activity_type}}"
                         }
                       }
                     ]
@@ -828,66 +828,6 @@
           "links": []
         }
       },
-      "p-action-limit": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Action limit (/s)",
-            "description": "Current configured actions-per-second limit for the namespace."
-          },
-          "plugin": {
-            "kind": "signoz/NumberPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time"
-              },
-              "formatting": {
-                "unit": "short",
-                "decimalPrecision": "2"
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "scalar",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "stepInterval": 60,
-                    "signal": "metrics",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "metricName": "temporal_cloud_v1_action_limit",
-                        "temporality": "unspecified",
-                        "timeAggregation": "latest",
-                        "spaceAggregation": "sum",
-                        "reduceTo": "last"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "temporal_namespace IN $temporal_namespace"
-                    },
-                    "groupBy": [],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
       "p-backlog": {
         "kind": "Panel",
         "spec": {
@@ -1069,7 +1009,7 @@
         "spec": {
           "display": {
             "name": "Actions used vs limit (/s)",
-            "description": "Actual actions per second versus the configured action limit. Watch this approach the limit."
+            "description": "Actual actions per second versus the configured action limit. Watch this approach the limit. Throttle is included because a spiky workload can be throttled while the 1-minute averaged count still sits below the limit."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1184,6 +1124,42 @@
                           "functions": [],
                           "legend": "{{temporal_namespace}} action limit"
                         }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "temporal_cloud_v1_total_action_throttled_count",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "temporal_namespace IN $temporal_namespace"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "temporal_namespace",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "{{temporal_namespace}} actions throttled"
+                        }
                       }
                     ]
                   }
@@ -1199,7 +1175,7 @@
         "spec": {
           "display": {
             "name": "Operations used vs limit (/s)",
-            "description": "Actual operations per second versus the configured operations limit."
+            "description": "Actual operations per second versus the configured operations limit. Throttle is included because a spiky workload can be throttled while the 1-minute averaged count still sits below the limit."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1314,6 +1290,42 @@
                           "functions": [],
                           "legend": "{{temporal_namespace}} operations limit"
                         }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "temporal_cloud_v1_operations_throttled_count",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "temporal_namespace IN $temporal_namespace AND is_background = 'false'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "temporal_namespace",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "{{temporal_namespace}} operations throttled"
+                        }
                       }
                     ]
                   }
@@ -1329,7 +1341,7 @@
         "spec": {
           "display": {
             "name": "Service requests used vs limit (/s)",
-            "description": "Frontend service request rate compared with the configured service request limit."
+            "description": "Frontend service request rate compared with the configured service request limit. Throttle is included because a spiky workload can be throttled while the 1-minute averaged count still sits below the limit."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1444,75 +1456,17 @@
                           "functions": [],
                           "legend": "{{temporal_namespace}} service request limit"
                         }
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "p-cap-throttled": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Actions and operations throttled (/s)",
-            "description": "Namespace-level throttling against action and operation limits."
-          },
-          "plugin": {
-            "kind": "signoz/TimeSeriesPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time",
-                "fillSpans": false
-              },
-              "formatting": {
-                "unit": "short",
-                "decimalPrecision": "2"
-              },
-              "chartAppearance": {
-                "lineInterpolation": "spline",
-                "showPoints": false,
-                "lineStyle": "solid",
-                "fillMode": "none",
-                "spanGaps": {
-                  "fillOnlyBelow": false,
-                  "fillLessThan": ""
-                }
-              },
-              "axes": {
-                "softMin": 0,
-                "softMax": 0,
-                "isLogScale": false
-              },
-              "legend": {
-                "position": "bottom",
-                "mode": "list",
-                "customColors": null
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "time_series",
-              "spec": {
-                "plugin": {
-                  "kind": "signoz/CompositeQuery",
-                  "spec": {
-                    "queries": [
+                      },
                       {
                         "type": "builder_query",
                         "spec": {
-                          "name": "A",
+                          "name": "C",
                           "stepInterval": 60,
                           "signal": "metrics",
                           "source": "",
                           "aggregations": [
                             {
-                              "metricName": "temporal_cloud_v1_total_action_throttled_count",
+                              "metricName": "temporal_cloud_v1_service_request_throttled_count",
                               "temporality": "unspecified",
                               "timeAggregation": "avg",
                               "spaceAggregation": "sum",
@@ -1523,42 +1477,20 @@
                           "filter": {
                             "expression": "temporal_namespace IN $temporal_namespace"
                           },
-                          "groupBy": [],
-                          "order": [],
-                          "having": {
-                            "expression": ""
-                          },
-                          "functions": [],
-                          "legend": "actions throttled"
-                        }
-                      },
-                      {
-                        "type": "builder_query",
-                        "spec": {
-                          "name": "B",
-                          "stepInterval": 60,
-                          "signal": "metrics",
-                          "source": "",
-                          "aggregations": [
+                          "groupBy": [
                             {
-                              "metricName": "temporal_cloud_v1_operations_throttled_count",
-                              "temporality": "unspecified",
-                              "timeAggregation": "avg",
-                              "spaceAggregation": "sum",
-                              "reduceTo": "avg"
+                              "name": "temporal_namespace",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
                             }
                           ],
-                          "disabled": false,
-                          "filter": {
-                            "expression": "temporal_namespace IN $temporal_namespace AND is_background = 'false'"
-                          },
-                          "groupBy": [],
                           "order": [],
                           "having": {
                             "expression": ""
                           },
                           "functions": [],
-                          "legend": "operations throttled"
+                          "legend": "{{temporal_namespace}} requests throttled"
                         }
                       }
                     ]
@@ -1662,8 +1594,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "On-demand envelope limits (/s)",
-            "description": "What namespace limits would be in on-demand mode; in on-demand namespaces these match the current limits."
+            "name": "On-demand envelope vs current limit (/s)",
+            "description": "Each on-demand envelope limit against the limit currently in force. Identical values mean the namespace is on-demand; a gap means it is on provisioned capacity."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1813,6 +1745,114 @@
                           },
                           "functions": [],
                           "legend": "{{temporal_namespace}} service request envelope"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "D",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "temporal_cloud_v1_action_limit",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "temporal_namespace IN $temporal_namespace"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "temporal_namespace",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "{{temporal_namespace}} action limit"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "E",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "temporal_cloud_v1_operations_limit",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "temporal_namespace IN $temporal_namespace"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "temporal_namespace",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "{{temporal_namespace}} operations limit"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "F",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "temporal_cloud_v1_service_request_limit",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "temporal_namespace IN $temporal_namespace"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "temporal_namespace",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "{{temporal_namespace}} service request limit"
                         }
                       }
                     ]
@@ -1964,66 +2004,6 @@
                     },
                     "functions": [],
                     "legend": "{{operation}}"
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
-      "p-ops-limit": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Operations limit (/s)",
-            "description": "Current configured operations-per-second limit for the namespace."
-          },
-          "plugin": {
-            "kind": "signoz/NumberPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time"
-              },
-              "formatting": {
-                "unit": "short",
-                "decimalPrecision": "2"
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "scalar",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "stepInterval": 60,
-                    "signal": "metrics",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "metricName": "temporal_cloud_v1_operations_limit",
-                        "temporality": "unspecified",
-                        "timeAggregation": "latest",
-                        "spaceAggregation": "sum",
-                        "reduceTo": "last"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "temporal_namespace IN $temporal_namespace"
-                    },
-                    "groupBy": [],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
                   }
                 }
               }
@@ -2776,66 +2756,6 @@
           "links": []
         }
       },
-      "p-service-request-limit": {
-        "kind": "Panel",
-        "spec": {
-          "display": {
-            "name": "Service request limit (/s)",
-            "description": "Current configured frontend service requests-per-second limit."
-          },
-          "plugin": {
-            "kind": "signoz/NumberPanel",
-            "spec": {
-              "visualization": {
-                "timePreference": "global_time"
-              },
-              "formatting": {
-                "unit": "short",
-                "decimalPrecision": "2"
-              },
-              "thresholds": null
-            }
-          },
-          "queries": [
-            {
-              "kind": "scalar",
-              "spec": {
-                "name": "A",
-                "plugin": {
-                  "kind": "signoz/BuilderQuery",
-                  "spec": {
-                    "name": "A",
-                    "stepInterval": 60,
-                    "signal": "metrics",
-                    "source": "",
-                    "aggregations": [
-                      {
-                        "metricName": "temporal_cloud_v1_service_request_limit",
-                        "temporality": "unspecified",
-                        "timeAggregation": "latest",
-                        "spaceAggregation": "sum",
-                        "reduceTo": "last"
-                      }
-                    ],
-                    "disabled": false,
-                    "filter": {
-                      "expression": "temporal_namespace IN $temporal_namespace"
-                    },
-                    "groupBy": [],
-                    "order": [],
-                    "having": {
-                      "expression": ""
-                    },
-                    "functions": [],
-                    "legend": ""
-                  }
-                }
-              }
-            }
-          ],
-          "links": []
-        }
-      },
       "p-svc-error-rate": {
         "kind": "Panel",
         "spec": {
@@ -3306,8 +3226,8 @@
         "kind": "Panel",
         "spec": {
           "display": {
-            "name": "Throttled + resource-exhausted (/s)",
-            "description": "Throttled requests and ResourceExhausted errors per second."
+            "name": "Resource exhausted (/s)",
+            "description": "Resource-exhausted errors. Usually self-healing through retries, unlike hitting a rate limit. Throttling now sits with its own limit in Capacity vs Usage."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -3347,69 +3267,34 @@
             {
               "kind": "time_series",
               "spec": {
+                "name": "A",
                 "plugin": {
-                  "kind": "signoz/CompositeQuery",
+                  "kind": "signoz/BuilderQuery",
                   "spec": {
-                    "queries": [
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
                       {
-                        "type": "builder_query",
-                        "spec": {
-                          "name": "A",
-                          "stepInterval": 60,
-                          "signal": "metrics",
-                          "source": "",
-                          "aggregations": [
-                            {
-                              "metricName": "temporal_cloud_v1_service_request_throttled_count",
-                              "temporality": "unspecified",
-                              "timeAggregation": "avg",
-                              "spaceAggregation": "sum",
-                              "reduceTo": "avg"
-                            }
-                          ],
-                          "disabled": false,
-                          "filter": {
-                            "expression": "temporal_namespace IN $temporal_namespace"
-                          },
-                          "groupBy": [],
-                          "order": [],
-                          "having": {
-                            "expression": ""
-                          },
-                          "functions": [],
-                          "legend": "throttled"
-                        }
-                      },
-                      {
-                        "type": "builder_query",
-                        "spec": {
-                          "name": "B",
-                          "stepInterval": 60,
-                          "signal": "metrics",
-                          "source": "",
-                          "aggregations": [
-                            {
-                              "metricName": "temporal_cloud_v1_resource_exhausted_error_count",
-                              "temporality": "unspecified",
-                              "timeAggregation": "avg",
-                              "spaceAggregation": "sum",
-                              "reduceTo": "avg"
-                            }
-                          ],
-                          "disabled": false,
-                          "filter": {
-                            "expression": "temporal_namespace IN $temporal_namespace"
-                          },
-                          "groupBy": [],
-                          "order": [],
-                          "having": {
-                            "expression": ""
-                          },
-                          "functions": [],
-                          "legend": "resource exhausted"
-                        }
+                        "metricName": "temporal_cloud_v1_resource_exhausted_error_count",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
                       }
-                    ]
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "temporal_namespace IN $temporal_namespace"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "resource exhausted"
                   }
                 }
               }
@@ -4132,37 +4017,10 @@
             {
               "x": 0,
               "y": 0,
-              "width": 3,
+              "width": 12,
               "height": 3,
               "content": {
                 "$ref": "#/spec/panels/p-open-workflows"
-              }
-            },
-            {
-              "x": 3,
-              "y": 0,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/p-action-limit"
-              }
-            },
-            {
-              "x": 6,
-              "y": 0,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/p-ops-limit"
-              }
-            },
-            {
-              "x": 9,
-              "y": 0,
-              "width": 3,
-              "height": 3,
-              "content": {
-                "$ref": "#/spec/panels/p-service-request-limit"
               }
             },
             {
@@ -4496,7 +4354,7 @@
               "width": 6,
               "height": 6,
               "content": {
-                "$ref": "#/spec/panels/p-cap-operations"
+                "$ref": "#/spec/panels/p-cap-service-requests"
               }
             },
             {
@@ -4505,21 +4363,12 @@
               "width": 6,
               "height": 6,
               "content": {
-                "$ref": "#/spec/panels/p-cap-service-requests"
+                "$ref": "#/spec/panels/p-cap-operations"
               }
             },
             {
               "x": 6,
               "y": 6,
-              "width": 6,
-              "height": 6,
-              "content": {
-                "$ref": "#/spec/panels/p-cap-throttled"
-              }
-            },
-            {
-              "x": 0,
-              "y": 12,
               "width": 6,
               "height": 6,
               "content": {
@@ -4527,9 +4376,9 @@
               }
             },
             {
-              "x": 6,
+              "x": 0,
               "y": 12,
-              "width": 6,
+              "width": 12,
               "height": 6,
               "content": {
                 "$ref": "#/spec/panels/p-billable-actions"
