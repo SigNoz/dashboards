@@ -1,0 +1,521 @@
+{
+  "schemaVersion": "v6",
+  "image": "/assets/Icons/eight-ball",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "tag",
+      "value": "web-vitals"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Web Vitals Monitoring",
+      "description": "Real-time monitoring of key Web Vitals using traces to track user experience and page performance.\n\n"
+    },
+    "variables": [
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "display": {
+            "name": "service-name",
+            "description": "Name to the service to display web vitals from."
+          },
+          "value": "",
+          "constant": false,
+          "name": "service-name"
+        }
+      }
+    ],
+    "panels": {
+      "514c6591-1e77-4459-9c42-0d8827e68075": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CLS - Cumulative Layout Shift",
+            "description": "Measures visual stability. To provide a good user experience, pages should maintain a CLS of 0.1 or less."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 0.1,
+                  "operator": "above",
+                  "unit": "none",
+                  "color": "Orange",
+                  "format": "text"
+                },
+                {
+                  "value": 0.25,
+                  "operator": "above",
+                  "unit": "none",
+                  "color": "Red",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "avg(web_vital.value)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "(service.name = $service-name AND web_vital.name = 'CLS')"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "FCP"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "59d65b85-c81f-49a9-8e15-92b9fafbd190": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LCP - Largest Contentful Paint",
+            "description": "Measures loading performance. To provide a good user experience, LCP should occur within 2.5 seconds of when the page first starts loading."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": [
+                {
+                  "value": 2500,
+                  "unit": "ms",
+                  "color": "Orange",
+                  "label": "Needs Improvement"
+                },
+                {
+                  "value": 4000,
+                  "unit": "ms",
+                  "color": "Red",
+                  "label": "Poor"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "avg(web_vital.value)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "(service.name = $service-name AND web_vital.name = 'LCP')"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "LCP"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "850542c7-6557-42eb-a677-312649c6fd3d": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "INP - Interaction to Next Paint",
+            "description": "Measures interactivity. To provide a good user experience, pages should have a INP of 200 milliseconds or less."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": [
+                {
+                  "value": 200,
+                  "unit": "ms",
+                  "color": "Orange",
+                  "label": "Needs Improvement"
+                },
+                {
+                  "value": 500,
+                  "unit": "ms",
+                  "color": "Red",
+                  "label": "Poor"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "avg(web_vital.value)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "(service.name = $service-name AND web_vital.name = 'INP')"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "INP"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "b1d707f1-03fa-42b0-9a2d-b03dcffb8e41": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "FCP - First Contentful Paint",
+            "description": "Measures when the browser renders the first bit of content (like text, image, or SVG)."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": [
+                {
+                  "value": 1800,
+                  "unit": "ms",
+                  "color": "Orange",
+                  "label": "Needs Improvement"
+                },
+                {
+                  "value": 3000,
+                  "unit": "ms",
+                  "color": "Red",
+                  "label": "Poor"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "avg(web_vital.value)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "(service.name = $service-name AND web_vital.name = 'FCP')"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "FCP"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "e63d8e79-95a8-47af-81ae-bc7f27f66004": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "TTFB - Time to First Byte",
+            "description": "Measures the time the browser waits to receive the first byte of response from the server."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": [
+                {
+                  "value": 200,
+                  "unit": "ms",
+                  "color": "Orange",
+                  "label": "Needs Improvement"
+                },
+                {
+                  "value": 600,
+                  "unit": "ms",
+                  "color": "Red",
+                  "label": "Poor"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "avg(web_vital.value)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "(web_vital.name = 'TTFB' AND service.name = $service-name)"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "TTFB"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/59d65b85-c81f-49a9-8e15-92b9fafbd190"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/b1d707f1-03fa-42b0-9a2d-b03dcffb8e41"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/e63d8e79-95a8-47af-81ae-bc7f27f66004"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/850542c7-6557-42eb-a677-312649c6fd3d"
+              }
+            },
+            {
+              "x": 0,
+              "y": 12,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/514c6591-1e77-4459-9c42-0d8827e68075"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "duration": "",
+    "refreshInterval": "",
+    "links": []
+  }
+}

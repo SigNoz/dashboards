@@ -1,0 +1,2543 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "tag",
+      "value": "open-webui"
+    },
+    {
+      "key": "tag",
+      "value": "llm"
+    },
+    {
+      "key": "tag",
+      "value": "genai"
+    },
+    {
+      "key": "tag",
+      "value": "opentelemetry"
+    },
+    {
+      "key": "tag",
+      "value": "production"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Open WebUI — Production Monitoring",
+      "description": "End-to-end monitoring for Open WebUI: application golden signals (throughput, latency, errors), database query performance, and full LLM/GenAI observability (requests, tokens, cost, latency by model) from the OpenLIT-instrumented service. Use the service_name picker to scope to one or more services."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "service_name",
+            "description": "Filter to one or more services"
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "traces"
+            }
+          },
+          "name": "service_name"
+        }
+      }
+    ],
+    "panels": {
+      "w1": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Requests",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND kind_string = 'Server'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w10": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "DB Query Latency (p95 / p99)",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND db.system EXISTS"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p99(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND db.system EXISTS"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p99(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w11": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Database Operations",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "A.avg(duration_nano)": "ns"
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Queries"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg Latency"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND db.system EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "db.operation",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 20,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w12": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Requests",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.request.model EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w13": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Input Tokens",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.usage.input_tokens EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.input_tokens)",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w14": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Output Tokens",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.output_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.usage.output_tokens EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.output_tokens)",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w15": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Cost (USD)",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "4"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.cost)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.usage.cost EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.cost)",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w16": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Latency Percentiles (p50 / p95 / p99)",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.request.model EXISTS"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p50(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.request.model EXISTS"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p99(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.request.model EXISTS"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p99(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w17": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Token Usage Over Time",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.usage.input_tokens EXISTS"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.input_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "Input tokens"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.usage.output_tokens EXISTS"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.output_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "Output tokens"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w18": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Cost Over Time (USD)",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.cost)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.usage.cost EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.cost)",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "Cost"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w19": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Requests by Model",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.request.model EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.request.model",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{gen_ai.request.model}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w2": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Error Rate",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND kind_string = 'Server' AND has_error = true"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 10000,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND kind_string = 'Server' AND has_error = false"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 10000,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / (A + B)",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": ""
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w20": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Breakdown",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "A.avg(duration_nano)": "ns"
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Requests"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens)",
+                        "alias": "Input Tokens"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.output_tokens)",
+                        "alias": "Output Tokens"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.cost)",
+                        "alias": "Cost (USD)"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg Latency"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.request.model EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.request.model",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 20,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w21": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Errors Over Time by Service",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "has_error = true AND service.name IN $service_name"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "service.name",
+                        "signal": "",
+                        "fieldContext": "resource",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{service.name}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w22": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Recent Error Traces",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "name": "service.name",
+                  "signal": "traces",
+                  "fieldContext": "resource",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "name",
+                  "signal": "traces",
+                  "fieldContext": "span",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "duration_nano",
+                  "signal": "traces",
+                  "fieldContext": "span",
+                  "fieldDataType": ""
+                },
+                {
+                  "name": "response_status_code",
+                  "signal": "traces",
+                  "fieldContext": "span",
+                  "fieldDataType": ""
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "has_error = true AND service.name IN $service_name"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "selectFields": [
+                      {
+                        "name": "service.name",
+                        "signal": "",
+                        "fieldContext": "resource",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "name",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "duration_nano",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": ""
+                      },
+                      {
+                        "name": "response_status_code",
+                        "signal": "",
+                        "fieldContext": "span",
+                        "fieldDataType": ""
+                      }
+                    ],
+                    "limit": 15,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w23": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Recent Logs",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "name": "timestamp",
+                  "signal": "logs",
+                  "fieldContext": "log",
+                  "fieldDataType": ""
+                },
+                {
+                  "name": "body",
+                  "signal": "logs",
+                  "fieldContext": "log",
+                  "fieldDataType": ""
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "logs",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name"
+                    },
+                    "groupBy": [],
+                    "order": [],
+                    "selectFields": [],
+                    "limit": 15,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w3": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Latency p95",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND kind_string = 'Server'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "p95(duration_nano)",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w4": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Latency p99",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "p99(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND kind_string = 'Server'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "p99(duration_nano)",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w5": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Rate by Endpoint",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND kind_string = 'Server' AND http.route EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.route",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{http.route}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w6": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Latency Percentiles (p50 / p95 / p99)",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND kind_string = 'Server'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p50(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND kind_string = 'Server'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p99(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND kind_string = 'Server'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p99(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w7": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Error Rate Over Time",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND kind_string = 'Server' AND has_error = true"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 10000,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND kind_string = 'Server' AND has_error = false"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": [],
+                          "limit": 10000,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / (A + B)",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": ""
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w8": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Endpoint Performance",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "A.p95(duration_nano)": "ns",
+                  "A.p99(duration_nano)": "ns"
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Requests"
+                      },
+                      {
+                        "expression": "p95(duration_nano)",
+                        "alias": "P95"
+                      },
+                      {
+                        "expression": "p99(duration_nano)",
+                        "alias": "P99"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND kind_string = 'Server' AND http.route EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.route",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 50,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "w9": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Distribution by Endpoint",
+            "description": ""
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND kind_string = 'Server' AND http.route EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.route",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [],
+                    "limit": 10,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{http.route}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Application Health",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w1"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w2"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w3"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w4"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w5"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w6"
+              }
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w7"
+              }
+            },
+            {
+              "x": 6,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w9"
+              }
+            },
+            {
+              "x": 0,
+              "y": 15,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w8"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Database",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w10"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w11"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "LLM / GenAI (OpenLIT)",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w12"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w13"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w14"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/w15"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w16"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w17"
+              }
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w18"
+              }
+            },
+            {
+              "x": 6,
+              "y": 9,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w19"
+              }
+            },
+            {
+              "x": 0,
+              "y": 15,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w20"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Errors \u0026 Logs",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w21"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w22"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/w23"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "duration": "",
+    "refreshInterval": "",
+    "links": []
+  }
+}
