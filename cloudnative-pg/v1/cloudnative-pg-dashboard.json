@@ -1,0 +1,664 @@
+{
+  "title": "CloudNativePG",
+  "description": "CloudNativePG cluster health from the native cnpg_* instance metrics: connections, throughput, cache, replication, WAL & archiving, checkpoints, storage, and the metrics collector itself.",
+  "tags": ["cloudnative-pg", "cnpg", "postgresql", "database", "metrics"],
+  "version": "v5",
+  "dotMigrated": true,
+  "variables": {
+    "var_pod": {
+      "id": "var_pod",
+      "name": "pod",
+      "key": "pod",
+      "description": "Filter by CloudNativePG instance pod.",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "pod",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 0
+    },
+    "var_datname": {
+      "id": "var_datname",
+      "name": "datname",
+      "key": "datname",
+      "description": "Filter per-database panels by database name (datname label).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "datname",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 1
+    }
+  },
+  "layout": [
+    { "i": "row_overview",   "x": 0,  "y": 0,   "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "v_up",          "x": 0,  "y": 1,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_version",     "x": 3,  "y": 1,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_replicas",    "x": 6,  "y": 1,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_backends",    "x": 9,  "y": 1,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_maxtx",       "x": 0,  "y": 4,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_dbsize",      "x": 3,  "y": 4,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_archive_age", "x": 6,  "y": 4,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_collerr",     "x": 9,  "y": 4,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_replica_mode","x": 0,  "y": 7,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_fencing",     "x": 3,  "y": 7,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_switchover",  "x": 6,  "y": 7,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_nodes",       "x": 9,  "y": 7,   "w": 3,  "h": 3, "minW": 2, "minH": 2 },
+
+    { "i": "row_connections", "x": 0, "y": 10,  "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_backends_state","x": 0, "y": 11,  "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_backends_db",   "x": 6, "y": 11,  "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_backends_wait", "x": 0, "y": 18, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_maxtx",         "x": 6, "y": 18, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_throughput", "x": 0, "y": 25, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_txns",   "x": 0, "y": 26, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_tuples", "x": 6, "y": 26, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_deadlocks", "x": 0, "y": 33, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_temp_bytes","x": 6, "y": 33, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_cache", "x": 0, "y": 40, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_cache_ratio","x": 0, "y": 41, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_blocks",     "x": 6, "y": 41, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_blk_time",   "x": 0, "y": 48, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_temp_files", "x": 6, "y": 48, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_replication", "x": 0, "y": 55, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_repl_lag",        "x": 0, "y": 56, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_repl_lag_detail", "x": 6, "y": 56, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_repl_status",     "x": 0, "y": 63, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_repl_slots",      "x": 6, "y": 63, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_wal", "x": 0, "y": 70, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_wal_size",     "x": 0, "y": 71, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_wal_count",    "x": 6, "y": 71, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_archive_status","x": 0, "y": 78, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_archiver_ops", "x": 6, "y": 78, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_archive_age",  "x": 0, "y": 85, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_checkpoints", "x": 0, "y": 92, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_checkpoints",      "x": 0, "y": 93, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_checkpoint_time",  "x": 6, "y": 93, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_checkpoint_buffers","x": 0, "y": 100, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_storage", "x": 0, "y": 107, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_dbsize", "x": 0, "y": 108, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_xid_age","x": 6, "y": 108, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_mxid_age","x": 0, "y": 115, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_collection_dur","x": 6, "y": 115, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_collections",   "x": 0, "y": 122, "w": 12, "h": 7, "minW": 4, "minH": 5 }
+  ],
+  "panelMap": {
+    "row_overview":    ["v_up", "v_version", "v_replicas", "v_backends", "v_maxtx", "v_dbsize", "v_archive_age", "v_collerr", "v_replica_mode", "v_fencing", "v_switchover", "v_nodes"],
+    "row_connections": ["g_backends_state", "g_backends_db", "g_backends_wait", "g_maxtx"],
+    "row_throughput":  ["g_txns", "g_tuples", "g_deadlocks", "g_temp_bytes"],
+    "row_cache":       ["g_cache_ratio", "g_blocks", "g_blk_time", "g_temp_files"],
+    "row_replication": ["g_repl_lag", "g_repl_lag_detail", "g_repl_status", "g_repl_slots"],
+    "row_wal":         ["g_wal_size", "g_wal_count", "g_archive_status", "g_archiver_ops", "g_archive_age"],
+    "row_checkpoints": ["g_checkpoints", "g_checkpoint_time", "g_checkpoint_buffers"],
+    "row_storage":     ["g_dbsize", "g_xid_age", "g_mxid_age", "g_collection_dur", "g_collections"]
+  },
+  "widgets": [
+
+    { "id": "row_overview",    "panelTypes": "row", "title": "Cluster Health" },
+    { "id": "row_connections", "panelTypes": "row", "title": "Connections & Backends" },
+    { "id": "row_throughput",  "panelTypes": "row", "title": "Throughput" },
+    { "id": "row_cache",       "panelTypes": "row", "title": "Cache & Block I/O" },
+    { "id": "row_replication", "panelTypes": "row", "title": "Replication" },
+    { "id": "row_wal",         "panelTypes": "row", "title": "WAL & Archiving" },
+    { "id": "row_checkpoints", "panelTypes": "row", "title": "Checkpoints" },
+    { "id": "row_storage",     "panelTypes": "row", "title": "Storage & Collector" },
+
+    {
+      "id": "v_up", "panelTypes": "value", "title": "Cluster Up",
+      "description": "1 if all selected PostgreSQL instances are up. Uses the minimum across pods, so any down instance drops it to 0.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 1, "thresholdFormat": "Background", "thresholdOperator": "<", "thresholdColor": "#e53935", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_up", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "min" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_version", "panelTypes": "value", "title": "PostgreSQL Version",
+      "description": "Major.minor PostgreSQL version reported by the cluster.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_postgres_version", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_replicas", "panelTypes": "value", "title": "Streaming Replicas",
+      "description": "Number of streaming replicas connected to the primary.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_replication_streaming_replicas", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_backends", "panelTypes": "value", "title": "Total Backends",
+      "description": "Total backend connections across selected instances, all states. The Backends by State panel breaks this down.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_backends_total", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_maxtx", "panelTypes": "value", "title": "Longest Transaction",
+      "description": "Duration of the longest-running transaction. Long transactions hold locks and block vacuum.",
+      "yAxisUnit": "s", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 300, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "s", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_backends_max_tx_duration_seconds", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_dbsize", "panelTypes": "value", "title": "Total DB Size",
+      "description": "Sum of all database sizes on the primary.",
+      "yAxisUnit": "bytes", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_database_size_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_archive_age", "panelTypes": "value", "title": "WAL Archive Age",
+      "description": "Seconds since the last successful WAL archival. A rising value means archiving has stalled.",
+      "yAxisUnit": "s", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 300, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "s", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_archiver_seconds_since_last_archival", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_collerr", "panelTypes": "value", "title": "Collection Errors",
+      "description": "1 if the last metrics collection on any instance ended with an error.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_last_collection_error", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_replica_mode", "panelTypes": "value", "title": "Replica Mode",
+      "description": "1 if the cluster is a designated replica cluster (replicating from an external primary), 0 for a standalone primary cluster.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_replica_mode", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_fencing", "panelTypes": "value", "title": "Fencing",
+      "description": "1 if any instance is fenced (isolated from the cluster for maintenance/recovery). Should normally be 0.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_fencing_on", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_switchover", "panelTypes": "value", "title": "Switchover Required",
+      "description": "1 if a manual switchover is required (the operator cannot promote automatically). Should normally be 0.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_manual_switchover_required", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "v_nodes", "panelTypes": "value", "title": "Nodes Used",
+      "description": "Distinct Kubernetes nodes hosting the cluster's instances. A value of 1 with multiple instances means no high-availability node spread.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_nodes_used", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" } }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_backends_state", "panelTypes": "graph", "title": "Backends by State",
+      "description": "Backend connections grouped by state (active, idle, idle in transaction, …).",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_backends_total", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" },
+          "groupBy": [{ "key": "state", "dataType": "string", "type": "tag" }], "legend": "{{state}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_backends_db", "panelTypes": "graph", "title": "Backends by Database",
+      "description": "Backend connections grouped by database.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_backends_total", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" },
+          "groupBy": [{ "key": "datname", "dataType": "string", "type": "tag" }], "legend": "{{datname}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_backends_wait", "panelTypes": "graph", "title": "Backends Waiting on Locks",
+      "description": "Backends blocked waiting on other queries. Sustained values point to lock contention.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_backends_waiting_total", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "{{pod}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_maxtx", "panelTypes": "graph", "title": "Longest Transaction by Database",
+      "description": "Maximum transaction duration per database.",
+      "yAxisUnit": "s", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_backends_max_tx_duration_seconds", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" },
+          "groupBy": [{ "key": "datname", "dataType": "string", "type": "tag" }], "legend": "{{datname}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_txns", "panelTypes": "graph", "title": "Transactions /s",
+      "description": "Committed and rolled-back transactions per second across selected databases.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_xact_commit", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "commit" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_xact_rollback", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "rollback" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_tuples", "panelTypes": "graph", "title": "Tuple Activity /s",
+      "description": "Rows returned, fetched, inserted, updated, and deleted per second.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_tup_returned", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "returned" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_tup_fetched", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "fetched" },
+        { "queryName": "C", "dataSource": "metrics", "expression": "C", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_tup_inserted", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "inserted" },
+        { "queryName": "D", "dataSource": "metrics", "expression": "D", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_tup_updated", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "updated" },
+        { "queryName": "E", "dataSource": "metrics", "expression": "E", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_tup_deleted", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "deleted" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_deadlocks", "panelTypes": "graph", "title": "Deadlocks & Conflicts /s",
+      "description": "Deadlocks detected and queries canceled due to recovery conflicts (standby) per second. Any sustained value needs investigation.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_deadlocks", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" }, "legend": "deadlocks" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_conflicts", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" }, "legend": "conflicts" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_temp_bytes", "panelTypes": "graph", "title": "Temp File Bytes /s",
+      "description": "Temporary file bytes written per second, by database. High values mean queries are spilling to disk (raise work_mem).",
+      "yAxisUnit": "Bps", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_temp_bytes", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" },
+          "groupBy": [{ "key": "datname", "dataType": "string", "type": "tag" }], "legend": "{{datname}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_cache_ratio", "panelTypes": "graph", "title": "Buffer Cache Hit Ratio",
+      "description": "Shared-buffer cache hit ratio from blks_hit / (blks_hit + blks_read) * 100. Below ~99% on an OLTP workload suggests undersized shared_buffers.",
+      "yAxisUnit": "percent", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_blks_hit", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" } },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_blks_read", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" } }
+      ], "queryFormulas": [{ "queryName": "F1", "expression": "A / (A + B) * 100", "legend": "Cache hit %" }] } }
+    },
+
+    {
+      "id": "g_blocks", "panelTypes": "graph", "title": "Block I/O /s",
+      "description": "Buffer cache hits vs. disk block reads per second.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_blks_hit", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "cache hit" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_blks_read", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "disk read" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_blk_time", "panelTypes": "graph", "title": "Block I/O Time /s",
+      "description": "Milliseconds per second spent reading and writing data blocks (requires track_io_timing). Rising read time points to disk pressure.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_blk_read_time", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "read time" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_blk_write_time", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname" }, "legend": "write time" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_temp_files", "panelTypes": "graph", "title": "Temp Files /s",
+      "description": "Temporary files created per second, by database.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_database_temp_files", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" },
+          "groupBy": [{ "key": "datname", "dataType": "string", "type": "tag" }], "legend": "{{datname}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_repl_lag", "panelTypes": "graph", "title": "Replication Lag (standby)",
+      "description": "Replica lag behind the primary in seconds, per standby instance.",
+      "yAxisUnit": "s", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_replication_lag", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "{{pod}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_repl_lag_detail", "panelTypes": "graph", "title": "Write / Flush / Replay Lag (primary view)",
+      "description": "Per-replica write, flush, and replay lag in seconds as seen by the primary, grouped by replica application name.",
+      "yAxisUnit": "s", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_replication_write_lag_seconds", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "application_name", "dataType": "string", "type": "tag" }], "legend": "write: {{application_name}}" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_replication_flush_lag_seconds", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "application_name", "dataType": "string", "type": "tag" }], "legend": "flush: {{application_name}}" },
+        { "queryName": "C", "dataSource": "metrics", "expression": "C", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_replication_replay_lag_seconds", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "application_name", "dataType": "string", "type": "tag" }], "legend": "replay: {{application_name}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_repl_status", "panelTypes": "graph", "title": "Replication Status",
+      "description": "Per-instance recovery state (1 = standby) and WAL receiver up (1 = streaming) flags.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_replication_in_recovery", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "in recovery: {{pod}}" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_replication_is_wal_receiver_up", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "wal receiver up: {{pod}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_repl_slots", "panelTypes": "graph", "title": "Replication Slot Lag",
+      "description": "WAL retained per replication slot in bytes (restart-LSN diff). Growing lag on an inactive slot risks unbounded WAL accumulation.",
+      "yAxisUnit": "bytes", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_replication_slots_pg_wal_lsn_diff", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "slot_name", "dataType": "string", "type": "tag" }], "legend": "{{slot_name}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_wal_size", "panelTypes": "graph", "title": "WAL Directory Size",
+      "description": "Total size of the pg_wal directory in bytes, per instance.",
+      "yAxisUnit": "bytes", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_pg_wal", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND value = 'size'" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "{{pod}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_wal_count", "panelTypes": "graph", "title": "WAL Segment Count",
+      "description": "Number of WAL segments in pg_wal, per instance.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_pg_wal", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND value = 'count'" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "{{pod}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_archive_status", "panelTypes": "graph", "title": "WAL Archive Status",
+      "description": "WAL segments waiting to be archived (ready) vs. archived (done). A growing ready count means archiving is falling behind.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_pg_wal_archive_status", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND value = 'ready'" }, "legend": "ready" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_pg_wal_archive_status", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND value = 'done'" }, "legend": "done" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_archiver_ops", "panelTypes": "graph", "title": "WAL Archiver Ops /s",
+      "description": "Successful vs. failed WAL archive operations per second. Any sustained failure rate needs investigation.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 0, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#f6be00", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_archiver_archived_count", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "archived" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_archiver_failed_count", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "failed" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_archive_age", "panelTypes": "graph", "title": "Time Since Last Archive / Failure",
+      "description": "Seconds since the last successful archival and since the last failure, per instance. The success age sawtooths as WAL is archived; a steadily climbing value means archiving stalled.",
+      "yAxisUnit": "s", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_archiver_seconds_since_last_archival", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "since archival: {{pod}}" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_archiver_seconds_since_last_failure", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "since failure: {{pod}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_checkpoints", "panelTypes": "graph", "title": "Checkpoints /s",
+      "description": "Timed (scheduled) vs. requested checkpoints per second. A high requested rate means checkpoints are being forced by WAL volume — consider raising max_wal_size.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_checkpointer_checkpoints_timed", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "timed" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_checkpointer_checkpoints_req", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "requested" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_checkpoint_time", "panelTypes": "graph", "title": "Checkpoint Write / Sync Time /s",
+      "description": "Milliseconds per second spent writing and syncing buffers during checkpoints.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_checkpointer_write_time", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "write time" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_checkpointer_sync_time", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "sync time" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_checkpoint_buffers", "panelTypes": "graph", "title": "Buffers Written /s",
+      "description": "Buffers written per second by the checkpointer (during checkpoints) and the background writer, plus buffers allocated.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_checkpointer_buffers_written", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "checkpointer" },
+        { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_bgwriter_buffers_clean", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "bgwriter" },
+        { "queryName": "C", "dataSource": "metrics", "expression": "C", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_stat_bgwriter_buffers_alloc", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" }, "legend": "allocated" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_dbsize", "panelTypes": "graph", "title": "Database Size",
+      "description": "Disk space consumed per database.",
+      "yAxisUnit": "bytes", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_database_size_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" },
+          "groupBy": [{ "key": "datname", "dataType": "string", "type": "tag" }], "legend": "{{datname}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_xid_age", "panelTypes": "graph", "title": "Transaction ID Age",
+      "description": "Transactions since the frozen XID per database. Climbing toward ~2.1 billion risks transaction-ID wraparound — vacuum should keep this well below.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 1500000000, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_database_xid_age", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" },
+          "groupBy": [{ "key": "datname", "dataType": "string", "type": "tag" }], "legend": "{{datname}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_mxid_age", "panelTypes": "graph", "title": "MultiXact ID Age",
+      "description": "Multixact age from the frozen multixact ID per database. Like transaction-ID age, climbing values risk multixact wraparound; vacuum keeps it bounded.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] },
+      "thresholds": [{ "index": "t0", "thresholdValue": 1500000000, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "none", "thresholdLabel": "" }],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_pg_database_mxid_age", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod AND datname IN $datname AND datname != ''" },
+          "groupBy": [{ "key": "datname", "dataType": "string", "type": "tag" }], "legend": "{{datname}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_collection_dur", "panelTypes": "graph", "title": "Metrics Collection Duration",
+      "description": "Time the CNPG exporter takes to collect metrics from PostgreSQL, by collector. Rising duration can indicate database pressure.",
+      "yAxisUnit": "s", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_collection_duration_seconds", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "{{pod}}" }
+      ], "queryFormulas": [] } }
+    },
+
+    {
+      "id": "g_collections", "panelTypes": "graph", "title": "Metrics Collections /s",
+      "description": "Rate of PostgreSQL metric collection cycles per instance.",
+      "yAxisUnit": "none", "selectedLogFields": [], "selectedTracesFields": [], "contextLinks": { "linksData": [] }, "thresholds": [],
+      "query": { "queryType": "builder", "builder": { "queryData": [
+        { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+          "aggregations": [{ "metricName": "cnpg_collector_collections_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+          "filter": { "expression": "pod IN $pod" },
+          "groupBy": [{ "key": "pod", "dataType": "string", "type": "tag" }], "legend": "{{pod}}" }
+      ], "queryFormulas": [] } }
+    }
+
+  ]
+}

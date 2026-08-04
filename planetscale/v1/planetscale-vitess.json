@@ -1,0 +1,1134 @@
+{
+  "title": "PlanetScale Vitess (MySQL)",
+  "description": "Track PlanetScale Vitess query rate, latency, pools, MySQL internals, replication lag, VTOrc, storage, and pod resources. Use branch, keyspace, and tablet type filters.",
+  "tags": ["planetscale", "vitess", "mysql", "database", "metrics"],
+  "version": "v5",
+  "dotMigrated": true,
+  "variables": {
+    "var_branch": {
+      "id": "var_branch",
+      "name": "branch",
+      "key": "branch",
+      "description": "Filter panels by PlanetScale database branch (planetscale_database_branch_id).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "planetscale_database_branch_id",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 0
+    },
+    "var_keyspace": {
+      "id": "var_keyspace",
+      "name": "keyspace",
+      "key": "keyspace",
+      "description": "Filter vttablet and MySQL panels by Vitess keyspace (planetscale_keyspace).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "planetscale_keyspace",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 1
+    },
+    "var_tablet_type": {
+      "id": "var_tablet_type",
+      "name": "tablet_type",
+      "key": "tablet_type",
+      "description": "Filter vttablet and MySQL panels by tablet type, such as primary, replica, or rdonly (planetscale_tablet_type).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "planetscale_tablet_type",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 2
+    }
+  },
+  "layout": [
+    { "i": "row_overview", "x": 0, "y": 0, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "v_qps", "x": 0, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_latency", "x": 2, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_errors", "x": 4, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_replag", "x": 6, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_slow", "x": 8, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+    { "i": "v_storage", "x": 10, "y": 1, "w": 2, "h": 3, "minW": 2, "minH": 2 },
+
+    { "i": "row_vtgate", "x": 0, "y": 4, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_vtg_qps", "x": 0, "y": 5, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtg_latency", "x": 6, "y": 5, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtg_errors", "x": 0, "y": 12, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtg_rows", "x": 6, "y": 12, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_vttablet", "x": 0, "y": 19, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_vtt_qps", "x": 0, "y": 20, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtt_latency", "x": 6, "y": 20, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtt_rows", "x": 0, "y": 27, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtt_slow", "x": 6, "y": 27, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_pools", "x": 0, "y": 34, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_connpool", "x": 0, "y": 35, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_txnpool", "x": 6, "y": 35, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_pool_waits", "x": 0, "y": 42, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_streampool", "x": 6, "y": 42, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_foundrows", "x": 0, "y": 49, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_threads", "x": 6, "y": 49, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_mysql", "x": 0, "y": 56, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_innodb_rows", "x": 0, "y": 57, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_innodb_locks", "x": 6, "y": 57, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_net_bytes", "x": 0, "y": 64, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_autoinc", "x": 6, "y": 64, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_repl", "x": 0, "y": 71, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_replica_lag", "x": 0, "y": 72, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vrepl_lag", "x": 6, "y": 72, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "t_vrepl_state", "x": 0, "y": 79, "w": 12, "h": 6, "minW": 4, "minH": 5 },
+    { "i": "g_vstream_count", "x": 0, "y": 85, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vstream_lag", "x": 6, "y": 85, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vstream_err", "x": 0, "y": 92, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_conn_util_pod", "x": 0, "y": 99, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_errors", "x": 0, "y": 106, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_vtt_errors", "x": 0, "y": 107, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtorc", "x": 6, "y": 107, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "t_serving", "x": 0, "y": 114, "w": 6, "h": 6, "minW": 4, "minH": 5 },
+    { "i": "t_pod_status", "x": 6, "y": 114, "w": 6, "h": 6, "minW": 4, "minH": 5 },
+
+    { "i": "row_storage", "x": 0, "y": 120, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_vol_used", "x": 0, "y": 121, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vol_bytes", "x": 6, "y": 121, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "t_top_tables", "x": 0, "y": 128, "w": 12, "h": 7, "minW": 4, "minH": 5 },
+
+    { "i": "row_resources", "x": 0, "y": 135, "w": 12, "h": 1, "minW": 12, "minH": 1 },
+    { "i": "g_cpu", "x": 0, "y": 136, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_mem", "x": 6, "y": 136, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_iops", "x": 0, "y": 143, "w": 6, "h": 7, "minW": 4, "minH": 5 },
+    { "i": "g_vtgate_pods", "x": 6, "y": 143, "w": 6, "h": 7, "minW": 4, "minH": 5 }
+  ],
+  "widgets": [
+    { "id": "row_overview", "panelTypes": "row", "title": "Overview" },
+    {
+      "id": "v_qps",
+      "panelTypes": "value",
+      "title": "vtgate Query Rate",
+      "description": "Queries per second through vtgate.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.count", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_latency",
+      "panelTypes": "value",
+      "title": "vtgate Latency p99",
+      "description": "p99 query execution time through vtgate. Confirm the unit after ingest.",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p99" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_errors",
+      "panelTypes": "value",
+      "title": "Buffer Pool Hit %",
+      "description": "InnoDB buffer pool hit ratio from (1 - reads / read_requests) * 100. Low values mean disk reads increased.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_buffer_pool_reads_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_buffer_pool_read_requests_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "(1 - A / B) * 100", "legend": "Hit %" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_replag",
+      "panelTypes": "value",
+      "title": "Replica Lag",
+      "description": "Worst MySQL replication lag across selected tablets.",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_replication_lag", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_slow",
+      "panelTypes": "value",
+      "title": "Slow Queries /s",
+      "description": "Slow queries per second.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_slow_queries_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "v_storage",
+      "panelTypes": "value",
+      "title": "Storage Used",
+      "description": "Used vttablet volume percentage from (capacity - available) / capacity.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 85, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_volume_capacity_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_volume_available_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "(A - B) / A * 100" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    { "id": "row_vtgate", "panelTypes": "row", "title": "vtgate — Query Serving" },
+    {
+      "id": "g_vtg_qps",
+      "panelTypes": "graph",
+      "title": "vtgate Query Rate by Operation",
+      "description": "Queries per second through vtgate by operation type.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.count", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" },
+              "groupBy": [{ "key": "planetscale_vtgate_operation", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_vtgate_operation}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtg_latency",
+      "panelTypes": "graph",
+      "title": "vtgate Query Latency (p50 / p95 / p99)",
+      "description": "Query execution time distribution through vtgate.",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p50" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" }, "legend": "p50" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p95" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" }, "legend": "p95" },
+            { "queryName": "C", "dataSource": "metrics", "expression": "C", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p99" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" }, "legend": "p99" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtg_errors",
+      "panelTypes": "graph",
+      "title": "vtgate Average Query Latency",
+      "description": "Mean vtgate query execution time from rate(duration.sum) / rate(duration.count).",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.sum", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" } },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_queries_duration.count", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" } }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "A / B", "legend": "Avg latency" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtg_rows",
+      "panelTypes": "graph",
+      "title": "vtgate Rows Returned / Affected",
+      "description": "Rows returned and affected per second through vtgate.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_returned_rows_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" }, "legend": "Returned" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_affected_rows_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" }, "legend": "Affected" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    { "id": "row_vttablet", "panelTypes": "row", "title": "vttablet — Tablet Query Performance" },
+    {
+      "id": "g_vtt_qps",
+      "panelTypes": "graph",
+      "title": "Tablet Query Rate by Tablet Type",
+      "description": "Queries per second by vttablet tablet type.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_queries_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_tablet_type", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_tablet_type}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtt_latency",
+      "panelTypes": "graph",
+      "title": "Tablet Query Latency p99 by Keyspace",
+      "description": "p99 tablet query execution time by keyspace.",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_queries_duration.bucket", "temporality": "cumulative", "timeAggregation": "", "spaceAggregation": "p99" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_keyspace", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_keyspace}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtt_rows",
+      "panelTypes": "graph",
+      "title": "Tablet Rows Read / Returned / Affected",
+      "description": "Rows read, returned, and affected per second at the tablet.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_queries_read_rows_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Read" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_queries_returned_rows_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Returned" },
+            { "queryName": "C", "dataSource": "metrics", "expression": "C", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_queries_affected_rows_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Affected" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtt_slow",
+      "panelTypes": "graph",
+      "title": "Slow Queries by Keyspace",
+      "description": "Slow queries per second by keyspace.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_slow_queries_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_keyspace", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_keyspace}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    { "id": "row_pools", "panelTypes": "row", "title": "Connection & Transaction Pools (vttablet)" },
+    {
+      "id": "g_connpool",
+      "panelTypes": "graph",
+      "title": "Connection Pool — In Use vs Capacity",
+      "description": "vttablet connection pool usage compared with capacity.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_connection_pool_in_use", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "In use" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_connection_pool_capacity", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Capacity" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_txnpool",
+      "panelTypes": "graph",
+      "title": "Transaction Pool — In Use vs Capacity",
+      "description": "vttablet transaction pool usage compared with capacity.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_transaction_pool_in_use", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "In use" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_transaction_pool_capacity", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Capacity" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_pool_waits",
+      "panelTypes": "graph",
+      "title": "Pool Waits /s",
+      "description": "Waits per second for free connection and transaction pool slots. Sustained non-zero values indicate pool saturation.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_connection_pool_wait_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Connection pool" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_transaction_pool_wait_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Transaction pool" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_streampool",
+      "panelTypes": "graph",
+      "title": "Stream Connection Pool — In Use vs Capacity",
+      "description": "vttablet stream connection pool usage compared with capacity.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_stream_connection_pool_in_use", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "In use" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_stream_connection_pool_capacity", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Capacity" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_foundrows",
+      "panelTypes": "graph",
+      "title": "Found Rows Pool — In Use vs Capacity",
+      "description": "vttablet found-rows pool usage compared with capacity.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_found_rows_pool_in_use", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "In use" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_found_rows_pool_capacity", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Capacity" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_threads",
+      "panelTypes": "graph",
+      "title": "MySQL Threads Running",
+      "description": "MySQL threads running queries.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_threads_running", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_tablet_type", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_tablet_type}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    { "id": "row_mysql", "panelTypes": "row", "title": "MySQL Internals" },
+    {
+      "id": "g_innodb_rows",
+      "panelTypes": "graph",
+      "title": "InnoDB Row Operations /s",
+      "description": "InnoDB row operations per second by operation type.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_row_operations_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_mysql_operation_type", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_mysql_operation_type}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_innodb_locks",
+      "panelTypes": "graph",
+      "title": "InnoDB Row Lock Waits /s",
+      "description": "InnoDB row lock waits per second and lock wait time accrued per second.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_row_lock_waits_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Lock waits" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_row_lock_time_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Lock time /s" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_net_bytes",
+      "panelTypes": "graph",
+      "title": "MySQL Network I/O",
+      "description": "MySQL bytes sent and received per second.",
+      "yAxisUnit": "Bps",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_bytes_sent_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Sent" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_bytes_received_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Received" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_autoinc",
+      "panelTypes": "graph",
+      "title": "InnoDB Buffer Pool Hit %",
+      "description": "Buffer pool hit ratio from (1 - rate(reads) / rate(read_requests)) * 100. Sustained dips point to a working set larger than the buffer pool.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_buffer_pool_reads_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_buffer_pool_read_requests_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "(1 - A / B) * 100", "legend": "Hit %" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    { "id": "row_repl", "panelTypes": "row", "title": "Replication & MySQL Connections" },
+    {
+      "id": "g_replica_lag",
+      "panelTypes": "graph",
+      "title": "Replica Lag by Shard",
+      "description": "MySQL replication lag by shard, in seconds.",
+      "yAxisUnit": "s",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_replication_lag", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace" },
+              "groupBy": [{ "key": "planetscale_shard", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_shard}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vrepl_lag",
+      "panelTypes": "graph",
+      "title": "MySQL Threads Connected vs Max",
+      "description": "Open MySQL connections compared with max_connections.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_threads_connected", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Connected" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_max_connections", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "max_connections" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "t_vrepl_state",
+      "panelTypes": "graph",
+      "title": "MySQL Connection Attempts /s",
+      "description": "New MySQL connection attempts per second by tablet type.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_connections_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_tablet_type", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_tablet_type}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vstream_count",
+      "panelTypes": "graph",
+      "title": "Temp Tables Created /s",
+      "description": "Internal temp tables created per second and temp tables spilled to disk. High disk-table rates point to expensive sorts or joins.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_created_tmp_tables_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "In memory" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_created_tmp_disk_tables_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "On disk" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vstream_lag",
+      "panelTypes": "graph",
+      "title": "Table Locks /s",
+      "description": "Table locks acquired without waiting compared with locks that waited.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_table_locks_immediate_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Immediate" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_table_locks_waited_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Waited" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vstream_err",
+      "panelTypes": "graph",
+      "title": "InnoDB Buffer Pool I/O /s",
+      "description": "Logical buffer pool reads compared with reads that reached disk.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_buffer_pool_read_requests_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Read requests (logical)" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_innodb_buffer_pool_reads_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Disk reads (misses)" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    {
+      "id": "g_conn_util_pod",
+      "panelTypes": "graph",
+      "title": "Connection Utilization % by Pod",
+      "description": "Per-pod MySQL connection utilization from threads_connected / max_connections * 100. Use it to find a saturated tablet hidden by fleet totals.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 90, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_threads_connected", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }] },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_mysql_max_connections", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }] }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "A / B * 100", "legend": "{{planetscale_pod}}" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    { "id": "row_errors", "panelTypes": "row", "title": "Errors, Recovery & Serving" },
+    {
+      "id": "g_vtt_errors",
+      "panelTypes": "graph",
+      "title": "VTOrc Detected Problems",
+      "description": "Current VTOrc problem count. Non-zero values indicate replication or topology issues.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtorc_detected_problems", "temporality": "unspecified", "timeAggregation": "max", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" }, "legend": "Problems" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtorc",
+      "panelTypes": "graph",
+      "title": "VTOrc Recoveries /s",
+      "description": "Successful and failed VTOrc recovery attempts per second by recovery type.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtorc_successful_recoveries_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" },
+              "groupBy": [{ "key": "planetscale_vtorc_recovery_type", "dataType": "string", "type": "tag" }],
+              "legend": "OK — {{planetscale_vtorc_recovery_type}}" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtorc_failed_recoveries_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" },
+              "groupBy": [{ "key": "planetscale_vtorc_recovery_type", "dataType": "string", "type": "tag" }],
+              "legend": "FAIL — {{planetscale_vtorc_recovery_type}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "t_serving",
+      "panelTypes": "table",
+      "title": "Tablet Serving Status",
+      "description": "vttablet serving status by shard and tablet type. Value 1 means serving.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_is_serving", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "min" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" },
+              "groupBy": [
+                { "key": "planetscale_shard", "dataType": "string", "type": "tag", "isColumn": true },
+                { "key": "planetscale_tablet_type", "dataType": "string", "type": "tag" }
+              ], "legend": "Serving" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "t_pod_status",
+      "panelTypes": "table",
+      "title": "Pods by Status Phase",
+      "description": "Pod count by Kubernetes status phase. Check non-zero Pending or Failed pods.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_pods_status_phase", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" },
+              "groupBy": [{ "key": "planetscale_phase", "dataType": "string", "type": "tag", "isColumn": true }], "legend": "Pods" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    { "id": "row_storage", "panelTypes": "row", "title": "Storage" },
+    {
+      "id": "g_vol_used",
+      "panelTypes": "graph",
+      "title": "Volume Used %",
+      "description": "Used vttablet volume percentage from (capacity - available) / capacity * 100.",
+      "yAxisUnit": "percent",
+      "thresholds": [
+        { "index": "t0", "thresholdValue": 85, "thresholdFormat": "Background", "thresholdOperator": ">", "thresholdColor": "#e53935", "thresholdUnit": "percent", "thresholdLabel": "" }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_volume_capacity_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "disabled": true, "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_volume_available_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" } }
+          ],
+          "queryFormulas": [{ "queryName": "F1", "expression": "(A - B) / A * 100", "legend": "Used %" }]
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vol_bytes",
+      "panelTypes": "graph",
+      "title": "Volume Available vs Capacity",
+      "description": "Available and provisioned vttablet volume bytes.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_volume_available_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Available" },
+            { "queryName": "B", "dataSource": "metrics", "expression": "B", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_volume_capacity_bytes", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace AND planetscale_tablet_type IN $tablet_type" }, "legend": "Capacity" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "t_top_tables",
+      "panelTypes": "table",
+      "title": "Top Tables by Storage",
+      "description": "Table storage size in bytes.",
+      "yAxisUnit": "bytes",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vttablet_table_storage_all_bytes", "temporality": "unspecified", "timeAggregation": "latest", "spaceAggregation": "max" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch AND planetscale_keyspace IN $keyspace" },
+              "groupBy": [{ "key": "planetscale_table", "dataType": "string", "type": "tag", "isColumn": true }], "legend": "Size (bytes)" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+
+    { "id": "row_resources", "panelTypes": "row", "title": "Pod Resources & Topology" },
+    {
+      "id": "g_cpu",
+      "panelTypes": "graph",
+      "title": "CPU Utilization by Pod",
+      "description": "CPU utilization by pod.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_pods_cpu_util_percentages", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "avg" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_mem",
+      "panelTypes": "graph",
+      "title": "Memory Utilization by Pod",
+      "description": "Memory utilization by pod.",
+      "yAxisUnit": "percent",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_pods_mem_util_percentages", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "avg" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_iops",
+      "panelTypes": "graph",
+      "title": "Disk IOPS by Pod",
+      "description": "I/O operations per second by pod.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_pods_iops_total", "temporality": "cumulative", "timeAggregation": "rate", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" },
+              "groupBy": [{ "key": "planetscale_pod", "dataType": "string", "type": "tag" }],
+              "legend": "{{planetscale_pod}}" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    },
+    {
+      "id": "g_vtgate_pods",
+      "panelTypes": "graph",
+      "title": "vtgate Pods",
+      "description": "Total vtgate pod count.",
+      "yAxisUnit": "none",
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            { "queryName": "A", "dataSource": "metrics", "expression": "A", "stepInterval": 60,
+              "aggregations": [{ "metricName": "planetscale_vtgate_total_pods", "temporality": "unspecified", "timeAggregation": "avg", "spaceAggregation": "sum" }],
+              "filter": { "expression": "planetscale_database_branch_id IN $branch" }, "legend": "Pods" }
+          ],
+          "queryFormulas": []
+        },
+        "promql": [{ "name": "A", "query": "", "legend": "", "disabled": false }],
+        "clickhouse_sql": [{ "name": "A", "query": "", "legend": "", "disabled": false }]
+      }
+    }
+  ]
+}

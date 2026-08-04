@@ -1,0 +1,691 @@
+{
+  "description": "Standard control-plane view for kube-scheduler queue pressure, scheduling throughput, and duration buckets.",
+  "layout": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "scheduler-discovery",
+      "moved": false,
+      "static": false,
+      "minW": 3,
+      "minH": 2
+    },
+    {
+      "x": 3,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "attempts-rate",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 6,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "pending-pods",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 9,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "i": "scheduler-goroutines",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "scheduler-rss",
+      "moved": false,
+      "static": false,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "w": 6,
+      "h": 5,
+      "i": "attempts-result",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "x": 0,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "e2e-buckets",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "x": 6,
+      "y": 7,
+      "w": 6,
+      "h": 5,
+      "i": "framework-buckets",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 5,
+      "i": "scheduler-workqueue-depth",
+      "moved": false,
+      "static": false,
+      "minW": 4,
+      "minH": 5
+    }
+  ],
+  "panelMap": {},
+  "tags": [
+    "kubernetes",
+    "control-plane",
+    "scheduler",
+    "prometheus"
+  ],
+  "title": "Kubernetes Scheduler",
+  "uploadedGrafana": false,
+  "uuid": "57211d32-6ec0-4d0e-8d31-c3b1e7bc39b9",
+  "variables": {
+    "service.name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Auto-discovered services (from metric labels).",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "service.name",
+      "key": "service.name",
+      "modificationUUID": "d5b1e5bc-3865-4243-a6e1-60cd9a94ee66",
+      "multiSelect": true,
+      "name": "service.name",
+      "order": 0,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "k8s.cluster.name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional cluster label selector.",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "k8s.cluster.name",
+      "key": "k8s.cluster.name",
+      "modificationUUID": "5b3d5925-3348-4e25-9992-a1ec4ce546ec",
+      "multiSelect": true,
+      "name": "k8s.cluster.name",
+      "order": 1,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment_name": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional OTel environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment.name",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment_name",
+      "key": "deployment_environment_name",
+      "modificationUUID": "d35c6992-7cf7-4d51-bc6d-5785931f2813",
+      "multiSelect": true,
+      "name": "deployment_environment_name",
+      "order": 2,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    },
+    "deployment_environment": {
+      "allSelected": true,
+      "customValue": "",
+      "defaultValue": "",
+      "description": "Optional legacy environment label selector.",
+      "dynamicVariablesAttribute": "deployment.environment",
+      "dynamicVariablesSource": "Metrics",
+      "haveCustomValuesSelected": false,
+      "id": "deployment_environment",
+      "key": "deployment_environment",
+      "modificationUUID": "03ca36f5-95c3-4834-9015-31ce76b77def",
+      "multiSelect": true,
+      "name": "deployment_environment",
+      "order": 3,
+      "queryValue": "",
+      "showALLOption": true,
+      "sort": "DISABLED",
+      "textboxValue": "",
+      "type": "DYNAMIC"
+    }
+  },
+  "version": "v5",
+  "widgets": [
+    {
+      "description": "",
+      "id": "scheduler-discovery",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_schedule_attempts_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "service.name",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{service.name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Auto-Discovered Scheduler Services",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "attempts-rate",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_schedule_attempts_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "attempts/s",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Scheduling Attempts / s",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "pending-pods",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_pending_pods",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "pending",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Pending Pods",
+      "yAxisUnit": "short",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "scheduler-goroutines",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "go_goroutines",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "goroutines",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Go Routines",
+      "yAxisUnit": "short",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "scheduler-rss",
+      "panelTypes": "value",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "process_resident_memory_bytes",
+                  "reduceTo": "last",
+                  "spaceAggregation": "avg",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "rss",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Process RSS",
+      "yAxisUnit": "By",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "attempts-result",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_schedule_attempts_total",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "rate"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "result",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{result}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Scheduling Attempts By Result",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "e2e-buckets",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_scheduling_attempt_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p50",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p50",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_scheduling_attempt_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p90",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "B",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p90",
+              "queryName": "B",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            },
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_scheduling_attempt_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p99",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "C",
+              "groupBy": [],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p99",
+              "queryName": "C",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "E2E Scheduling Duration (p50/p90/p99)",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    },
+    {
+      "description": "",
+      "id": "framework-buckets",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "scheduler_framework_extension_point_duration_seconds.bucket",
+                  "reduceTo": "avg",
+                  "spaceAggregation": "p99",
+                  "temporality": null,
+                  "timeAggregation": ""
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "extension_point",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "p99 {{extension_point}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Framework Extension p99 by extension_point",
+      "yAxisUnit": "reqps",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      },
+      "legend": "p99 {{extension_point}}"
+    },
+    {
+      "description": "",
+      "id": "scheduler-workqueue-depth",
+      "panelTypes": "graph",
+      "query": {
+        "builder": {
+          "queryData": [
+            {
+              "aggregations": [
+                {
+                  "metricName": "workqueue_depth",
+                  "reduceTo": "last",
+                  "spaceAggregation": "sum",
+                  "temporality": null,
+                  "timeAggregation": "latest"
+                }
+              ],
+              "dataSource": "metrics",
+              "disabled": false,
+              "expression": "A",
+              "groupBy": [
+                {
+                  "dataType": "string",
+                  "isColumn": false,
+                  "key": "name",
+                  "type": ""
+                }
+              ],
+              "having": {
+                "expression": ""
+              },
+              "legend": "{{name}}",
+              "queryName": "A",
+              "stepInterval": 60,
+              "filter": {
+                "expression": "service.name IN $service.name AND k8s.cluster.name IN $k8s.cluster.name"
+              }
+            }
+          ],
+          "queryFormulas": []
+        },
+        "queryType": "builder"
+      },
+      "timePreferance": "GLOBAL_TIME",
+      "title": "Workqueue Depth",
+      "yAxisUnit": "short",
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": ""
+      }
+    }
+  ],
+  "dotMigrated": true
+}

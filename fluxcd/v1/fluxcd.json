@@ -1,0 +1,1520 @@
+{
+  "title": "FluxCD — Controllers",
+  "description": "FluxCD controller health: reconciliation throughput, errors, duration, workqueues, runtime resources, and Kubernetes API traffic.",
+  "tags": [
+    "fluxcd",
+    "flux",
+    "gitops",
+    "kubernetes",
+    "control-plane",
+    "reconciliation",
+    "metrics"
+  ],
+  "version": "v5",
+  "dotMigrated": true,
+  "variables": {
+    "k8s_cluster_name": {
+      "id": "k8s_cluster_name",
+      "name": "k8s_cluster_name",
+      "type": "DYNAMIC",
+      "description": "Kubernetes cluster",
+      "dynamicVariablesAttribute": "k8s.cluster.name",
+      "dynamicVariablesSource": "Metrics",
+      "multiSelect": true,
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "customValue": "",
+      "order": 0
+    },
+    "kind": {
+      "id": "kind",
+      "name": "kind",
+      "type": "CUSTOM",
+      "description": "Flux resource kind (reconciliation panels)",
+      "customValue": "Bucket,GitRepository,HelmChart,HelmRelease,HelmRepository,Kustomization,OCIRepository,Alert,Provider,Receiver,ImagePolicy,ImageRepository,ImageUpdateAutomation",
+      "multiSelect": true,
+      "showALLOption": true,
+      "sort": "ASC",
+      "textboxValue": "",
+      "order": 1
+    },
+    "k8s_namespace": {
+      "id": "k8s_namespace",
+      "name": "k8s_namespace",
+      "type": "TEXTBOX",
+      "description": "Namespace where Flux controllers run",
+      "textboxValue": "flux-system",
+      "selectedValue": "flux-system",
+      "multiSelect": false,
+      "showALLOption": false,
+      "sort": "DISABLED",
+      "order": 2
+    }
+  },
+  "layout": [
+    { "i": "row-overview", "x": 0, "y": 0, "w": 12, "h": 1 },
+    { "i": "v-rec-rate", "x": 0, "y": 1, "w": 2, "h": 3 },
+    { "i": "v-rec-errors", "x": 2, "y": 1, "w": 2, "h": 3 },
+    { "i": "v-active-workers", "x": 4, "y": 1, "w": 2, "h": 3 },
+    { "i": "v-wq-depth", "x": 6, "y": 1, "w": 2, "h": 3 },
+    { "i": "v-rec-p99", "x": 8, "y": 1, "w": 2, "h": 3 },
+    { "i": "v-api-rate", "x": 10, "y": 1, "w": 2, "h": 3 },
+    { "i": "row-reconcile", "x": 0, "y": 4, "w": 12, "h": 1 },
+    { "i": "g-rec-result", "x": 0, "y": 5, "w": 6, "h": 6 },
+    { "i": "g-rec-controller", "x": 6, "y": 5, "w": 6, "h": 6 },
+    { "i": "g-rec-errors", "x": 0, "y": 11, "w": 6, "h": 6 },
+    { "i": "t-rec-kind", "x": 6, "y": 11, "w": 6, "h": 6 },
+    { "i": "row-duration", "x": 0, "y": 17, "w": 12, "h": 1 },
+    { "i": "g-dur-avg-kind", "x": 0, "y": 18, "w": 6, "h": 6 },
+    { "i": "g-dur-pct", "x": 6, "y": 18, "w": 6, "h": 6 },
+    { "i": "g-dur-kind", "x": 0, "y": 24, "w": 6, "h": 6 },
+    { "i": "g-dur-resource", "x": 6, "y": 24, "w": 6, "h": 6 },
+    { "i": "g-dur-controller", "x": 0, "y": 30, "w": 12, "h": 6 },
+    { "i": "row-workqueue", "x": 0, "y": 36, "w": 12, "h": 1 },
+    { "i": "g-wq-depth", "x": 0, "y": 37, "w": 6, "h": 6 },
+    { "i": "g-wq-adds", "x": 6, "y": 37, "w": 6, "h": 6 },
+    { "i": "g-wq-retries", "x": 0, "y": 43, "w": 6, "h": 6 },
+    { "i": "g-wq-qdur", "x": 6, "y": 43, "w": 6, "h": 6 },
+    { "i": "g-wq-unfinished", "x": 0, "y": 49, "w": 12, "h": 6 },
+    { "i": "row-resources", "x": 0, "y": 55, "w": 12, "h": 1 },
+    { "i": "g-res-cpu", "x": 0, "y": 56, "w": 4, "h": 6 },
+    { "i": "g-res-mem", "x": 4, "y": 56, "w": 4, "h": 6 },
+    { "i": "g-res-goroutines", "x": 8, "y": 56, "w": 4, "h": 6 },
+    { "i": "row-api", "x": 0, "y": 62, "w": 12, "h": 1 },
+    { "i": "g-api-code", "x": 0, "y": 63, "w": 6, "h": 6 },
+    { "i": "g-api-method", "x": 6, "y": 63, "w": 6, "h": 6 },
+    { "i": "g-api-host", "x": 0, "y": 69, "w": 6, "h": 6 },
+    { "i": "g-api-errors", "x": 6, "y": 69, "w": 6, "h": 6 }
+  ],
+  "widgets": [
+    { "id": "row-overview", "panelTypes": "row", "title": "Overview" },
+    {
+      "id": "v-rec-rate",
+      "title": "Reconciliations / sec",
+      "description": "Reconciliation rate across all Flux controllers.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "reduceTo": "avg",
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_reconcile_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "v-rec-errors",
+      "title": "Reconcile Errors (range)",
+      "description": "Total reconciliation errors over the selected range.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "reduceTo": "sum",
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_reconcile_errors_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "increase",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "v-active-workers",
+      "title": "Active Workers",
+      "description": "Reconcile workers currently busy.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "reduceTo": "last",
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_active_workers",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "v-wq-depth",
+      "title": "Workqueue Depth",
+      "description": "Items currently queued across controllers.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "reduceTo": "last",
+              "aggregations": [
+                {
+                  "metricName": "workqueue_depth",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "v-rec-p99",
+      "title": "Reconcile Duration p99",
+      "description": "p99 reconciliation duration.",
+      "panelTypes": "value",
+      "yAxisUnit": "s",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "reduceTo": "avg",
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p99"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "v-api-rate",
+      "title": "K8s API Reqs / sec",
+      "description": "Kubernetes API request rate from Flux.",
+      "panelTypes": "value",
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "reduceTo": "avg",
+              "aggregations": [
+                {
+                  "metricName": "rest_client_requests_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": []
+            }
+          ]
+        }
+      }
+    },
+
+    { "id": "row-reconcile", "panelTypes": "row", "title": "Reconciliation" },
+    {
+      "id": "g-rec-result",
+      "title": "Reconciliation Rate by Result",
+      "description": "Reconcile rate split by result (success / error / requeue).",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_reconcile_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "result",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "result--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{result}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-rec-controller",
+      "title": "Reconciliation Rate by Controller",
+      "description": "Reconcile rate split by controller.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_reconcile_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "controller",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "controller--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{controller}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-rec-errors",
+      "title": "Reconcile Error Rate by Controller",
+      "description": "Reconcile error rate split by controller.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_reconcile_errors_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "controller",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "controller--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{controller}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "t-rec-kind",
+      "title": "Reconciliations by Flux Kind",
+      "description": "Reconcile rate per Flux resource kind.",
+      "panelTypes": "table",
+      "yAxisUnit": "none",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "reduceTo": "sum",
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.count",
+                  "temporality": "cumulative",
+                  "timeAggregation": "increase",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [
+                {
+                  "key": "kind",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "kind--string--tag--false",
+                  "isColumn": true,
+                  "isJSON": false
+                }
+              ],
+              "legend": "Reconciles"
+            }
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "row-duration",
+      "panelTypes": "row",
+      "title": "Reconciliation Duration"
+    },
+    {
+      "id": "g-dur-avg-kind",
+      "title": "Avg Reconcile Duration by Kind",
+      "description": "Mean reconciliation duration per kind (rate of sum / rate of count).",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": true,
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.sum",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [
+                {
+                  "key": "kind",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "kind--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ]
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "disabled": true,
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.count",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [
+                {
+                  "key": "kind",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "kind--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ]
+            }
+          ],
+          "queryFormulas": [
+            {
+              "queryName": "F1",
+              "expression": "A / B",
+              "legend": "{{kind}}",
+              "disabled": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-dur-pct",
+      "title": "Reconcile Duration p50 / p95 / p99",
+      "description": "Reconciliation duration percentiles across all resources.",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p50"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [],
+              "legend": "p50"
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p95"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [],
+              "legend": "p95"
+            },
+            {
+              "queryName": "C",
+              "dataSource": "metrics",
+              "expression": "C",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p99"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [],
+              "legend": "p99"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-dur-kind",
+      "title": "Reconcile Duration p99 by Kind",
+      "description": "p99 reconciliation duration per Flux kind.",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p99"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [
+                {
+                  "key": "kind",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "kind--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{kind}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-dur-resource",
+      "title": "Reconcile Duration p99 by Resource",
+      "description": "p99 reconciliation duration per Flux object. Surfaces slow individual resources.",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "gotk_reconcile_duration_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p99"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.cluster.name IN $k8s_cluster_name AND kind IN $kind"
+              },
+              "groupBy": [
+                {
+                  "key": "name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{name}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-dur-controller",
+      "title": "Controller Reconcile Time p99 by Controller",
+      "description": "controller-runtime reconcile time p99 per controller.",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "controller_runtime_reconcile_time_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p99"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "controller",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "controller--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{controller}}"
+            }
+          ]
+        }
+      }
+    },
+
+    { "id": "row-workqueue", "panelTypes": "row", "title": "Workqueue" },
+    {
+      "id": "g-wq-depth",
+      "title": "Workqueue Depth by Controller",
+      "description": "Queue depth per workqueue.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "workqueue_depth",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{name}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-wq-adds",
+      "title": "Workqueue Add Rate by Controller",
+      "description": "Workqueue add rate per workqueue.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "workqueue_adds_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{name}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-wq-retries",
+      "title": "Workqueue Retry Rate by Controller",
+      "description": "Workqueue retry rate per workqueue. Sustained retries signal reconciliation churn.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "workqueue_retries_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{name}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-wq-qdur",
+      "title": "Workqueue Queue Duration p99",
+      "description": "p99 time items wait in queue before processing.",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "workqueue_queue_duration_seconds.bucket",
+                  "temporality": "cumulative",
+                  "timeAggregation": "",
+                  "spaceAggregation": "p99"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{name}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-wq-unfinished",
+      "title": "Workqueue Unfinished Work Seconds",
+      "description": "In-progress work age. Growing values signal stuck processors.",
+      "panelTypes": "graph",
+      "yAxisUnit": "s",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "workqueue_unfinished_work_seconds",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "name",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "name--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{name}}"
+            }
+          ]
+        }
+      }
+    },
+
+    { "id": "row-resources", "panelTypes": "row", "title": "Resources" },
+    {
+      "id": "g-res-cpu",
+      "title": "CPU Usage by Controller",
+      "description": "CPU cores per controller (rate of process CPU seconds).",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "process_cpu_seconds_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "k8s.deployment.name",
+                  "dataType": "string",
+                  "type": "resource",
+                  "id": "k8s.deployment.name--string--resource--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{k8s.deployment.name}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-res-mem",
+      "title": "Memory (Working Set) by Controller",
+      "description": "Container working-set memory per controller.",
+      "panelTypes": "graph",
+      "yAxisUnit": "bytes",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "container.memory.working_set",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "k8s.deployment.name",
+                  "dataType": "string",
+                  "type": "resource",
+                  "id": "k8s.deployment.name--string--resource--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{k8s.deployment.name}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-res-goroutines",
+      "title": "Goroutines by Controller",
+      "description": "Goroutine count per controller.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "go_goroutines",
+                  "temporality": "unspecified",
+                  "timeAggregation": "avg",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "k8s.deployment.name",
+                  "dataType": "string",
+                  "type": "resource",
+                  "id": "k8s.deployment.name--string--resource--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{k8s.deployment.name}}"
+            }
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "row-api",
+      "panelTypes": "row",
+      "title": "Kubernetes API (rest_client)"
+    },
+    {
+      "id": "g-api-code",
+      "title": "K8s API Request Rate by Status Code",
+      "description": "API request rate split by status code.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "rest_client_requests_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "code",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "code--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{code}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-api-method",
+      "title": "K8s API Request Rate by Method",
+      "description": "API request rate split by HTTP method.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "rest_client_requests_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "method",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "method--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{method}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-api-host",
+      "title": "K8s API Request Rate by Host",
+      "description": "API request rate split by host.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "rest_client_requests_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name"
+              },
+              "groupBy": [
+                {
+                  "key": "host",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "host--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{host}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "g-api-errors",
+      "title": "K8s API Error Rate (non-2xx)",
+      "description": "Non-2xx API response rate split by status code.",
+      "panelTypes": "graph",
+      "yAxisUnit": "none",
+      "legendPosition": "bottom",
+      "softMin": 0,
+      "softMax": 0,
+      "thresholds": [],
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "query": {
+        "queryType": "builder",
+        "promql": [],
+        "clickhouse_sql": [],
+        "builder": {
+          "queryFormulas": [],
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "disabled": false,
+              "aggregations": [
+                {
+                  "metricName": "rest_client_requests_total",
+                  "temporality": "cumulative",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "k8s.namespace.name = $k8s_namespace AND k8s.cluster.name IN $k8s_cluster_name AND code NOT LIKE '2%'"
+              },
+              "groupBy": [
+                {
+                  "key": "code",
+                  "dataType": "string",
+                  "type": "tag",
+                  "id": "code--string--tag--false",
+                  "isColumn": false,
+                  "isJSON": false
+                }
+              ],
+              "legend": "{{code}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
