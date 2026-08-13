@@ -1,0 +1,2097 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "technology",
+      "value": "github-copilot"
+    },
+    {
+      "key": "domain",
+      "value": "ai-coding-agent"
+    },
+    {
+      "key": "signal",
+      "value": "traces"
+    },
+    {
+      "key": "service",
+      "value": "copilot-chat"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "GitHub Copilot Chat",
+      "description": "Usage, cost drivers, latency and tool activity for GitHub Copilot Chat, built from the OpenTelemetry traces the Copilot Chat extension exports. Use the Service picker to scope to one or more rollouts. Answers: how many tokens are we spending and on which model, how much is served from the prompt cache, how fast is the first token, which tools does the agent call, and what is failing. Token panels are scoped to chat spans because the invoke_agent span carries a roll-up of its children and would otherwise double count."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "Service",
+            "description": "Filter to one or more Copilot Chat services"
+          },
+          "defaultValue": [
+            "copilot-chat",
+            "copilot-chat-platform",
+            "copilot-chat-frontend"
+          ],
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "traces"
+            }
+          },
+          "name": "service_name"
+        }
+      }
+    ],
+    "panels": {
+      "agent-invocations": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Activity by Agent",
+            "description": "Which internal Copilot agents are running. Background agents such as title generation and summarizeVirtualTools spend real tokens without any visible chat turn."
+          },
+          "plugin": {
+            "kind": "signoz/BarChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false,
+                "stackedBarChart": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.agent.name EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.agent.name",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{gen_ai.agent.name}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "avg-input-per-chat": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg Input Tokens per Call",
+            "description": "Average prompt size per model call. Rising values mean the agent is carrying more context into each turn."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "avg(gen_ai.usage.input_tokens)",
+                        "alias": "avg_input"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "avg_input",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "cache-hit-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Prompt Cache Hit Rate",
+            "description": "Share of input tokens served from the prompt cache. Cached input is billed at a large discount, so this is the single biggest lever on Copilot cost."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "1"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.cache_read.input_tokens) / sum(gen_ai.usage.input_tokens) * 100",
+                        "alias": "cache_hit_rate"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "cache_hit_rate",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "cache-read-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cached Input Tokens",
+            "description": "Input tokens read from the prompt cache rather than reprocessed."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.cache_read.input_tokens)",
+                        "alias": "cached_tokens"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "cached_tokens",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "chat-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Call Latency",
+            "description": "End-to-end duration of chat completion spans, p50 through p99."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p50(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "p95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p99(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p99(duration_nano)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "chat-requests": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Calls",
+            "description": "Number of chat completions requested from the model."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "conversations": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Conversations",
+            "description": "Distinct chat conversations, counted on gen_ai.conversation.id."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count_distinct(gen_ai.conversation.id)",
+                        "alias": "conversations"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "conversations",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "errors-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Errors Over Time",
+            "description": "Copilot spans with an error status, most often a tool that failed rather than the model itself."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND has_error = true"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "Errors"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "finish-reasons": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Finish Reasons",
+            "description": "How model responses terminated. A rising share of length means answers are being truncated by the token limit; tool_calls means the model handed control back to the agent."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.response.finish_reasons EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.response.finish_reasons",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{gen_ai.response.finish_reasons}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "mcp-vs-builtin": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "MCP vs Built-in Tools",
+            "description": "Split of tool calls between MCP server tools (names prefixed mcp_) and Copilot's built-in tools. Shows whether your MCP servers are earning their place in the tool list."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {
+                  "Built-in tools": "#4E79A7",
+                  "MCP tools": "#F28E2B"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.tool.name REGEXP '^mcp_'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "MCP tools"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS AND gen_ai.tool.name NOT REGEXP '^mcp_'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "Built-in tools"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "reasoning-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Reasoning Tokens",
+            "description": "Output tokens spent on internal reasoning by reasoning-capable models. Billed as output but never shown in the chat."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.reasoning.output_tokens)",
+                        "alias": "reasoning_tokens"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "reasoning_tokens",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "recent-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Recent Errors",
+            "description": "Individual failing spans with their status message. Click through to the full trace to see the conversation turn that produced the failure."
+          },
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "name": "name",
+                  "signal": "traces",
+                  "fieldContext": "span",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "gen_ai.tool.name",
+                  "signal": "traces",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "status_message",
+                  "signal": "traces",
+                  "fieldContext": "span",
+                  "fieldDataType": "string"
+                },
+                {
+                  "name": "duration_nano",
+                  "signal": "traces",
+                  "fieldContext": "span",
+                  "fieldDataType": "number"
+                },
+                {
+                  "name": "trace_id",
+                  "signal": "traces",
+                  "fieldContext": "span",
+                  "fieldDataType": "string"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND has_error = true"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "timestamp",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "selectFields": [
+                      {
+                        "name": "name",
+                        "signal": "traces",
+                        "fieldContext": "span",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "gen_ai.tool.name",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "status_message",
+                        "signal": "traces",
+                        "fieldContext": "span",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "duration_nano",
+                        "signal": "traces",
+                        "fieldContext": "span",
+                        "fieldDataType": "number"
+                      },
+                      {
+                        "name": "trace_id",
+                        "signal": "traces",
+                        "fieldContext": "span",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "requests-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Calls Over Time",
+            "description": "Chat completions per model over time. Useful for spotting when Copilot silently switches you to a different model."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat' AND gen_ai.response.model EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.response.model",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{gen_ai.response.model}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "spans-by-operation": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Activity by Operation",
+            "description": "Breakdown of Copilot spans across chat, execute_tool, invoke_agent and embeddings."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.operation.name",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{gen_ai.operation.name}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "token-usage-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Token Usage Over Time",
+            "description": "Input, output, cached-input and reasoning tokens over time. Cached input is a subset of input, not an additional charge."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.input_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "Input"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.output_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "Output"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.cache_read.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.cache_read.input_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "Cached input"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "D",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.reasoning.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.reasoning.output_tokens)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "Reasoning"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "tokens-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tokens by Model",
+            "description": "Which model is consuming the token budget. Copilot routes different tasks to different models, so this rarely matches the call-count split."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens) + sum(gen_ai.usage.output_tokens)",
+                        "alias": "total_tokens"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat' AND gen_ai.response.model EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.response.model",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "total_tokens",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{gen_ai.response.model}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "tool-calls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls",
+            "description": "Number of tools the agent executed, such as read_file, grep_search or an MCP tool."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'execute_tool'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "tool-calls-by-name": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls by Name",
+            "description": "Which tools the agent actually reaches for. Shows what kind of work Copilot is trusted with."
+          },
+          "plugin": {
+            "kind": "signoz/BarChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false,
+                "stackedBarChart": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.tool.name",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{gen_ai.tool.name}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "tool-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Latency (p95)",
+            "description": "Slowest tools by p95 execution time. Long-running terminal commands and remote MCP calls dominate here and directly stall the agent."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": null,
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.tool.name",
+                        "signal": "traces",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "p95(duration_nano)",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{gen_ai.tool.name}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "total-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Tokens",
+            "description": "Input plus output tokens across Copilot model calls. Copilot emits no total_tokens attribute, so this sums the two components, scoped to chat spans to avoid double counting the invoke_agent roll-up."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens) + sum(gen_ai.usage.output_tokens)",
+                        "alias": "total_tokens"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "total_tokens",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "ttfc": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Time to First Chunk",
+            "description": "Seconds until the first streamed token arrives. This is what the developer actually perceives as Copilot being slow, independent of total response length."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(gen_ai.response.time_to_first_chunk)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p50(gen_ai.response.time_to_first_chunk)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(gen_ai.response.time_to_first_chunk)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(gen_ai.response.time_to_first_chunk)",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 100,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": "p95"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/total-tokens"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/chat-requests"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/tool-calls"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/conversations"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/cache-hit-rate"
+              }
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/cache-read-tokens"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/reasoning-tokens"
+              }
+            },
+            {
+              "x": 9,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/avg-input-per-chat"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 8,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/token-usage-over-time"
+              }
+            },
+            {
+              "x": 8,
+              "y": 6,
+              "width": 4,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tokens-by-model"
+              }
+            },
+            {
+              "x": 0,
+              "y": 13,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/requests-by-model"
+              }
+            },
+            {
+              "x": 6,
+              "y": 13,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/finish-reasons"
+              }
+            },
+            {
+              "x": 0,
+              "y": 20,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/chat-latency"
+              }
+            },
+            {
+              "x": 6,
+              "y": 20,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ttfc"
+              }
+            },
+            {
+              "x": 0,
+              "y": 27,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tool-calls-by-name"
+              }
+            },
+            {
+              "x": 6,
+              "y": 27,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/mcp-vs-builtin"
+              }
+            },
+            {
+              "x": 0,
+              "y": 34,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tool-latency"
+              }
+            },
+            {
+              "x": 6,
+              "y": 34,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/spans-by-operation"
+              }
+            },
+            {
+              "x": 0,
+              "y": 41,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/agent-invocations"
+              }
+            },
+            {
+              "x": 6,
+              "y": 41,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/errors-over-time"
+              }
+            },
+            {
+              "x": 0,
+              "y": 48,
+              "width": 12,
+              "height": 8,
+              "content": {
+                "$ref": "#/spec/panels/recent-errors"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "duration": "",
+    "refreshInterval": "",
+    "links": []
+  }
+}
