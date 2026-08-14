@@ -18,11 +18,13 @@ export OTEL_EXPORTER_OTLP_HEADERS="signoz-ingestion-key=<your-ingestion-key>"
 grok
 ```
 
-Two things are worth knowing before you wire this up.
+Three things are worth knowing before you wire this up.
 
-**Use `http/protobuf`, not `grpc`.** Grok Build 1.0.3 documents gRPC as supported, but selecting it fails at export time with `gRPC protocol is not compatible with HTTP transport`. The telemetry stream still reports itself as active, so nothing surfaces in the terminal and the data silently never arrives. Check `grok --debug` for `external otel:` lines if a collector receives nothing.
+**No OpenTelemetry Collector is needed.** Grok Build exports straight to the SigNoz Cloud ingest endpoint, as the snippet above shows. Worth stating plainly because not every coding agent can: Gemini CLI, for one, has no OTLP header setting at all, so it needs a local collector purely to attach the auth header. Grok Build does not.
 
-**Collector auth is environment-only.** There is deliberately no headers key in `~/.grok/config.toml`, so the ingestion key has to come from `OTEL_EXPORTER_OTLP_HEADERS`. Non-secret settings can live in the config file under `[telemetry]` as `otel_*` keys.
+**Use `http/protobuf`, not `grpc`.** Grok Build 1.0.3 documents gRPC as supported, but selecting it fails at export time with `gRPC protocol is not compatible with HTTP transport`. The telemetry stream still reports itself as active, so nothing surfaces in the terminal and the data silently never arrives. Check `grok --debug` for `external otel:` lines if nothing shows up in SigNoz.
+
+**The ingestion key has to come from the environment.** There is deliberately no headers key in `~/.grok/config.toml`, so that tokens never touch disk, which leaves `OTEL_EXPORTER_OTLP_HEADERS` as the only way to authenticate. Every non-secret setting can live in the config file under `[telemetry]` as `otel_*` keys.
 
 There is no cost metric. To track spend, join `grok_code.token.usage` against your own price sheet.
 
