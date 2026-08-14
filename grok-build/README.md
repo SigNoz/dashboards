@@ -2,110 +2,88 @@
 
 ## Details
 
-This dashboard tracks usage and health for [Grok Build](https://github.com/xai-org/grok-build), xAI's terminal coding agent. It covers token consumption split by type and model, session and turn volume, tool activity and outcomes, error categories, and startup latency broken down by phase.
+This comprehensive dashboard provides deep visibility into Grok Build usage patterns and performance metrics. It tracks everything from token consumption and model mix to tool effectiveness, error categories, and startup latency, giving teams the data they need to optimize their AI-assisted development workflows.
 
-Everything here comes from the OpenTelemetry export Grok Build ships natively, so there is no instrumentation library to install. Grok emits **metrics and events only, no traces**, and every panel on this dashboard is metrics-based. All counters live under the `ai.xai.grok_code` meter scope and are monotonic delta sums, which is why the panels aggregate them with `increase` rather than `rate`.
-
-Telemetry is off by default and requires a **double opt-in**: the `GROK_EXTERNAL_OTEL=1` master switch plus at least one exporter. Either one alone emits nothing.
-
-```bash
-export GROK_EXTERNAL_OTEL=1
-export OTEL_METRICS_EXPORTER=otlp
-export OTEL_LOGS_EXPORTER=otlp
-export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-export OTEL_EXPORTER_OTLP_ENDPOINT="https://ingest.<region>.signoz.cloud:443"
-export OTEL_EXPORTER_OTLP_HEADERS="signoz-ingestion-key=<your-ingestion-key>"
-grok
-```
-
-Three things are worth knowing before you wire this up.
-
-**No OpenTelemetry Collector is needed.** Grok Build exports straight to the SigNoz Cloud ingest endpoint, as the snippet above shows. Worth stating plainly because not every coding agent can: Gemini CLI, for one, has no OTLP header setting at all, so it needs a local collector purely to attach the auth header. Grok Build does not.
-
-**Use `http/protobuf`, not `grpc`.** Grok Build 1.0.3 documents gRPC as supported, but selecting it fails at export time with `gRPC protocol is not compatible with HTTP transport`. The telemetry stream still reports itself as active, so nothing surfaces in the terminal and the data silently never arrives. Check `grok --debug` for `external otel:` lines if nothing shows up in SigNoz.
-
-**The ingestion key has to come from the environment.** There is deliberately no headers key in `~/.grok/config.toml`, so that tokens never touch disk, which leaves `OTEL_EXPORTER_OTLP_HEADERS` as the only way to authenticate. Every non-secret setting can live in the config file under `[telemetry]` as `otel_*` keys.
-
-There is no cost metric. To track spend, join `grok_code.token.usage` against your own price sheet.
+Grok Build exports metrics natively, so no instrumentation library is required. Enable it with `GROK_EXTERNAL_OTEL=1` plus an OTLP exporter, and use `http/protobuf` as the protocol.
 
 ## Dashboard panels
 
 ### Sections
 
-#### Total Tokens
+### Total Tokens
 
-Tokens are the currency of an AI coding agent. This adds every token type together so you can see at a glance how much work Grok is doing and whether usage is climbing, flat, or tailing off.
+Tokens are the currency of AI coding assistants. This panel adds every token type together, giving you a complete picture of how much work Grok is doing and whether usage is ramping up, holding steady, or tailing off.
 
 <img width="721" height="238" alt="grok-build-total-tokens" src="./images/grok-build-panel-01.webp" />
 
-#### Sessions
+### Sessions
 
-How many times Grok Build was started. Read this next to Turns to tell a lot of quick one-off invocations apart from a few long working sessions.
+How many times Grok Build was started. Sessions show how often developers are turning to the agent, revealing adoption and engagement patterns across the team.
 
 <img width="722" height="238" alt="grok-build-sessions" src="./images/grok-build-panel-02.webp" />
 
-#### Turns
+### Turns
 
-Every prompt-and-response cycle the agent completed, whether it finished, was cancelled, or errored. This is the closest thing to a request count for a coding agent.
+Every prompt-and-response cycle the agent completed. Read this alongside Sessions to tell a lot of quick one-off invocations apart from a few long working sessions.
 
 <img width="722" height="238" alt="grok-build-turns" src="./images/grok-build-panel-03.webp" />
 
-#### Errors
+### Errors
 
-Total errors across every category. The panel turns amber as soon as one is recorded, because on a healthy setup this should sit at zero.
+Total errors across every category. The panel turns amber as soon as one is recorded, since a healthy setup should sit at zero.
 
 <img width="721" height="238" alt="grok-build-errors" src="./images/grok-build-panel-04.webp" />
 
-#### Token Usage Over Time
+### Token Usage Over Time
 
-Token consumption split by type. Grok reports four: `input`, `output`, `cache_read`, and `reasoning`. The reasoning split is its own dimension here rather than being folded into output, which makes it easy to see how much of your spend goes on thinking the user never sees.
+Token consumption split by type over time. Grok reports four types: input, output, cache reads, and reasoning. Reasoning tokens are broken out separately rather than folded into output, so you can see how much of your spend goes on thinking the user never sees.
 
 <img width="1441" height="557" alt="grok-build-token-usage-over-time" src="./images/grok-build-panel-05.webp" />
 
-#### Tokens by Type
+### Tokens by Type
 
-The same four types as a share of the total. Input tokens dominate on almost any real workload, and a high `cache_read` share is the signal that prompt caching is doing its job. If that share falls, sessions are being restarted rather than continued.
+The same four types as a share of the total. Input tokens dominate on almost any real workload, and a high cache read share means prompt caching is working. A falling share usually means sessions are being restarted rather than continued.
 
 <img width="1442" height="557" alt="grok-build-tokens-by-type" src="./images/grok-build-panel-06.webp" />
 
-#### Tokens by Model
+### Tokens by Model
 
 Token spend per model. Useful for tracking migration between model versions and for spotting which model is actually carrying the workload, which is rarely the one you assume.
 
 <img width="1441" height="556" alt="grok-build-tokens-by-model" src="./images/grok-build-panel-07.webp" />
 
-#### Tool Calls by Tool
+### Tool Calls by Tool
 
-Which tools the agent reaches for, from reading files and running shell commands to spawning subagents and searching the web. A good proxy for how much real work is being delegated rather than just discussed. Note that MCP tools collapse to `mcp_tool` and other non-built-in tools to `custom_tool` unless `OTEL_LOG_TOOL_DETAILS=1` is set.
+Grok's agent does more than talk. This counts every tool it executed, from reading a file to running a terminal command to spawning a subagent, which is a good proxy for how much real work is being delegated to it.
 
 <img width="1453" height="556" alt="grok-build-tool-calls-by-tool" src="./images/grok-build-panel-08.webp" />
 
-#### Tool Outcomes
+### Tool Outcomes
 
-Success against error across every tool call. Tool failures are usually environmental rather than model problems: a missing file, a command that exits non-zero, a denied permission. A rising error share is often the first sign that the agent is working against a stale picture of the repo.
+Success against error across all tool calls. Tool failures are usually environmental rather than model problems: a missing file, a command that exits non-zero, a denied permission.
 
 <img width="1441" height="557" alt="grok-build-tool-outcomes" src="./images/grok-build-panel-09.webp" />
 
-#### Turns Over Time by Outcome
+### Turns Over Time by Outcome
 
-Turn volume split by `completed`, `cancelled`, and `error`. Cancellations are worth watching on their own, since they usually mean a developer stopped the agent mid-answer rather than anything failing.
+Turn volume split by completed, cancelled, and error. Cancellations are worth watching on their own, since they usually mean a developer stopped the agent mid-answer rather than anything failing.
 
 <img width="1442" height="557" alt="grok-build-turns-over-time-by-outcome" src="./images/grok-build-panel-10.webp" />
 
-#### Errors by Category
+### Errors by Category
 
-Errors over time, grouped by category. One caveat worth knowing: `rate_limit` covers both the per-minute request ceiling and full quota exhaustion, so the metric alone cannot tell "slow down" apart from "you are out of credit". Use the `status_code` on the `api_error` event to separate them.
+Errors over time, grouped by category. Note that rate limit covers both the per-minute request ceiling and full quota exhaustion, so check the status code on the api_error event to tell them apart.
 
 <img width="1441" height="556" alt="grok-build-errors-by-category" src="./images/grok-build-panel-11.webp" />
 
-#### Startup Duration p95
+### Startup Duration p95
 
-How long Grok takes from process start to a usable session. This includes a deliberate wait: the CLI holds telemetry closed until it has fetched fleet policy from xAI, since that policy can force the stream off. The wait is bounded and emission starts regardless within 30 seconds.
+How long Grok takes from process start to a usable session. This includes a deliberate wait while the CLI fetches fleet policy, which is bounded and never exceeds 30 seconds.
 
 <img width="1442" height="556" alt="grok-build-startup-duration-p95" src="./images/grok-build-panel-12.webp" />
 
-#### Startup Phase Duration p95
+### Startup Phase Duration p95
 
-The same startup cost broken down by step, which is what you actually need to make it faster. Filter on `outcome = ok` before comparing percentiles, because truncated samples from timeouts will skew the result. Note that the step named by `stuck_in` on a timeout is often not the slowest step, since a phase that runs without pausing finishes before the timeout is recorded.
+The same startup cost broken down by step, which is what you need to make it faster. Filter on a successful outcome before comparing percentiles, since truncated samples from timeouts will skew the result.
 
 <img width="2894" height="557" alt="grok-build-startup-phase-duration-p95" src="./images/grok-build-panel-13.webp" />
