@@ -2,19 +2,9 @@
 
 ## Details
 
-This dashboard gives you a complete view of how DeepSeek Harness (`dsh`) is being used: token spend and cache efficiency, turn and session volume, model latency, native and MCP tool activity, and where things fail.
+This dashboard offers a clear view into DeepSeek Harness (`dsh`) usage and performance. It highlights key metrics such as token spend and cache efficiency, turn and session volume, model latency and time to first token, native and MCP tool activity, and error breakdown.
 
-DeepSeek Harness has no OpenTelemetry export in its core. Instrumentation comes from the `@loongsuite/dsh-plugin` plugin, which you add per profile with `dsh plugin --profile headless add @loongsuite/dsh-plugin`, then point at your backend with `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_EXPORTER_OTLP_HEADERS`. Give the base URL only; the plugin appends `/v1/traces` and `/v1/metrics` itself.
-
-Every panel filters through the `service_name` variable, so one board covers as many teams or machines as report under different service names.
-
-### A note on scoping
-
-The harness emits five span kinds, tagged with `gen_ai.span.kind`: `ENTRY`, `AGENT`, `STEP`, `LLM`, and `TOOL`. Several panels here are deliberately scoped to one of them, and the scoping is not cosmetic:
-
-- **Token panels read `LLM` spans only.** The `invoke_agent` span repeats the sum of its own model calls, so an unscoped sum double counts exactly 2x.
-- **Cache Hit Rate reads `AGENT` spans.** On `LLM` spans the cache attribute is omitted rather than set to zero when nothing was cached, which drops the cold calls out of the average and reads high.
-- **Model Finish Reasons reads `LLM` spans only.** On `AGENT` spans the same attribute name holds the turn outcome instead, so mixing the two produces a meaningless axis.
+To start sending DeepSeek Harness telemetry to SigNoz, follow the [DeepSeek Harness observability guide](https://signoz.io/docs/deepseek-harness-observability/).
 
 ## Dashboard panels
 
@@ -46,13 +36,13 @@ Every tool the agent executed, native and MCP together, which is a good proxy fo
 
 ### Total Tokens
 
-Total token spend across every model call. This is the cost line, and it is scoped to `LLM` spans so the agent-level roll-up does not double it.
+Total token spend across every model call. Scoped to `LLM` spans on purpose: the `invoke_agent` span repeats the sum of its own model calls, so an unscoped sum double counts exactly 2x.
 
 <img width="480" height="158" alt="deepseek-harness-total-tokens" src="./images/deepseek-harness-panel-05.webp" />
 
 ### Cache Hit Rate
 
-Share of input tokens served from cache. On a long session this climbs quickly, since each turn replays the conversation so far. A falling rate usually means sessions are being restarted rather than continued.
+Share of input tokens served from cache. On a long session this climbs quickly, since each turn replays the conversation so far. Read from `AGENT` spans, because `LLM` spans omit the cache attribute rather than setting it to zero on a miss, which would drop the cold calls out of the average and read high.
 
 <img width="479" height="158" alt="deepseek-harness-cache-hit-rate" src="./images/deepseek-harness-panel-06.webp" />
 
@@ -76,7 +66,7 @@ Turns, model calls, tool calls, and subagent turns on one axis. The subagent lin
 
 ### Model Finish Reasons
 
-Why each model call stopped. `tool_calls` dominating over `stop` is the normal shape for an agent: most calls end by reaching for a tool, and only the last call of a turn ends with a finished answer.
+Why each model call stopped. `tool_calls` dominating over `stop` is the normal shape for an agent: most calls end by reaching for a tool, and only the last call of a turn ends with a finished answer. Scoped to `LLM` spans, since on `AGENT` spans the same attribute holds the turn outcome instead.
 
 <img width="962" height="476" alt="deepseek-harness-model-finish-reasons" src="./images/deepseek-harness-panel-10.webp" />
 
