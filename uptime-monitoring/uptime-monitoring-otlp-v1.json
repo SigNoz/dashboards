@@ -397,7 +397,7 @@
                       {
                         "metricName": "httpcheck.tls.cert_remaining",
                         "temporality": "unspecified",
-                        "timeAggregation": "min",
+                        "timeAggregation": "latest",
                         "spaceAggregation": "min"
                       }
                     ],
@@ -439,7 +439,7 @@
         "spec": {
           "display": {
             "name": "Soonest Cert Expiry",
-            "description": "Least time remaining on any verified TLS certificate"
+            "description": "Least time remaining on any verified TLS certificate, taken from the newest sample per certificate so a renewal inside the window clears it."
           },
           "plugin": {
             "kind": "signoz/NumberPanel",
@@ -477,9 +477,9 @@
                       {
                         "metricName": "httpcheck.tls.cert_remaining",
                         "temporality": "unspecified",
-                        "timeAggregation": "min",
+                        "timeAggregation": "latest",
                         "spaceAggregation": "min",
-                        "reduceTo": "min"
+                        "reduceTo": "last"
                       }
                     ],
                     "disabled": false,
@@ -1046,7 +1046,7 @@
         "spec": {
           "display": {
             "name": "Non-2xx Responses by Endpoint",
-            "description": "Probes that got an HTTP response outside 2xx, split by endpoint and status class"
+            "description": "Count of probes that got an HTTP response outside 2xx, split by endpoint and status class."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1098,7 +1098,7 @@
                       {
                         "metricName": "httpcheck.status",
                         "temporality": "cumulative",
-                        "timeAggregation": "avg",
+                        "timeAggregation": "sum",
                         "spaceAggregation": "sum"
                       }
                     ],
@@ -1599,7 +1599,7 @@
         "spec": {
           "display": {
             "name": "TCP Connect Duration",
-            "description": "Time to establish the transport connection"
+            "description": "Time to establish the transport connection. Probes that reuse a keep-alive connection report zero and are filtered out, so an endpoint appears here only while it is opening new connections."
           },
           "plugin": {
             "kind": "signoz/TimeSeriesPanel",
@@ -1679,7 +1679,10 @@
                       }
                     ],
                     "limit": 100,
-                    "legend": "{{http.url}}"
+                    "legend": "{{http.url}}",
+                    "having": {
+                      "expression": "__result > 0"
+                    }
                   }
                 }
               }
@@ -1726,9 +1729,9 @@
                       {
                         "metricName": "httpcheck.tls.cert_remaining",
                         "temporality": "unspecified",
-                        "timeAggregation": "min",
+                        "timeAggregation": "latest",
                         "spaceAggregation": "min",
-                        "reduceTo": "min"
+                        "reduceTo": "last"
                       }
                     ],
                     "disabled": false,
