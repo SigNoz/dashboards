@@ -1,0 +1,1924 @@
+{
+  "tags": [
+    "prometheus",
+    "node-exporter",
+    "host"
+  ],
+  "spec": {
+    "display": {
+      "name": "Prometheus Node Exporter",
+      "description": "Linux host health from Prometheus Node Exporter metrics ingested by SigNoz."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "job",
+            "description": "Node Exporter scrape job"
+          },
+          "defaultValue": [],
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT JSONExtractString(labels, 'service.name') AS job FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'node_uname_info' AND job != '' GROUP BY job ORDER BY job"
+            }
+          },
+          "name": "job"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "instance",
+            "description": "Node Exporter host instance"
+          },
+          "defaultValue": [],
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/QueryVariable",
+            "spec": {
+              "queryValue": "SELECT JSONExtractString(labels, 'service.instance.id') AS instance FROM signoz_metrics.distributed_time_series_v4_1day WHERE metric_name = 'node_uname_info' AND JSONExtractString(labels, 'service.name') IN $job AND instance != '' GROUP BY instance ORDER BY instance"
+            }
+          },
+          "name": "instance"
+        }
+      }
+    ],
+    "panels": {
+      "0a354c8b-86f2-4f16-9f85-0c38486592f0": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Usage",
+            "description": "Non-idle CPU time averaged across cores for each selected instance."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 80,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Orange",
+                  "format": "text"
+                },
+                {
+                  "value": 90,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Red",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_cpu_seconds_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND mode = 'idle'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(1 - A) * 100",
+                          "disabled": false,
+                          "order": null,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null,
+                          "legend": "{{service.instance.id}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "20e9e43b-a741-4b28-94b7-fcaed650f5d7": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Usage",
+            "description": "Used memory calculated from MemAvailable and total memory."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 80,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Orange",
+                  "format": "text"
+                },
+                {
+                  "value": 90,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Red",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_memory_MemAvailable_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_memory_MemTotal_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(1 - A / B) * 100",
+                          "disabled": false,
+                          "order": null,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null,
+                          "legend": "{{service.instance.id}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "3bf35ec3-31e9-41af-b6ae-10808d13990d": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Filesystem Usage",
+            "description": "Used filesystem capacity by mountpoint. Pseudo and container filesystems are excluded."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 80,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Orange",
+                  "format": "text"
+                },
+                {
+                  "value": 90,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Red",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_filesystem_avail_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != '' AND fstype NOT IN ('tmpfs', 'devtmpfs', 'overlay', 'squashfs', 'proc', 'sysfs', 'cgroup', 'cgroup2')"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "mountpoint",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_filesystem_size_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != '' AND fstype NOT IN ('tmpfs', 'devtmpfs', 'overlay', 'squashfs', 'proc', 'sysfs', 'cgroup', 'cgroup2')"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "mountpoint",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(1 - A / B) * 100",
+                          "disabled": false,
+                          "order": null,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null,
+                          "legend": "{{service.instance.id}} {{mountpoint}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "4c16f8fd-7399-471a-801e-436680525da6": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Uptime",
+            "description": "Elapsed time since the host booted."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_time_seconds",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_boot_time_seconds",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A - B",
+                          "disabled": false,
+                          "order": null,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null,
+                          "legend": "{{service.instance.id}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "5d776d5a-73f4-44c5-89a1-e95a0b3200e1": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Usage by Mode",
+            "description": "Per-mode CPU rate excluding idle time."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": true
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "linear",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 100,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {}
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_cpu_seconds_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND mode != 'idle'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "mode",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A * 100",
+                          "disabled": false,
+                          "order": null,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null,
+                          "legend": "{{service.instance.id}} {{mode}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "6a997beb-6988-48f3-9e7c-721818583a16": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "System Load",
+            "description": "One, five, and fifteen minute system load averages."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "linear",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {}
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_load1",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} 1m"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_load5",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} 5m"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_load15",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} 15m"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "7bb92147-a82d-4ef4-92ee-7c2f4ea0cc64": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Composition",
+            "description": "Free, cached, buffered, and reclaimable memory by instance."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": true
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "linear",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "solid",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {}
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_memory_MemFree_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} free"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_memory_Cached_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} cached"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_memory_Buffers_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} buffers"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "D",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_memory_SReclaimable_bytes",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} reclaimable"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "8ca397ec-d956-4a3d-97ce-f901bb7bafdd": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "File Descriptor Usage",
+            "description": "Allocated file descriptors as a percentage of the system maximum."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 80,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Orange",
+                  "format": "text"
+                },
+                {
+                  "value": 90,
+                  "operator": "above",
+                  "unit": "percent",
+                  "color": "Red",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_filefd_allocated",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_filefd_maximum",
+                              "temporality": "",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B * 100",
+                          "disabled": false,
+                          "order": null,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null,
+                          "legend": "{{service.instance.id}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "9df5691c-ca99-4454-bdce-c05a6ad68269": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Disk I/O Throughput",
+            "description": "Read and write throughput by block device. Loop, RAM, and device-mapper control devices are excluded."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "Bps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "linear",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {}
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_disk_read_bytes_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device NOT LIKE 'loop%' AND device NOT LIKE 'ram%' AND device != 'dm-control'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} read"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_disk_written_bytes_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device NOT LIKE 'loop%' AND device NOT LIKE 'ram%' AND device != 'dm-control'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} write"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "aeb0c7df-a8f2-448f-a997-c60bcb9076be": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Disk I/O Utilization",
+            "description": "Percentage of wall time each block device spent processing I/O."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "linear",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 100,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {}
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_disk_io_time_seconds_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device NOT LIKE 'loop%' AND device NOT LIKE 'ram%' AND device != 'dm-control'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A * 100",
+                          "disabled": false,
+                          "order": null,
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null,
+                          "legend": "{{service.instance.id}} {{device}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "be990862-75f4-49be-a5f7-0a6fd150da6c": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Network Throughput",
+            "description": "Receive and transmit throughput by network device, excluding loopback."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "Bps",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "linear",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {}
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_network_receive_bytes_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != 'lo'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} receive"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_network_transmit_bytes_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != 'lo'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} transmit"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "cfa3b429-14a1-473e-bd38-4e8adb328d12": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Network Errors and Drops",
+            "description": "Per-second receive and transmit errors and dropped packets, excluding loopback."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ops",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "linear",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": {}
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_network_receive_errs_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != 'lo'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} receive errors"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_network_transmit_errs_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != 'lo'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} transmit errors"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_network_receive_drop_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != 'lo'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} receive drops"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "D",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "node_network_transmit_drop_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $job AND service.instance.id IN $instance AND device != 'lo'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "service.instance.id",
+                              "signal": "metrics",
+                              "fieldContext": "resource",
+                              "fieldDataType": "string"
+                            },
+                            {
+                              "name": "device",
+                              "signal": "metrics",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [],
+                          "selectFields": null,
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{service.instance.id}} {{device}} transmit drops"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/0a354c8b-86f2-4f16-9f85-0c38486592f0"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/20e9e43b-a741-4b28-94b7-fcaed650f5d7"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/3bf35ec3-31e9-41af-b6ae-10808d13990d"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 4,
+              "content": {
+                "$ref": "#/spec/panels/4c16f8fd-7399-471a-801e-436680525da6"
+              }
+            },
+            {
+              "x": 0,
+              "y": 4,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/5d776d5a-73f4-44c5-89a1-e95a0b3200e1"
+              }
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/6a997beb-6988-48f3-9e7c-721818583a16"
+              }
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/7bb92147-a82d-4ef4-92ee-7c2f4ea0cc64"
+              }
+            },
+            {
+              "x": 6,
+              "y": 9,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/8ca397ec-d956-4a3d-97ce-f901bb7bafdd"
+              }
+            },
+            {
+              "x": 0,
+              "y": 14,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/9df5691c-ca99-4454-bdce-c05a6ad68269"
+              }
+            },
+            {
+              "x": 6,
+              "y": 14,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/aeb0c7df-a8f2-448f-a997-c60bcb9076be"
+              }
+            },
+            {
+              "x": 0,
+              "y": 19,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/be990862-75f4-49be-a5f7-0a6fd150da6c"
+              }
+            },
+            {
+              "x": 6,
+              "y": 19,
+              "width": 6,
+              "height": 5,
+              "content": {
+                "$ref": "#/spec/panels/cfa3b429-14a1-473e-bd38-4e8adb328d12"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "duration": "6h",
+    "refreshInterval": "1m",
+    "links": []
+  }
+}
