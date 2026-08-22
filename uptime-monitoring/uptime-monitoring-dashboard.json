@@ -1,0 +1,2822 @@
+{
+  "spec": {
+    "display": {
+      "name": "Uptime Monitoring (HTTP Check)",
+      "description": "Synthetic uptime checks for HTTP endpoints, from the OpenTelemetry httpcheck receiver. Availability per endpoint, error text per failed probe, content validation, DNS/TCP/TLS latency, response size and certificate expiry. Filter by service.name and http.url."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "Service",
+            "description": "Collector service emitting httpcheck metrics"
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "metrics"
+            }
+          },
+          "name": "service_name"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "Endpoint",
+            "description": "Probed HTTP endpoint (http.url)"
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "http.url",
+              "signal": "metrics"
+            }
+          },
+          "name": "http_url"
+        }
+      }
+    ],
+    "panels": {
+      "avail-pct": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Availability",
+            "description": "Share of probes that returned a 2xx response"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.status",
+                        "temporality": "cumulative",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url AND http.status_class = '2xx'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "availability-by-endpoint": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Availability by Endpoint",
+            "description": "Per-endpoint 2xx rate; 1 means every probe in the bucket succeeded"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 1,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.status",
+                        "temporality": "cumulative",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url AND http.status_class = '2xx'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "avg-response-size": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg Response Size",
+            "description": "Mean response body size across selected endpoints"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.response.size",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "avg-response-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg Response Time",
+            "description": "Mean total probe duration across selected endpoints"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "cert-remaining-by-endpoint": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "TLS Cert Time Remaining",
+            "description": "Seconds until certificate expiry per endpoint; only endpoints whose certificate verifies report this"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.tls.cert_remaining",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "min"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "asc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "cert-remaining-min": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Soonest Cert Expiry",
+            "description": "Least time remaining on any verified TLS certificate, taken from the newest sample per certificate so a renewal inside the window clears it."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 1209600,
+                  "operator": "below",
+                  "unit": "",
+                  "color": "#e5484d",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.tls.cert_remaining",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "min",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "asc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "dns-lookup-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "DNS Lookup Duration",
+            "description": "Time spent resolving the endpoint hostname. Endpoints that resolve without a lookup (localhost, cached) report zero and are filtered out."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.dns.lookup.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "endpoint-availability-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Endpoint Availability",
+            "description": "2xx rate per endpoint over the selected window. Endpoints with no successful probe read 0%; sort the Availability column ascending to put the worst first."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "Availability": "percentunit",
+                  "__result_0": "percentunit"
+                },
+                "decimalPrecision": "3"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Availability",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "Availability",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.status",
+                        "temporality": "cumulative",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url AND http.status_class = '2xx'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "asc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "endpoints-in-error": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Endpoints In Error",
+            "description": "Endpoints whose probe failed at the transport layer (DNS, connection refused, TLS rejected)"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 1,
+                  "operator": "above_or_equal",
+                  "unit": "",
+                  "color": "#e5484d",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.error",
+                        "temporality": "cumulative",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "endpoints-monitored": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Endpoints Monitored",
+            "description": "Number of endpoints reporting probe results"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "count",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "error-messages-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Transport Error Messages",
+            "description": "The actual failure text per endpoint (error.message on httpcheck.error), with how many probes hit it. This is the why behind the Transport Errors count: refused connections, DNS failures, TLS verification errors."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": null,
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Failed Probes",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "Failed Probes",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.error",
+                        "temporality": "cumulative",
+                        "timeAggregation": "sum",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url AND error.message EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "error.message",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "latency-by-endpoint-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Response Time by Endpoint",
+            "description": "Mean total probe duration per endpoint, slowest first"
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "Avg Response Time": "ms",
+                  "__result_0": "ms"
+                },
+                "decimalPrecision": "1"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Avg Response Time",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "Avg Response Time",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "max-response-size": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Max Response Size",
+            "description": "Largest response body seen in the window"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.response.size",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "max",
+                        "reduceTo": "max"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "non-2xx-by-endpoint": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Non-2xx Responses by Endpoint",
+            "description": "Count of probes that got an HTTP response outside 2xx, split by endpoint and status class."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.status",
+                        "temporality": "cumulative",
+                        "timeAggregation": "sum",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url AND http.status_class EXISTS AND http.status_class != '2xx'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "http.status_class",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": "{{http.url}} - {{http.status_class}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "request-write-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Write Duration",
+            "description": "Time spent writing the request to the wire"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.client.request.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "response-read-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Response Read Duration",
+            "description": "Time spent receiving the response after the request was sent"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.response.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "response-size-by-endpoint": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Response Size by Endpoint",
+            "description": "Body size per endpoint; a sudden drop often means an error page replaced the real response"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "bytes",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": true
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.response.size",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "status-class-share": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Status Class Distribution",
+            "description": "Share of probe results per HTTP status class"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.status",
+                        "temporality": "cumulative",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url AND http.status_class EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.status_class",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": "{{http.status_class}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "status-codes-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Status Codes by Endpoint",
+            "description": "Probe count per HTTP status code each endpoint returned in the window"
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": null,
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Probes",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "Probes",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.status",
+                        "temporality": "cumulative",
+                        "timeAggregation": "sum",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url AND http.status_class EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "http.status_code",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "number"
+                      },
+                      {
+                        "name": "http.status_class",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "tcp-connect-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "TCP Connect Duration",
+            "description": "Time to establish the transport connection. Probes that reuse a keep-alive connection report zero and are filtered out, so an endpoint appears here only while it is opening new connections."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.client.connection.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}",
+                    "having": {
+                      "expression": "__result > 0"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "tls-cert-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "TLS Certificates",
+            "description": "Time remaining per certificate with issuer and common name, soonest expiry first"
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": {
+                  "Time Remaining": "s",
+                  "__result_0": "s"
+                },
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Time Remaining",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "Time Remaining",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.tls.cert_remaining",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "min",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "http.tls.issuer",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "http.tls.cn",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "http.tls.san",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "asc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "tls-handshake-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "TLS Handshake Duration",
+            "description": "Time spent on the TLS handshake. Plain HTTP endpoints and reused connections report zero and are filtered out."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.tls.handshake.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "total-response-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Response Time by Endpoint",
+            "description": "httpcheck.duration: full probe wall time, DNS through response body"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ms",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.duration",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "transport-errors-by-endpoint": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Transport Errors by Endpoint",
+            "description": "httpcheck.error: probe never got an HTTP response (refused connection, DNS failure, TLS rejection)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.error",
+                        "temporality": "cumulative",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": "{{http.url}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "validation-failures": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Validation Failures",
+            "description": "Total failed content assertions in the window (httpcheck.validation.failed)."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "0"
+              },
+              "thresholds": [
+                {
+                  "value": 1,
+                  "operator": "above_or_equal",
+                  "unit": "",
+                  "color": "#e5484d",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Failed Checks",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "Failed Checks",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.validation.failed",
+                        "temporality": "cumulative",
+                        "timeAggregation": "sum",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "validation-failures-by-endpoint": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Validation Failures by Endpoint and Check",
+            "description": "Failed assertions over time, split by endpoint and validation type (contains, not_contains). Endpoints with no failures are filtered out."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.validation.failed",
+                        "temporality": "cumulative",
+                        "timeAggregation": "sum",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "validation.type",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": "{{http.url}} - {{validation.type}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "validation-failures-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Failed Content Checks",
+            "description": "Which assertion failed, on which endpoint, how many times. Cross-check against Status Codes by Endpoint: rows here with a 2xx there are the silent failures."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "columnUnits": null,
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Failed Checks",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "Failed Checks",
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "httpcheck.validation.failed",
+                        "temporality": "cumulative",
+                        "timeAggregation": "sum",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND http.url IN $http_url"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "http.url",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      },
+                      {
+                        "name": "validation.type",
+                        "signal": "metrics",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result",
+                          "signal": "",
+                          "fieldContext": "",
+                          "fieldDataType": ""
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": "__result > 0"
+                    },
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      },
+      "validation-pass-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Validation Pass Rate",
+            "description": "Share of response-content assertions that passed. A 200 with the wrong body fails here while every reachability panel stays green."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "3"
+              },
+              "thresholds": [
+                {
+                  "value": 1,
+                  "operator": "below",
+                  "unit": "",
+                  "color": "#e5484d",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "Pass Rate",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "httpcheck.validation.passed",
+                              "temporality": "cumulative",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND http.url IN $http_url"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 10000,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 0,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "httpcheck.validation.failed",
+                              "temporality": "cumulative",
+                              "timeAggregation": "sum",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND http.url IN $http_url"
+                          },
+                          "groupBy": null,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "selectFields": null,
+                          "limit": 10000,
+                          "secondaryAggregations": null,
+                          "functions": null,
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / (A + B)",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result",
+                                "signal": "",
+                                "fieldContext": "",
+                                "fieldDataType": ""
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "functions": null,
+                          "legend": "Validation Pass Rate"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": null
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Availability",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/avail-pct"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/endpoints-monitored"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/endpoints-in-error"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/avg-response-time"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/availability-by-endpoint"
+              }
+            },
+            {
+              "x": 0,
+              "y": 10,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/transport-errors-by-endpoint"
+              }
+            },
+            {
+              "x": 6,
+              "y": 10,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/status-class-share"
+              }
+            },
+            {
+              "x": 0,
+              "y": 23,
+              "width": 12,
+              "height": 11,
+              "content": {
+                "$ref": "#/spec/panels/endpoint-availability-table"
+              }
+            },
+            {
+              "x": 0,
+              "y": 17,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/error-messages-table"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Content Validation",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/validation-pass-rate"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/validation-failures"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/validation-failures-by-endpoint"
+              }
+            },
+            {
+              "x": 0,
+              "y": 10,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/validation-failures-table"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Latency",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/total-response-time"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/dns-lookup-duration"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tcp-connect-duration"
+              }
+            },
+            {
+              "x": 0,
+              "y": 13,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tls-handshake-duration"
+              }
+            },
+            {
+              "x": 6,
+              "y": 13,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/request-write-duration"
+              }
+            },
+            {
+              "x": 0,
+              "y": 19,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/response-read-duration"
+              }
+            },
+            {
+              "x": 6,
+              "y": 19,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/latency-by-endpoint-table"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Payload & TLS",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 4,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/cert-remaining-min"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 4,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/avg-response-size"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 4,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/max-response-size"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/response-size-by-endpoint"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/cert-remaining-by-endpoint"
+              }
+            },
+            {
+              "x": 0,
+              "y": 9,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tls-cert-table"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "HTTP Status Detail",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 8,
+              "content": {
+                "$ref": "#/spec/panels/status-codes-table"
+              }
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/non-2xx-by-endpoint"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "duration": "",
+    "refreshInterval": "",
+    "links": null
+  },
+  "tags": [
+    {
+      "key": "tag",
+      "value": "uptime"
+    },
+    {
+      "key": "tag",
+      "value": "httpcheck"
+    },
+    {
+      "key": "tag",
+      "value": "synthetic-monitoring"
+    },
+    {
+      "key": "tag",
+      "value": "opentelemetry"
+    }
+  ],
+  "image": "",
+  "schemaVersion": "v6",
+  "generateName": true
+}
