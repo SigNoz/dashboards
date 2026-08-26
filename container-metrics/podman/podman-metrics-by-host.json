@@ -1,0 +1,1037 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    { "key": "tag", "value": "container" },
+    { "key": "tag", "value": "podman" },
+    { "key": "signal", "value": "metrics" },
+    { "key": "receiver", "value": "podmanreceiver" }
+  ],
+  "spec": {
+    "display": {
+      "name": "Container Metrics (Podman)",
+      "description": "Podman container CPU, memory, network, and block I/O from the OpenTelemetry Collector podman_stats receiver. Every panel filters on container.runtime = 'podman', so the dashboard stays correct on hosts that also run Docker. Use the host.name and container.name variables to narrow the view. The receiver reports only running containers, so a container that stops disappears from these panels."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "host.name",
+          "display": {
+            "name": "host.name",
+            "description": "Host running the Podman containers"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": { "name": "host.name", "signal": "metrics" }
+          }
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "container.name",
+          "display": {
+            "name": "container.name",
+            "description": "Podman container name"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": { "name": "container.name", "signal": "metrics" }
+          }
+        }
+      }
+    ],
+    "links": [],
+    "panels": {
+      "containers-running": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Containers Reporting",
+            "description": "Number of Podman containers reporting stats. The receiver only reports running containers."
+          },
+          "links": [],
+          "plugin": { "kind": "signoz/NumberPanel", "spec": {} },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.cpu.percent",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "count",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "count(latest(container.cpu.percent))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "avg-cpu-percent": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg CPU %",
+            "description": "Average container.cpu.percent across the selected containers."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": { "formatting": { "unit": "percent", "decimalPrecision": "2" } }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.cpu.percent",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "avg(avg(container.cpu.percent))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "avg-memory-percent": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Avg Memory %",
+            "description": "Average container.memory.percent across the selected containers."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": { "formatting": { "unit": "percent", "decimalPrecision": "2" } }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.memory.percent",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "avg(avg(container.memory.percent))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "total-memory-used": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Memory Used",
+            "description": "Sum of container.memory.usage.total across the selected containers."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": { "formatting": { "unit": "bytes" } }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.memory.usage.total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(avg(container.memory.usage.total))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "container-inventory": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Containers",
+            "description": "One row per container: host, image, average CPU %, average memory %, and last memory usage."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": { "A": "percent", "B": "percent", "C": "bytes" },
+                "decimalPrecision": "3"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "container_inventory",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "stepInterval": 60,
+                          "legend": "CPU %",
+                          "aggregations": [
+                            {
+                              "metricName": "container.cpu.percent",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "groupBy": [
+                            { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "container.image.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                          ],
+                          "filter": {
+                            "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                          },
+                          "order": [
+                            { "key": { "name": "avg(avg(container.cpu.percent))" }, "direction": "desc" }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "stepInterval": 60,
+                          "legend": "Memory %",
+                          "aggregations": [
+                            {
+                              "metricName": "container.memory.percent",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "groupBy": [
+                            { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "container.image.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                          ],
+                          "filter": {
+                            "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                          },
+                          "order": [
+                            { "key": { "name": "avg(avg(container.memory.percent))" }, "direction": "desc" }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "C",
+                          "stepInterval": 60,
+                          "legend": "Memory Used",
+                          "aggregations": [
+                            {
+                              "metricName": "container.memory.usage.total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "groupBy": [
+                            { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "container.image.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                          ],
+                          "filter": {
+                            "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                          },
+                          "order": [
+                            { "key": { "name": "sum(avg(container.memory.usage.total))" }, "direction": "desc" }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cpu-percent": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Percent",
+            "description": "container.cpu.percent per container, the same number podman stats prints in its CPU% column."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "percent" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.cpu.percent",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "avg(avg(container.cpu.percent))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cpu-cores-total": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Cores Used",
+            "description": "Rate of container.cpu.usage.total in CPU seconds per second, so 1.0 means the container consumes one full core. The receiver truncates this counter to whole seconds, so an idle container produces a spiky line that steps by 1/step_interval. Read CPU Percent for fine-grained CPU load."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": { "legend": { "position": "bottom" } }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.cpu.usage.total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(rate(container.cpu.usage.total))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cpu-cores-system": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "System CPU Cores Used",
+            "description": "Rate of container.cpu.usage.system, the kernel-mode share of the container's CPU time. A high ratio against CPU Cores Used points at syscall or I/O pressure. The receiver truncates this counter to whole seconds, so it reads a flat zero until a container accumulates a full second of kernel time."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": { "legend": { "position": "bottom" } }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.cpu.usage.system",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(rate(container.cpu.usage.system))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "memory-percent": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Percent",
+            "description": "container.memory.percent per container: memory usage against the container's memory limit."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "percent" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.memory.percent",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "avg(avg(container.memory.percent))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "memory-used": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Usage",
+            "description": "container.memory.usage.total per container."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "bytes" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.memory.usage.total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(avg(container.memory.usage.total))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "memory-used-vs-limit": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Usage vs Limit",
+            "description": "container.memory.usage.total plotted against container.memory.usage.limit on a log scale, since an unlimited container's limit line sits three orders of magnitude above its usage. When a container has no explicit limit, the limit line reports the host's total memory."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "bytes" },
+              "axes": { "isLogScale": true }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "memory_vs_limit",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "stepInterval": 60,
+                          "aggregations": [
+                            {
+                              "metricName": "container.memory.usage.total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                          ],
+                          "legend": "{{container.name}} @ {{host.name}} used",
+                          "filter": {
+                            "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                          },
+                          "order": [
+                            { "key": { "name": "sum(avg(container.memory.usage.total))" }, "direction": "desc" }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "stepInterval": 60,
+                          "aggregations": [
+                            {
+                              "metricName": "container.memory.usage.limit",
+                              "temporality": "cumulative",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "groupBy": [
+                            { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                            { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                          ],
+                          "legend": "{{container.name}} @ {{host.name}} limit",
+                          "filter": {
+                            "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                          },
+                          "order": [
+                            { "key": { "name": "sum(avg(container.memory.usage.limit))" }, "direction": "desc" }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "memory-share": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Share by Container",
+            "description": "Share of the selected containers' total memory usage held by each container."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "bytes" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.memory.usage.total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(avg(container.memory.usage.total))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "network-rx": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Network Bytes Received",
+            "description": "Rate of container.network.io.usage.rx_bytes per container."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "Bps" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.network.io.usage.rx_bytes",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(rate(container.network.io.usage.rx_bytes))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "network-tx": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Network Bytes Sent",
+            "description": "Rate of container.network.io.usage.tx_bytes per container."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "Bps" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.network.io.usage.tx_bytes",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(rate(container.network.io.usage.tx_bytes))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "blockio-read": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Block I/O Read",
+            "description": "Rate of container.blockio.io_service_bytes_recursive.read, the bytes the container reads from disk."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "Bps" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.blockio.io_service_bytes_recursive.read",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(rate(container.blockio.io_service_bytes_recursive.read))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "blockio-write": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Block I/O Write",
+            "description": "Rate of container.blockio.io_service_bytes_recursive.write, the bytes the container writes to disk."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": { "position": "bottom" },
+              "formatting": { "unit": "Bps" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "stepInterval": 60,
+                    "aggregations": [
+                      {
+                        "metricName": "container.blockio.io_service_bytes_recursive.write",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "groupBy": [
+                      { "name": "container.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" },
+                      { "name": "host.name", "fieldContext": "resource", "fieldDataType": "string", "signal": "metrics" }
+                    ],
+                    "legend": "{{container.name}} @ {{host.name}}",
+                    "filter": {
+                      "expression": "container.runtime = 'podman' AND host.name IN $host.name AND container.name IN $container.name"
+                    },
+                    "order": [
+                      { "key": { "name": "sum(rate(container.blockio.io_service_bytes_recursive.write))" }, "direction": "desc" }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": { "title": "Overview", "collapse": { "open": true } },
+          "items": [
+            { "x": 0, "y": 0, "width": 3, "height": 3, "content": { "$ref": "#/spec/panels/containers-running" } },
+            { "x": 3, "y": 0, "width": 3, "height": 3, "content": { "$ref": "#/spec/panels/avg-cpu-percent" } },
+            { "x": 6, "y": 0, "width": 3, "height": 3, "content": { "$ref": "#/spec/panels/avg-memory-percent" } },
+            { "x": 9, "y": 0, "width": 3, "height": 3, "content": { "$ref": "#/spec/panels/total-memory-used" } },
+            { "x": 0, "y": 3, "width": 12, "height": 7, "content": { "$ref": "#/spec/panels/container-inventory" } }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": { "title": "CPU", "collapse": { "open": true } },
+          "items": [
+            { "x": 0, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/cpu-percent" } },
+            { "x": 6, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/cpu-cores-total" } },
+            { "x": 0, "y": 7, "width": 12, "height": 7, "content": { "$ref": "#/spec/panels/cpu-cores-system" } }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": { "title": "Memory", "collapse": { "open": true } },
+          "items": [
+            { "x": 0, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/memory-percent" } },
+            { "x": 6, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/memory-used" } },
+            { "x": 0, "y": 7, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/memory-used-vs-limit" } },
+            { "x": 6, "y": 7, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/memory-share" } }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": { "title": "Network", "collapse": { "open": true } },
+          "items": [
+            { "x": 0, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/network-rx" } },
+            { "x": 6, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/network-tx" } }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": { "title": "Block I/O", "collapse": { "open": true } },
+          "items": [
+            { "x": 0, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/blockio-read" } },
+            { "x": 6, "y": 0, "width": 6, "height": 7, "content": { "$ref": "#/spec/panels/blockio-write" } }
+          ]
+        }
+      }
+    ]
+  }
+}
