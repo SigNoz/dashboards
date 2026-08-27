@@ -1,0 +1,1488 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "technology",
+      "value": "cursor"
+    },
+    {
+      "key": "domain",
+      "value": "ai-coding-agent"
+    },
+    {
+      "key": "signal",
+      "value": "traces"
+    },
+    {
+      "key": "service",
+      "value": "ide-agent"
+    }
+  ],
+  "spec": {
+    "display": {
+      "description": "Cursor IDE agent activity and token usage, built from OpenTelemetry hook traces under service.name ide-agent. Covers token spend by model, turn and tool latency, tool mix, and tool failures. Token panels filter to the afterAgentResponse event because Cursor emits identical token counts on both afterAgentResponse and Stop. Cursor IDE only: the Cursor CLI does not emit the hook events these panels depend on.",
+      "name": "Cursor IDE \u2014 Agent Observability"
+    },
+    "duration": "",
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Overview"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/kpi-input-tokens"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/kpi-output-tokens"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 3,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/kpi-turns"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 6,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/kpi-failure-rate"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 9,
+              "y": 0
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Tokens"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/ts-input-tokens"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/ts-output-tokens"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/tbl-tokens-by-model"
+              },
+              "height": 6,
+              "width": 12,
+              "x": 0,
+              "y": 7
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Latency"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/ts-turn-latency"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/ts-tool-latency"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Tools"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/pie-tool-mix"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/ts-tool-calls"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/tbl-tool-perf"
+              },
+              "height": 6,
+              "width": 12,
+              "x": 0,
+              "y": 7
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Errors"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/ts-tool-failures"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/list-failures"
+              },
+              "height": 7,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            }
+          ]
+        }
+      }
+    ],
+    "links": [],
+    "panels": {
+      "kpi-input-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Total input tokens. Filtered to afterAgentResponse to avoid double-counting against the Stop span.",
+            "name": "Input Tokens"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "0",
+                "unit": ""
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'afterAgentResponse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.usage.input_tokens)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "kpi-output-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Total output tokens. Typically 50x to 350x smaller than input.",
+            "name": "Output Tokens"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "0",
+                "unit": ""
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.output_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'afterAgentResponse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.usage.output_tokens)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "kpi-turns": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Count of gen_ai.client.generation spans, one per agent turn",
+            "name": "Agent Turns"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "0",
+                "unit": ""
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND name = 'gen_ai.client.generation' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "kpi-failure-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "PostToolUseFailure / (PostToolUse + PostToolUseFailure). Counting has_error instead would inflate this roughly 2x.",
+            "name": "Tool Failure Rate"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "percentunit"
+              },
+              "thresholds": [
+                {
+                  "color": "#e5484d",
+                  "format": "text",
+                  "operator": "above",
+                  "unit": "",
+                  "value": 0.1
+                }
+              ],
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "failure_rate",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUseFailure' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "",
+                          "limit": 10000,
+                          "name": "A",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "count()",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "",
+                          "limit": 10000,
+                          "name": "B",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "count()",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "disabled": false,
+                          "expression": "A / (A + B)",
+                          "functions": null,
+                          "legend": "Failure Rate",
+                          "limit": 100,
+                          "name": "F1",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "__result",
+                                "signal": ""
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ts-input-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Charted separately from output because input dominates by two orders of magnitude",
+            "name": "Input Tokens Over Time"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "alias": "input_tokens",
+                        "expression": "sum(gen_ai.usage.input_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'afterAgentResponse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "Input Tokens",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.usage.input_tokens)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ts-output-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Output tokens per turn over time",
+            "name": "Output Tokens Over Time"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "alias": "output_tokens",
+                        "expression": "sum(gen_ai.usage.output_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'afterAgentResponse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "Output Tokens",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.usage.output_tokens)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tbl-tokens-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Cursor switches models within a single session, so this must group at span level",
+            "name": "Tokens by Model"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": null,
+                "decimalPrecision": "2"
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "alias": "Turns",
+                        "expression": "count()"
+                      },
+                      {
+                        "alias": "Input Tokens",
+                        "expression": "sum(gen_ai.usage.input_tokens)"
+                      },
+                      {
+                        "alias": "Output Tokens",
+                        "expression": "sum(gen_ai.usage.output_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'afterAgentResponse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo AND gen_ai.request.model IN $model"
+                    },
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.usage.input_tokens)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ts-turn-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Percentiles of the gen_ai.client.generation span, the true end-to-end turn duration",
+            "name": "Turn Duration"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "ns"
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "alias": "p50",
+                        "expression": "p50(duration_nano)"
+                      },
+                      {
+                        "alias": "p95",
+                        "expression": "p95(duration_nano)"
+                      },
+                      {
+                        "alias": "p99",
+                        "expression": "p99(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND name = 'gen_ai.client.generation' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "p95(duration_nano)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ts-tool-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "p95 of PostToolUse spans, the real tool execution time",
+            "name": "Tool Latency p95 by Tool"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "ns"
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "alias": "p95",
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                    },
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.client.tool_name",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.client.tool_name}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "p95(duration_nano)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "pie-tool-mix": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Share of completed tool calls per tool",
+            "name": "Tool Call Distribution"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUse' AND gen_ai.client.tool_name EXISTS AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                    },
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.client.tool_name",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.client.tool_name}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ts-tool-calls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Completed tool calls per interval, by tool",
+            "name": "Tool Calls Over Time"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUse' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                    },
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.client.tool_name",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.client.tool_name}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tbl-tool-perf": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Call volume and latency per tool",
+            "name": "Tool Performance"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": {
+                  "Avg Latency": "ns",
+                  "p95 Latency": "ns"
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "alias": "Calls",
+                        "expression": "count()"
+                      },
+                      {
+                        "alias": "Avg Latency",
+                        "expression": "avg(duration_nano)"
+                      },
+                      {
+                        "alias": "p95 Latency",
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUse' AND gen_ai.client.tool_name EXISTS AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                    },
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.client.tool_name",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ts-tool-failures": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "PostToolUseFailure events by tool",
+            "name": "Tool Failures Over Time"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUseFailure' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                    },
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.client.tool_name",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.client.tool_name}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "list-failures": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Individual failed tool calls, newest first",
+            "name": "Recent Tool Failures"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "fieldContext": "span",
+                  "fieldDataType": "",
+                  "name": "timestamp",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "name": "gen_ai.client.tool_name",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "name": "gen_ai.request.model",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "span",
+                  "fieldDataType": "",
+                  "name": "duration_nano",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "resource",
+                  "fieldDataType": "string",
+                  "name": "vcs.repository.name",
+                  "signal": "traces"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name = 'ide-agent' AND gen_ai.client.hook.event = 'PostToolUseFailure' AND gen_ai.client.name IN $agent AND vcs.repository.name IN $repo"
+                    },
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "timestamp",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "selectFields": [
+                      {
+                        "fieldContext": "span",
+                        "fieldDataType": "",
+                        "name": "timestamp",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.client.tool_name",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "span",
+                        "fieldDataType": "",
+                        "name": "duration_nano",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "resource",
+                        "fieldDataType": "string",
+                        "name": "vcs.repository.name",
+                        "signal": "traces"
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "refreshInterval": "",
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "capturingRegexp": "",
+          "customAllValue": "",
+          "display": {
+            "description": "Coding agent (service.name is always ide-agent, so the agent is identified here)",
+            "name": "Agent"
+          },
+          "name": "agent",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "gen_ai.client.name",
+              "signal": "traces"
+            }
+          },
+          "sort": "none"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "capturingRegexp": "",
+          "customAllValue": "",
+          "display": {
+            "description": "Filter by repository",
+            "name": "Repository"
+          },
+          "name": "repo",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "vcs.repository.name",
+              "signal": "traces"
+            }
+          },
+          "sort": "none"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "capturingRegexp": "",
+          "customAllValue": "",
+          "display": {
+            "description": "Cursor switches models mid-session, so this filters at span level",
+            "name": "Model"
+          },
+          "name": "model",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "gen_ai.request.model",
+              "signal": "traces"
+            }
+          },
+          "sort": "none"
+        }
+      }
+    ]
+  }
+}
