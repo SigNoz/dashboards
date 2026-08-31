@@ -1,0 +1,1387 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "technology",
+      "value": "cline"
+    },
+    {
+      "key": "domain",
+      "value": "ai-coding-agent"
+    },
+    {
+      "key": "signal",
+      "value": "logs"
+    },
+    {
+      "key": "service",
+      "value": "cline"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Cline Coding Agent Usage",
+      "description": "Token usage, cost, latency and tool activity for the Cline VS Code extension, under service.name cline. Token, cost, tool and error panels read task.* events; the two latency panels read cline.* metrics. Requires CLINE_BUNDLE_OVERRIDE=legacy, since the default bundle emits neither."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "model",
+          "display": {
+            "name": "Model",
+            "description": "Filter token, cost and latency panels by model"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "model",
+              "signal": "logs"
+            }
+          }
+        }
+      }
+    ],
+    "links": [],
+    "panels": {
+      "ov-input-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Input Tokens",
+            "description": "Total prompt tokens across all tasks"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "0"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(tokensIn)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tokens'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(tokensIn)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-output-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Output Tokens",
+            "description": "Total completion tokens across all tasks"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "0"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(tokensOut)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tokens'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(tokensOut)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-cache-read": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cache Read Tokens",
+            "description": "Tokens served from the provider prompt cache. Reported separately from input tokens, not included in them."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "0"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(cacheReadTokens)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tokens'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(cacheReadTokens)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-cost": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Cost (USD)",
+            "description": "Sum of totalCost. Reads 0 on Cline's own bundled provider and populates with a bring-your-own-key provider."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "4"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(totalCost)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tokens'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(totalCost)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-tasks": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tasks Started",
+            "description": "Count of task.created events"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.created'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-tool-calls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls",
+            "description": "Count of task.tool_used events"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tool_used'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-turns": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Conversation Turns",
+            "description": "Count of task.conversation_turn events"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.conversation_turn'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Provider API Errors",
+            "description": "Count of task.provider_api_error events"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2"
+              },
+              "thresholds": [
+                {
+                  "value": 1,
+                  "color": "#e5484d",
+                  "operator": "above_or_equal",
+                  "format": "text"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.provider_api_error'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tokens-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Token Usage Over Time",
+            "description": "Input vs output tokens per interval"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "tokens",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "logs",
+                          "name": "A",
+                          "legend": "Input",
+                          "aggregations": [
+                            {
+                              "expression": "sum(tokensIn)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'cline' AND body = 'task.tokens' AND model IN $model"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(tokensIn)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "logs",
+                          "name": "B",
+                          "legend": "Output",
+                          "aggregations": [
+                            {
+                              "expression": "sum(tokensOut)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'cline' AND body = 'task.tokens' AND model IN $model"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(tokensOut)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tokens-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Input Tokens by Model",
+            "description": "Prompt-token volume split per model"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(tokensIn)"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(tokensIn)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tokens' AND model IN $model"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "model",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      }
+                    ],
+                    "legend": "{{model}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cost-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cost Over Time by Model",
+            "description": "Sum of totalCost per interval, split per model."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "decimalPrecision": "4"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(totalCost)"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(totalCost)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tokens' AND model IN $model"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "model",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      }
+                    ],
+                    "legend": "{{model}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cache-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cache Read vs Write Tokens",
+            "description": "Prompt-cache effectiveness. High read with low write means the cache is paying off."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "cache",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "logs",
+                          "name": "A",
+                          "legend": "Cache read",
+                          "aggregations": [
+                            {
+                              "expression": "sum(cacheReadTokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'cline' AND body = 'task.tokens' AND model IN $model"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(cacheReadTokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "logs",
+                          "name": "B",
+                          "legend": "Cache write",
+                          "aggregations": [
+                            {
+                              "expression": "sum(cacheWriteTokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name = 'cline' AND body = 'task.tokens' AND model IN $model"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(cacheWriteTokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "api-duration": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "API Duration (p50 / p95 / p99)",
+            "description": "Model request duration from the cline.api.duration.seconds histogram. Available only as a metric, not in the events."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "duration",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "legend": "p50",
+                          "aggregations": [
+                            {
+                              "metricName": "cline.api.duration.seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "legend": "p95",
+                          "aggregations": [
+                            {
+                              "metricName": "cline.api.duration.seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p95"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "C",
+                          "legend": "p99",
+                          "aggregations": [
+                            {
+                              "metricName": "cline.api.duration.seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ttft": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Time To First Token (p95)",
+            "description": "How long before the model starts streaming. The number a developer actually feels."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "cline.api.ttft.seconds.bucket",
+                        "temporality": "cumulative",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p95"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "model",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{model}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "event-mix": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Event Mix",
+            "description": "Share of each Cline event type. The event name is the log body."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "legend": {
+                "position": "right"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "groupBy": [
+                      {
+                        "name": "body",
+                        "fieldContext": "log",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      }
+                    ],
+                    "legend": "{{body}}",
+                    "filter": {
+                      "expression": "service.name = 'cline'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-usage": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Usage",
+            "description": "Which tools the agent reaches for, and whether they succeed. The model key on these events is modelId, not model."
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Calls"
+                      }
+                    ],
+                    "groupBy": [
+                      {
+                        "name": "tool",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      },
+                      {
+                        "name": "success",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "bool",
+                        "signal": "logs"
+                      },
+                      {
+                        "name": "autoApproved",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "bool",
+                        "signal": "logs"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.tool_used'"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "api-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Recent Provider API Errors",
+            "description": "Error text, class and failure phase per failed model request"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "name": "timestamp",
+                  "fieldContext": "log",
+                  "signal": "logs"
+                },
+                {
+                  "name": "errorType",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "signal": "logs"
+                },
+                {
+                  "name": "errorMessage",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "signal": "logs"
+                },
+                {
+                  "name": "failurePhase",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "signal": "logs"
+                },
+                {
+                  "name": "model",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "signal": "logs"
+                },
+                {
+                  "name": "ulid",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "signal": "logs"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "logs",
+                    "name": "A",
+                    "filter": {
+                      "expression": "service.name = 'cline' AND body = 'task.provider_api_error'"
+                    },
+                    "selectFields": [
+                      {
+                        "name": "timestamp",
+                        "fieldContext": "log",
+                        "signal": "logs"
+                      },
+                      {
+                        "name": "errorType",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      },
+                      {
+                        "name": "errorMessage",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      },
+                      {
+                        "name": "failurePhase",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      },
+                      {
+                        "name": "model",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      },
+                      {
+                        "name": "ulid",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "logs"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "timestamp"
+                        },
+                        "direction": "desc"
+                      },
+                      {
+                        "key": {
+                          "name": "id"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 50
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Overview",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-input-tokens"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-output-tokens"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-cache-read"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-cost"
+              }
+            },
+            {
+              "x": 0,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-tasks"
+              }
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-tool-calls"
+              }
+            },
+            {
+              "x": 6,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-turns"
+              }
+            },
+            {
+              "x": 9,
+              "y": 3,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-errors"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Tokens & Cost",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tokens-over-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tokens-by-model"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/cost-over-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/cache-over-time"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Latency",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/api-duration"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/ttft"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Agent Activity & Errors",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/event-mix"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-usage"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 12,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/api-errors"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
