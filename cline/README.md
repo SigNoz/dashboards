@@ -4,7 +4,7 @@
 
 This dashboard gives a clear view into Cline usage and cost across a team. It covers token spend by model, prompt-cache effectiveness, request latency and time to first token, tool mix and failures, and provider API errors. Built from OpenTelemetry events and metrics under `service.name` `cline`, which require `CLINE_BUNDLE_OVERRIDE=legacy`.
 
-To start sending Cline telemetry to SigNoz, follow the [Cline observability guide](https://signoz.io/docs/cline-observability/).
+To start sending Cline telemetry to SigNoz, follow the [Cline monitoring guide](https://signoz.io/docs/cline-monitoring/).
 
 ## Dashboard panels
 
