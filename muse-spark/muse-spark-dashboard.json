@@ -1,0 +1,1937 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "technology",
+      "value": "muse-spark"
+    },
+    {
+      "key": "domain",
+      "value": "llm"
+    },
+    {
+      "key": "signal",
+      "value": "traces"
+    },
+    {
+      "key": "service",
+      "value": "muse-spark"
+    }
+  ],
+  "spec": {
+    "display": {
+      "description": "Cost, token and latency monitoring for Meta Muse Spark via the Meta Model API, built on gen_ai.* trace attributes. Panels filter gen_ai.provider.name = 'meta' so Muse Spark calls stay separate from other providers reached through the same OpenAI-compatible SDK.",
+      "name": "Meta Muse Spark \u2014 LLM Monitoring"
+    },
+    "duration": "",
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Overview"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/total-cost"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/total-requests"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 3,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/error-rate"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 6,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/cache-hit-rate"
+              },
+              "height": 3,
+              "width": 3,
+              "x": 9,
+              "y": 0
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Cost and Tokens"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/cost-over-time"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/cost-by-model"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/tokens-by-type"
+              },
+              "height": 6,
+              "width": 12,
+              "x": 0,
+              "y": 6
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/model-table"
+              },
+              "height": 6,
+              "width": 12,
+              "x": 0,
+              "y": 12
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Latency"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/duration-percentiles"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/ttfc-percentiles"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/slowest-calls"
+              },
+              "height": 6,
+              "width": 12,
+              "x": 0,
+              "y": 6
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "collapse": {
+              "open": true
+            },
+            "title": "Reliability"
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/requests-over-time"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/errors-over-time"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/finish-reasons"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 0,
+              "y": 6
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/recent-errors"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 6,
+              "y": 6
+            }
+          ]
+        }
+      }
+    ],
+    "links": [],
+    "panels": {
+      "total-cost": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Sum of gen_ai.cost.total_cost. Correct only when cached input is priced separately; span-derived cost overstates by 3-5x without it.",
+            "name": "Total Cost"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "4",
+                "unit": "usd"
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.cost.total_cost)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.cost.total_cost)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "total-requests": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Muse Spark calls in the selected window",
+            "name": "Requests"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "error-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Share of Muse Spark calls that errored",
+            "name": "Error Rate"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "percentunit"
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "error_rate",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND has_error = true AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "",
+                          "limit": 10000,
+                          "name": "A",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "count()",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "",
+                          "limit": 10000,
+                          "name": "B",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "count()",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "disabled": false,
+                          "expression": "A / B",
+                          "functions": null,
+                          "legend": "Error Rate",
+                          "limit": 100,
+                          "name": "F1",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "__result",
+                                "signal": ""
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cache-hit-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "cache_read tokens / input tokens. Cached input is 8x cheaper on the standard tier, so this drives real spend.",
+            "name": "Prompt Cache Hit Rate"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "percentunit"
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "cache_hit_rate",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.cache_read.input_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "",
+                          "limit": 10000,
+                          "name": "A",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "sum(gen_ai.usage.cache_read.input_tokens)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "",
+                          "limit": 10000,
+                          "name": "B",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "sum(gen_ai.usage.input_tokens)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "disabled": false,
+                          "expression": "A / B",
+                          "functions": null,
+                          "legend": "Cache Hit Rate",
+                          "limit": 100,
+                          "name": "F1",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "__result",
+                                "signal": ""
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cost-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Sum of true cost per model. The 12x price gap between standard and contributor tiers makes the model split essential.",
+            "name": "Cost Over Time by Model"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "usd"
+              },
+              "legend": {
+                "customColors": {
+                  "muse-spark-1.2": "#E69F00",
+                  "muse-spark-1.2-contributor": "#009E73",
+                  "muse-spark-1.3": "#0072B2",
+                  "muse-spark-1.3-contributor": "#CC79A7"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.cost.total_cost)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "{{gen_ai.request.model}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.cost.total_cost)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": "",
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cost-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Which model id is actually spending the money",
+            "name": "Cost Share by Model"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": {
+                  "muse-spark-1.2": "#E69F00",
+                  "muse-spark-1.2-contributor": "#009E73",
+                  "muse-spark-1.3": "#0072B2",
+                  "muse-spark-1.3-contributor": "#CC79A7"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.cost.total_cost)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "{{gen_ai.request.model}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "sum(gen_ai.cost.total_cost)",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": "",
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tokens-by-type": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Input, output, reasoning and cache-read tokens. Reasoning is a subset of output; cache-read is a subset of input.",
+            "name": "Token Usage by Type"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": {
+                  "A": "#0072B2",
+                  "B": "#E69F00",
+                  "C": "#D55E00",
+                  "Cache read (of input)": "#56B4E9",
+                  "D": "#56B4E9",
+                  "Input": "#0072B2",
+                  "Output": "#E69F00",
+                  "Reasoning (of output)": "#D55E00"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "tokens",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "Input",
+                          "limit": 100,
+                          "name": "A",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "sum(gen_ai.usage.input_tokens)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "Output",
+                          "limit": 100,
+                          "name": "B",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "sum(gen_ai.usage.output_tokens)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.reasoning.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "Reasoning (of output)",
+                          "limit": 100,
+                          "name": "C",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "sum(gen_ai.usage.reasoning.output_tokens)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.cache_read.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "Cache read (of input)",
+                          "limit": 100,
+                          "name": "D",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "sum(gen_ai.usage.cache_read.input_tokens)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "model-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Requests, tokens, cost and latency per model id",
+            "name": "Per-Model Usage and Cost"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": {
+                  "Avg Latency": "ns",
+                  "Cost": "usd"
+                },
+                "decimalPrecision": "2"
+              },
+              "thresholds": null,
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "alias": "Requests",
+                        "expression": "count()"
+                      },
+                      {
+                        "alias": "Cost",
+                        "expression": "sum(gen_ai.cost.total_cost)"
+                      },
+                      {
+                        "alias": "Input Tokens",
+                        "expression": "sum(gen_ai.usage.input_tokens)"
+                      },
+                      {
+                        "alias": "Output Tokens",
+                        "expression": "sum(gen_ai.usage.output_tokens)"
+                      },
+                      {
+                        "alias": "Reasoning Tokens",
+                        "expression": "sum(gen_ai.usage.reasoning.output_tokens)"
+                      },
+                      {
+                        "alias": "Avg Latency",
+                        "expression": "avg(duration_nano)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "duration-percentiles": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "End-to-end Muse Spark call duration",
+            "name": "Call Duration (p50 / p95 / p99)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "ns"
+              },
+              "legend": {
+                "customColors": {
+                  "A": "#56B4E9",
+                  "B": "#0072B2",
+                  "C": "#D55E00",
+                  "p50": "#56B4E9",
+                  "p95": "#0072B2",
+                  "p99": "#D55E00"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "latency",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "p50(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "p50",
+                          "limit": 100,
+                          "name": "A",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "p50(duration_nano)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "p95(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "p95",
+                          "limit": 100,
+                          "name": "B",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "p95(duration_nano)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "p99(duration_nano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "p99",
+                          "limit": 100,
+                          "name": "C",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "p99(duration_nano)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ttfc-percentiles": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Seconds of reasoning before the first visible token on streaming calls. Measured at 4.79s of a 5.0s call, so total duration alone hides the user-perceived wait. Requires the wrapper to record gen_ai.response.time_to_first_chunk.",
+            "name": "Time to First Chunk (p50 / p95)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "s"
+              },
+              "legend": {
+                "customColors": {
+                  "A": "#56B4E9",
+                  "B": "#0072B2",
+                  "TTFC p50": "#56B4E9",
+                  "TTFC p95": "#0072B2"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "ttfc",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "p50(gen_ai.response.time_to_first_chunk)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "TTFC p50",
+                          "limit": 100,
+                          "name": "A",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "p50(gen_ai.response.time_to_first_chunk)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "expression": "p95(gen_ai.response.time_to_first_chunk)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                          },
+                          "functions": null,
+                          "groupBy": null,
+                          "legend": "TTFC p95",
+                          "limit": 100,
+                          "name": "B",
+                          "order": [
+                            {
+                              "direction": "desc",
+                              "key": {
+                                "fieldContext": "",
+                                "fieldDataType": "",
+                                "name": "p95(gen_ai.response.time_to_first_chunk)",
+                                "signal": ""
+                              }
+                            }
+                          ],
+                          "secondaryAggregations": null,
+                          "selectFields": null,
+                          "signal": "traces",
+                          "source": "",
+                          "stepInterval": 0
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "slowest-calls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Individual Muse Spark spans, slowest first",
+            "name": "Slowest Calls"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "fieldContext": "resource",
+                  "fieldDataType": "string",
+                  "name": "service.name",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "span",
+                  "fieldDataType": "string",
+                  "name": "name",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "span",
+                  "fieldDataType": "",
+                  "name": "duration_nano",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "name": "gen_ai.request.model",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "attribute",
+                  "fieldDataType": "",
+                  "name": "gen_ai.usage.output_tokens",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "attribute",
+                  "fieldDataType": "",
+                  "name": "gen_ai.usage.reasoning.output_tokens",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "attribute",
+                  "fieldDataType": "",
+                  "name": "gen_ai.cost.total_cost",
+                  "signal": "traces"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 25,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "duration_nano",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "selectFields": [
+                      {
+                        "fieldContext": "resource",
+                        "fieldDataType": "string",
+                        "name": "service.name",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "span",
+                        "fieldDataType": "string",
+                        "name": "name",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "span",
+                        "fieldDataType": "",
+                        "name": "duration_nano",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "",
+                        "name": "gen_ai.usage.output_tokens",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "",
+                        "name": "gen_ai.usage.reasoning.output_tokens",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "",
+                        "name": "gen_ai.cost.total_cost",
+                        "signal": "traces"
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "requests-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Muse Spark call volume per model id",
+            "name": "Requests Over Time by Model"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": {
+                  "muse-spark-1.2": "#E69F00",
+                  "muse-spark-1.2-contributor": "#009E73",
+                  "muse-spark-1.3": "#0072B2",
+                  "muse-spark-1.3-contributor": "#CC79A7"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "{{gen_ai.request.model}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": "",
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "errors-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Errored Muse Spark calls. Note the instrumentation sets no error.type, so 401 / 404 / 400 cannot be separated by attribute.",
+            "name": "Errors Over Time by Model"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": {
+                  "muse-spark-1.2": "#E69F00",
+                  "muse-spark-1.2-contributor": "#009E73",
+                  "muse-spark-1.3": "#0072B2",
+                  "muse-spark-1.3-contributor": "#CC79A7"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND has_error = true AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "{{gen_ai.request.model}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": "",
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "finish-reasons": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "stop vs tool_calls vs length. A large length slice means callers are getting truncated or empty responses.",
+            "name": "Finish Reasons"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": ""
+              },
+              "legend": {
+                "customColors": {
+                  "[\"length\"]": "#D55E00",
+                  "[\"stop\"]": "#009E73",
+                  "[\"tool_calls\"]": "#0072B2"
+                },
+                "mode": "list",
+                "position": "bottom"
+              },
+              "visualization": {
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND gen_ai.response.finish_reasons EXISTS AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "{{gen_ai.response.finish_reasons}}",
+                    "limit": 100,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "count()",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": "",
+                    "groupBy": [
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.response.finish_reasons",
+                        "signal": "traces"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "recent-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Latest errored Muse Spark spans",
+            "name": "Recent Errors"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "fieldContext": "resource",
+                  "fieldDataType": "string",
+                  "name": "service.name",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "span",
+                  "fieldDataType": "string",
+                  "name": "name",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "name": "gen_ai.request.model",
+                  "signal": "traces"
+                },
+                {
+                  "fieldContext": "span",
+                  "fieldDataType": "",
+                  "name": "duration_nano",
+                  "signal": "traces"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "disabled": false,
+                    "filter": {
+                      "expression": "gen_ai.provider.name = 'meta' AND has_error = true AND service.name IN $service_name AND gen_ai.request.model IN $model"
+                    },
+                    "legend": "",
+                    "limit": 25,
+                    "name": "A",
+                    "order": [
+                      {
+                        "direction": "desc",
+                        "key": {
+                          "fieldContext": "",
+                          "fieldDataType": "",
+                          "name": "timestamp",
+                          "signal": ""
+                        }
+                      }
+                    ],
+                    "selectFields": [
+                      {
+                        "fieldContext": "resource",
+                        "fieldDataType": "string",
+                        "name": "service.name",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "span",
+                        "fieldDataType": "string",
+                        "name": "name",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "name": "gen_ai.request.model",
+                        "signal": "traces"
+                      },
+                      {
+                        "fieldContext": "span",
+                        "fieldDataType": "",
+                        "name": "duration_nano",
+                        "signal": "traces"
+                      }
+                    ],
+                    "signal": "traces",
+                    "source": ""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "refreshInterval": "",
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "capturingRegexp": "",
+          "customAllValue": "",
+          "defaultValue": [
+            "muse-chat-api",
+            "muse-agent-runner",
+            "muse-batch-classifier"
+          ],
+          "display": {
+            "description": "Filter by service. Defaults to the three Muse Spark services; the list stays dynamic so the dashboard is reusable elsewhere.",
+            "name": "Service"
+          },
+          "name": "service_name",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "traces"
+            }
+          },
+          "sort": "alphabetical-asc"
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "capturingRegexp": "",
+          "customAllValue": "",
+          "display": {
+            "description": "Muse Spark model id. Fixed list so the picker cannot drift into other providers' models present elsewhere in the workspace.",
+            "name": "Model"
+          },
+          "name": "model",
+          "plugin": {
+            "kind": "signoz/CustomVariable",
+            "spec": {
+              "customValue": "muse-spark-1.3,muse-spark-1.3-contributor,muse-spark-1.2,muse-spark-1.2-contributor"
+            }
+          },
+          "sort": "alphabetical-asc"
+        }
+      }
+    ]
+  }
+}
