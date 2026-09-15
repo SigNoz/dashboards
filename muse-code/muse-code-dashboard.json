@@ -1,0 +1,2058 @@
+{
+  "spec": {
+    "display": {
+      "name": "Meta Muse Code (CLI) - Observability",
+      "description": "Monitoring for Meta's Muse Code terminal coding agent, built from OTel traces emitted by its hook system. Covers sessions and turns, model-call token usage and prompt-cache efficiency, model and turn latency, and tool-call volume, duration and failures. Every panel filters through the service_name variable, so one board covers however many services your teams report under."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "service_name",
+          "display": {
+            "name": "Service",
+            "description": "Filter to one or more Muse Code services. Set MUSE_OTEL_SERVICE per team or repo to split them."
+          },
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "traces"
+            }
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "capturingRegexp": "",
+          "customAllValue": "",
+          "defaultValue": [
+            "muse-code-platform",
+            "muse-code-backend",
+            "muse-code-mobile"
+          ],
+          "sort": "alphabetical-asc"
+        }
+      }
+    ],
+    "panels": {
+      "sessions": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Sessions",
+            "description": "Muse Code TUI sessions observed"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND name = 'muse session'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "turns": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Turns",
+            "description": "User turns completed"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND name = 'turn'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "model-calls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Calls",
+            "description": "Completed model calls"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tool-calls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls",
+            "description": "Tool executions"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tok-in": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Input Tokens",
+            "description": "Total input tokens"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.input_tokens)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tok-out": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Output Tokens",
+            "description": "Total output tokens"
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "0"
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.output_tokens)"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "groupBy": [],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.output_tokens)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": ""
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tokens-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Token Usage Over Time",
+            "description": "Input, output, cache-read and reasoning tokens per interval"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.input_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "input"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.output_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "output"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.cache_read.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.cache_read.input_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "cache read"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "D",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.reasoning.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.reasoning.output_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "reasoning"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "cache-ratio": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cache Read Ratio (%)",
+            "description": "Share of input tokens served from prompt cache. Cache reads are far cheaper, so a high ratio means lower spend."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percent",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.cache_read.input_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.cache_read.input_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "disabled": true,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.input_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": ""
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A * 100 / B",
+                          "disabled": false,
+                          "legend": "cache read %",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "having": {
+                            "expression": ""
+                          },
+                          "functions": null
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tokens-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Input Tokens by Model",
+            "description": "Input token volume split by gen_ai.request.model"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "gen_ai.request.model",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.input_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{gen_ai.request.model}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "reasoning-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Reasoning Tokens Over Time",
+            "description": "Muse Spark reasoning tokens. These bill as output but are not visible in the reply."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.reasoning.output_tokens)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.reasoning.output_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "reasoning tokens"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "model-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Call Latency",
+            "description": "p50 / p95 / p99 of chat span duration"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(durationNano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p50(durationNano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(durationNano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(durationNano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "p95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p99(durationNano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p99(durationNano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "turn-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Turn Duration",
+            "description": "p50 / p95 / p99 of a full user turn, prompt to reply"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p50(durationNano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND name = 'turn'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p50(durationNano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "p50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(durationNano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND name = 'turn'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(durationNano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "p95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p99(durationNano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND name = 'turn'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p99(durationNano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "p99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tool-volume": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls by Tool",
+            "description": "Execution count per tool name"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "gen_ai.tool.name",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{gen_ai.tool.name}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tool-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Duration p95 by Tool",
+            "description": "p95 execution time per tool"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "ns",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "p95(durationNano)"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS"
+                          },
+                          "groupBy": [
+                            {
+                              "name": "gen_ai.tool.name",
+                              "signal": "",
+                              "fieldContext": "attribute",
+                              "fieldDataType": "string"
+                            }
+                          ],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(durationNano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "{{gen_ai.tool.name}}"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tool-outcome": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Outcomes",
+            "description": "Success vs failure across tool executions"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "muse.tool.status",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{muse.tool.status}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "tool-failures": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Failures Over Time",
+            "description": "Failed tool executions, from the PostToolUseFailure hook"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 0,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "traces",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "service.name IN $service_name AND gen_ai.tool.name EXISTS AND muse.tool.status = 'failed'"
+                          },
+                          "groupBy": [],
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "selectFields": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "secondaryAggregations": null,
+                          "functions": [],
+                          "legend": "failures"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "finish-reasons": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Calls by Finish Reason",
+            "description": "tool_calls means the model asked to run a tool; stop means it answered"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.response.finish_reasons",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{gen_ai.response.finish_reasons}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "reasoning-effort": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Calls by Reasoning Effort",
+            "description": "Distribution of the configured Muse reasoning effort"
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time"
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "traces",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "service.name IN $service_name AND gen_ai.operation.name = 'chat'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.request.reasoning_effort",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "having": {
+                      "expression": ""
+                    },
+                    "functions": [],
+                    "legend": "{{gen_ai.request.reasoning_effort}}"
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Overview",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/sessions"
+              }
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/turns"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/model-calls"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/tool-calls"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/tok-in"
+              }
+            },
+            {
+              "x": 10,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/tok-out"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Tokens & Cache",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tokens-over-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/cache-ratio"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tokens-by-model"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/reasoning-tokens"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Latency",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/model-latency"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/turn-latency"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Tool Activity",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-volume"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-latency"
+              }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-outcome"
+              }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/tool-failures"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Model Behaviour",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/finish-reasons"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 6,
+              "content": {
+                "$ref": "#/spec/panels/reasoning-effort"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "tags": [
+    {
+      "key": "technology",
+      "value": "muse-code"
+    },
+    {
+      "key": "vendor",
+      "value": "meta"
+    },
+    {
+      "key": "domain",
+      "value": "ai-coding-agent"
+    },
+    {
+      "key": "signal",
+      "value": "traces"
+    }
+  ],
+  "image": "",
+  "schemaVersion": "v6",
+  "generateName": true
+}
