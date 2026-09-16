@@ -80,7 +80,7 @@ Import [`aisix-ai-gateway-prometheus-v1.json`](aisix-ai-gateway-prometheus-v1.js
 
 ![AISIX cache and policy panels](assets/policies.png)
 
-![AISIX configuration and usage-event panels](assets/operations.png)
+![AISIX usage-event drops panel](assets/operations.png)
 
 ## References
 
