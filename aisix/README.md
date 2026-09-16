@@ -75,8 +75,8 @@ Import [`aisix-ai-gateway-prometheus-v1.json`](aisix-ai-gateway-prometheus-v1.js
 
 - **Cache Outcomes** shows semantic-cache results. No data is expected when the cache is disabled.
 - **Rate-Limit Rejections** and **Guardrail Blocks** show policy enforcement rates.
-- **Configuration Reload Health** reports whether the most recent configuration reload succeeded.
-- **Usage-Event Drops** shows events that could not enter the delivery queue because the sink was disabled or the queue was full or closed. It does not count exporter failures after queue acceptance.
+- **Configuration Reload Health** reports whether the most recent configuration reload succeeded on every selected gateway instance.
+- **Usage-Event Drops** groups queue-admission drops by bounded reason, such as `sink_disabled`. It does not count exporter failures after queue acceptance.
 
 ![AISIX cache and policy panels](assets/policies.png)
 
