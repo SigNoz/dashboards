@@ -1,0 +1,1199 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "tag",
+      "value": "sglang"
+    },
+    {
+      "key": "tag",
+      "value": "llm"
+    },
+    {
+      "key": "tag",
+      "value": "inference"
+    },
+    {
+      "key": "tag",
+      "value": "gpu"
+    },
+    {
+      "key": "tag",
+      "value": "metrics"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "SGLang",
+      "description": "SGLang inference server health from the native sglang:* metrics. Covers token throughput, time to first token, inter-token and end-to-end latency, queue depth, KV cache pool usage, and prefix cache hit rate."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "display": {
+            "name": "model_name",
+            "description": "Filter panels to one model served by this SGLang server."
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "customAllValue": "",
+          "capturingRegexp": "",
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "model_name",
+              "signal": "metrics"
+            }
+          },
+          "name": "model_name"
+        }
+      }
+    ],
+    "panels": {
+      "ts_gen_throughput": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Generation Throughput (tokens/s)",
+            "description": "Tokens generated per second, read from the sglang:gen_throughput gauge. SGLang reports this as a token/s rate, so the panel does not apply rate() on top of it. The engine samples it at its log interval, so it reads 0 while the server sits idle."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "sglang:gen_throughput",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "model_name IN $model_name AND tp_rank = '0'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "model_name",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{model_name}}",
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ts_token_rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Prompt vs Generation Token Rate (tokens/s)",
+            "description": "Prefill (prompt) against decode (generation) tokens per second, computed from the cumulative counters. Use this panel for the balance between input and output tokens, which drives cost. Use Generation Throughput for the instantaneous decode rate. The decode series here is the same quantity, smoothed by the rate window."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:prompt_tokens_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "prompt (prefill)",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:generation_tokens_total",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "generation (decode)",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ts_ttft": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Time to First Token (p50 / p95 / p99)",
+            "description": "How long a request waits before the first token comes back. Users feel this as responsiveness. It rises before the other latency panels when the waiting queue builds up."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:time_to_first_token_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p50",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:time_to_first_token_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p95"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p95",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:time_to_first_token_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p99",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ts_itl": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Inter-Token Latency (p50 / p95 / p99)",
+            "description": "Gap between consecutive output tokens during decode, the streaming equivalent of time-per-output-token. SGLang v0.5.x exposes this as sglang:inter_token_latency_seconds."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:inter_token_latency_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p50",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:inter_token_latency_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p95"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p95",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:inter_token_latency_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p99",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ts_e2e": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "End-to-End Request Latency (p50 / p95 / p99)",
+            "description": "Total time per request, covering queueing, prefill, and decode. Long outputs make this large even when time to first token and inter-token latency are healthy, so read it alongside both."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "s",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:e2e_request_latency_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p50",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:e2e_request_latency_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p95"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p95",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "C",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:e2e_request_latency_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "p99",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ts_reqs": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Running vs Queued Requests",
+            "description": "Requests in the running batch against requests waiting to be scheduled. A queue that stays above zero means the server is at capacity, and time to first token climbs next."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "none",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:num_running_reqs",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name AND tp_rank = '0' AND priority = ''"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "running",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "stepInterval": 60,
+                          "signal": "metrics",
+                          "source": "",
+                          "aggregations": [
+                            {
+                              "metricName": "sglang:num_queue_reqs",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": "model_name IN $model_name AND tp_rank = '0' AND priority = ''"
+                          },
+                          "groupBy": [],
+                          "having": {
+                            "expression": ""
+                          },
+                          "legend": "queued",
+                          "limit": 100,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ts_kv_usage": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "KV Cache Pool Usage",
+            "description": "Fraction of the KV cache token pool in use. As this approaches 1 the scheduler retracts and re-runs requests. That work surfaces as latency spikes."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "sglang:token_usage",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "model_name IN $model_name AND tp_rank = '0'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "model_name",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{model_name}}",
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ts_cache_hit": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Prefix Cache Hit Rate",
+            "description": "Fraction of prompt tokens served from the radix prefix cache. Shared system prompts push this up and cut prefill cost. A sudden drop points to a change in the traffic mix."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": {
+                "timePreference": "global_time",
+                "fillSpans": false
+              },
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              },
+              "chartAppearance": {
+                "lineInterpolation": "spline",
+                "showPoints": false,
+                "lineStyle": "solid",
+                "fillMode": "none",
+                "spanGaps": {
+                  "fillOnlyBelow": false,
+                  "fillLessThan": ""
+                }
+              },
+              "axes": {
+                "softMin": null,
+                "softMax": null,
+                "isLogScale": false
+              },
+              "legend": {
+                "position": "bottom",
+                "mode": "list",
+                "customColors": null
+              },
+              "thresholds": null
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "stepInterval": 60,
+                    "signal": "metrics",
+                    "source": "",
+                    "aggregations": [
+                      {
+                        "metricName": "sglang:cache_hit_rate",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "avg"
+                      }
+                    ],
+                    "disabled": false,
+                    "filter": {
+                      "expression": "model_name IN $model_name AND tp_rank = '0'"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "model_name",
+                        "signal": "",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "having": {
+                      "expression": ""
+                    },
+                    "legend": "{{model_name}}",
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Token Throughput",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_gen_throughput"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_token_rate"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Latency",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_ttft"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_itl"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_e2e"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Load & Cache",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_reqs"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_kv_usage"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ts_cache_hit"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
