@@ -1,0 +1,1946 @@
+{
+  "schemaVersion": "v6",
+  "image": "",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "technology",
+      "value": "eve"
+    },
+    {
+      "key": "domain",
+      "value": "llm"
+    },
+    {
+      "key": "signal",
+      "value": "traces"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Eve",
+      "description": "Turns, conversations, LLM calls, token usage, latency, tools, subagents and failures for agents built on eve, Vercel's agent framework, from its OpenTelemetry traces. Token panels read chat spans only, and failure panels use agent.turn.outcome so cancelled turns are not counted as errors."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "service_name",
+          "display": {
+            "name": "Service",
+            "description": "Service running eve."
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "traces"
+            }
+          }
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "environment",
+          "display": {
+            "name": "Environment",
+            "description": "Deployment environment."
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "deployment.environment",
+              "signal": "traces"
+            }
+          }
+        }
+      }
+    ],
+    "panels": {
+      "turns": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Turns",
+            "description": "Agent turns (invoke_agent spans), including subagent turns. Each turn is its own trace."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent'"
+                    },
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "conversations": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Conversations",
+            "description": "Distinct sessions (gen_ai.conversation.id). A subagent shares its parent's session, and /new keeps the same id."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count_distinct(gen_ai.conversation.id)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent'"
+                    },
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count_distinct(gen_ai.conversation.id)"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-calls": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Calls",
+            "description": "Model calls across all agents (chat spans)."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                    },
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Input Tokens",
+            "description": "Prompt tokens, summed over chat spans only. invoke_agent and agent.step spans repeat the same totals, so summing every span triples the figure. Includes cache reads."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                    },
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.input_tokens)"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "output-tokens": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Output Tokens",
+            "description": "Completion tokens, summed over chat spans only."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "sum(gen_ai.usage.output_tokens)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                    },
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(gen_ai.usage.output_tokens)"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "turn-failure-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Turn Failure Rate",
+            "description": "Share of turns with agent.turn.outcome = failed. Cancelled turns and recovered tool failures are excluded, unlike a has_error count."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percentunit"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "ratio",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent' AND agent.turn.outcome = 'failed'"
+                          },
+                          "limit": 10000,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent'"
+                          },
+                          "limit": 10000,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B",
+                          "legend": "Turn Failure Rate",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tokens-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Token Usage Over Time",
+            "description": "Input, output, and cache-read tokens from chat spans. Cache reads are a subset of input; on long sessions they are most of it."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "tokens",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.input_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                          },
+                          "limit": 100,
+                          "legend": "Input",
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.input_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.output_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                          },
+                          "limit": 100,
+                          "legend": "Output",
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.output_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "C",
+                          "aggregations": [
+                            {
+                              "expression": "sum(gen_ai.usage.cache_read.input_tokens)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                          },
+                          "limit": 100,
+                          "legend": "Cache read (subset of input)",
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(gen_ai.usage.cache_read.input_tokens)"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "calls-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Calls by Model",
+            "description": "Chat call volume per served model."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat' AND gen_ai.response.model EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.response.model",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.response.model}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tokens-by-model": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tokens by Model",
+            "description": "Calls and tokens per served model and provider. gen_ai.provider.name reads openai.responses for eve's openai() helper and gateway for AI Gateway model strings."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Calls"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens)",
+                        "alias": "Input tokens"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.output_tokens)",
+                        "alias": "Output tokens"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.cache_read.input_tokens)",
+                        "alias": "Cache read"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat' AND gen_ai.response.model EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.response.model",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      },
+                      {
+                        "name": "gen_ai.provider.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tokens-by-agent": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tokens by Agent",
+            "description": "Turns and tokens per agent, from invoke_agent spans. Subagent usage is reported on the subagent's own turn, not rolled into its caller."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Turns"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.input_tokens)",
+                        "alias": "Input tokens"
+                      },
+                      {
+                        "expression": "sum(gen_ai.usage.output_tokens)",
+                        "alias": "Output tokens"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent' AND gen_ai.agent.name EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.agent.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "chat-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Call Latency",
+            "description": "p50 / p95 / p99 duration of chat spans."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "ns"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "p50(duration_nano)",
+                        "alias": "p50"
+                      },
+                      {
+                        "expression": "p95(duration_nano)",
+                        "alias": "p95"
+                      },
+                      {
+                        "expression": "p99(duration_nano)",
+                        "alias": "p99"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                    },
+                    "limit": 100,
+                    "order": [
+                      {
+                        "key": {
+                          "name": "p50(duration_nano)"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "turn-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Turn Latency (p95)",
+            "description": "p95 end-to-end turn duration per agent, including every model step, tool call, and subagent dispatch in the turn."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "ns"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent' AND gen_ai.agent.name EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.agent.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.agent.name}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "p95(duration_nano)"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "steps-per-turn": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Model Steps per Turn",
+            "description": "Average agent.step spans per turn. Each tool round trip adds a step, so a rising line means agents need more tool calls to answer."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "steps",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND name = 'agent.step'"
+                          },
+                          "limit": 100,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent'"
+                          },
+                          "limit": 100,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B",
+                          "legend": "Steps per turn",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "finish-reasons": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Finish Reasons",
+            "description": "Why each model call ended. tool-calls and stop dominate a healthy tool-using agent; a growing length slice means responses are being cut off."
+          },
+          "plugin": {
+            "kind": "signoz/PieChartPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat' AND gen_ai.response.finish_reasons EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.response.finish_reasons",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.response.finish_reasons}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "agents-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Agents",
+            "description": "Turns, failed and cancelled turns, and average turn latency per agent, from agent.turn.outcome."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": {
+                  "A.avg(duration_nano)": "ns"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Turns"
+                      },
+                      {
+                        "expression": "countIf(agent.turn.outcome = 'failed')",
+                        "alias": "Failed"
+                      },
+                      {
+                        "expression": "countIf(agent.turn.outcome = 'cancelled')",
+                        "alias": "Cancelled"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg latency"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent' AND gen_ai.agent.name EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.agent.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tools-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tools",
+            "description": "Calls, failures, and average latency per authored tool (execute_tool spans). A tool failure does not fail the turn, so this is where it shows up."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": {
+                  "A.avg(duration_nano)": "ns"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Calls"
+                      },
+                      {
+                        "expression": "countIf(has_error = true)",
+                        "alias": "Failures"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg latency"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'execute_tool' AND gen_ai.tool.name EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.tool.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-calls-over-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Calls Over Time",
+            "description": "Authored tool invocations per tool."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'execute_tool' AND gen_ai.tool.name EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "gen_ai.tool.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{gen_ai.tool.name}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "actions-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Actions by Kind",
+            "description": "Every action the model took (agent.action spans): authored tools, provider-executed tools such as web_search that have no execute_tool span, and subagent calls."
+          },
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": {
+                  "A.avg(duration_nano)": "ns"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Actions"
+                      },
+                      {
+                        "expression": "countIf(agent.action.outcome = 'failed')",
+                        "alias": "Failed"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg latency"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND name = 'agent.action' AND agent.action.name EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "agent.action.kind",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      },
+                      {
+                        "name": "agent.action.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "turn-outcomes": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Turn Outcomes",
+            "description": "Turns over time by agent.turn.outcome: completed, failed, cancelled."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'invoke_agent' AND agent.turn.outcome EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "agent.turn.outcome",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{agent.turn.outcome}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "tool-error-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Tool Error Rate",
+            "description": "Share of authored tool executions that threw."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percentunit"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "ratio",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'execute_tool' AND has_error = true"
+                          },
+                          "limit": 10000,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'execute_tool'"
+                          },
+                          "limit": 10000,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B",
+                          "legend": "Tool Error Rate",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "llm-error-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "LLM Error Rate",
+            "description": "Share of model calls that failed, excluding cancellations, which eve marks as TurnCancelledError on the chat span."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percentunit"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "ratio",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat' AND has_error = true AND error.type != 'TurnCancelledError'"
+                          },
+                          "limit": 10000,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "expression": "count()"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment IN $environment AND gen_ai.operation.name = 'chat'"
+                          },
+                          "limit": 10000,
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "count()"
+                              },
+                              "direction": "desc"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B",
+                          "legend": "LLM Error Rate",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "errors-by-type": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Errors by Type",
+            "description": "Errored agent spans by error.type and span. A model failure appears on chat, agent.step, and invoke_agent; a cancellation appears as TurnCancelledError below the turn."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND has_error = true AND error.type EXISTS"
+                    },
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "error.type",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      },
+                      {
+                        "name": "operation.name",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{error.type}} ({{operation.name}})",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "recent-failures": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Recent Errors",
+            "description": "Latest errored agent spans with their error class and message."
+          },
+          "plugin": {
+            "kind": "signoz/ListPanel",
+            "spec": {
+              "selectFields": [
+                {
+                  "name": "name",
+                  "fieldContext": "span",
+                  "fieldDataType": "string",
+                  "signal": "traces"
+                },
+                {
+                  "name": "error.type",
+                  "fieldContext": "attribute",
+                  "fieldDataType": "string",
+                  "signal": "traces"
+                },
+                {
+                  "name": "status_message",
+                  "fieldContext": "span",
+                  "fieldDataType": "string",
+                  "signal": "traces"
+                },
+                {
+                  "name": "duration_nano",
+                  "fieldContext": "span",
+                  "fieldDataType": "number",
+                  "signal": "traces"
+                },
+                {
+                  "name": "service.name",
+                  "fieldContext": "resource",
+                  "fieldDataType": "string",
+                  "signal": "traces"
+                }
+              ]
+            }
+          },
+          "queries": [
+            {
+              "kind": "raw",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment IN $environment AND has_error = true AND error.type != 'TurnCancelledError'"
+                    },
+                    "selectFields": [
+                      {
+                        "name": "name",
+                        "fieldContext": "span",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      },
+                      {
+                        "name": "error.type",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      },
+                      {
+                        "name": "status_message",
+                        "fieldContext": "span",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      },
+                      {
+                        "name": "duration_nano",
+                        "fieldContext": "span",
+                        "fieldDataType": "number",
+                        "signal": "traces"
+                      },
+                      {
+                        "name": "service.name",
+                        "fieldContext": "resource",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "order": [
+                      {
+                        "key": {
+                          "name": "timestamp"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 20
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Overview",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/turns"
+              }
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/conversations"
+              }
+            },
+            {
+              "x": 4,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/llm-calls"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/input-tokens"
+              }
+            },
+            {
+              "x": 8,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/output-tokens"
+              }
+            },
+            {
+              "x": 10,
+              "y": 0,
+              "width": 2,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/turn-failure-rate"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Tokens & Models",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tokens-over-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/calls-by-model"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tokens-by-model"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tokens-by-agent"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Latency",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/chat-latency"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/turn-latency"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/steps-per-turn"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/finish-reasons"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Agents, Tools & Subagents",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/agents-table"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tools-table"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/tool-calls-over-time"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/actions-table"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Outcomes & Errors",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/turn-outcomes"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/errors-by-type"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/tool-error-rate"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/llm-error-rate"
+              }
+            },
+            {
+              "x": 0,
+              "y": 10,
+              "width": 12,
+              "height": 9,
+              "content": {
+                "$ref": "#/spec/panels/recent-failures"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
