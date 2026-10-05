@@ -1,0 +1,1568 @@
+{
+  "schemaVersion": "v6",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "tag",
+      "value": "bun"
+    },
+    {
+      "key": "tag",
+      "value": "elysia"
+    },
+    {
+      "key": "tag",
+      "value": "typescript"
+    },
+    {
+      "key": "tag",
+      "value": "runtime"
+    },
+    {
+      "key": "tag",
+      "value": "metrics"
+    },
+    {
+      "key": "tag",
+      "value": "otlp"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Bun and ElysiaJS Metrics",
+      "description": "HTTP request rate, latency, errors and runtime health for Bun applications built with ElysiaJS and OpenTelemetry."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "service_name",
+          "display": {
+            "name": "Service",
+            "description": "Bun service to inspect"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "metrics"
+            }
+          }
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "environment",
+          "display": {
+            "name": "Environment",
+            "description": "Deployment environment"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "deployment.environment.name",
+              "signal": "metrics"
+            }
+          }
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "http_route",
+          "display": {
+            "name": "Route",
+            "description": "Elysia route pattern (route panels use traces)"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "http.route",
+              "signal": "traces"
+            }
+          }
+        }
+      }
+    ],
+    "links": [],
+    "panels": {
+      "request-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Rate",
+            "description": "Average HTTP requests per second"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(rate(http.server.request.duration.count))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "error-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Error Rate",
+            "description": "Share of requests that returned a 5xx status"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "error_rate",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "metricName": "http.server.request.duration.count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.response.status_code >= 500"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(increase(http.server.request.duration.count))"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000,
+                          "disabled": true
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "metricName": "http.server.request.duration.count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "increase",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(increase(http.server.request.duration.count))"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000,
+                          "disabled": true
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B * 100",
+                          "legend": "Error Rate",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "p95-latency": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "P95 Latency",
+            "description": "95th percentile request duration (from traces)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "ns"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "p95(duration_nano)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "heap-used-kpi": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Heap Used",
+            "description": "Current heap memory in use"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "v8js.memory.heap.used",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(avg(v8js.memory.heap.used))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "rate-by-method": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Rate by Method",
+            "description": "Requests per second by HTTP method"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(rate(http.server.request.duration.count))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.request.method",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{http.request.method}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "rate-by-status": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Requests by Status Code",
+            "description": "Requests per second stacked by HTTP status code"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/AreaChartPanel",
+            "spec": {
+              "visualization": {
+                "stack": "normal"
+              },
+              "chartAppearance": {
+                "fillMode": "gradient",
+                "fillOpacity": 0.4
+              },
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(rate(http.server.request.duration.count))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.response.status_code",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "number",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{http.response.status_code}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "rate-by-route": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Rate by Route",
+            "description": "Requests per second for each matched route (from traces)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "rate()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "rate()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.route",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{http.route}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "routes-table": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Routes",
+            "description": "Requests and latency per route in the selected range (from traces)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TablePanel",
+            "spec": {
+              "formatting": {
+                "columnUnits": {
+                  "A.p95(duration_nano)": "ns",
+                  "A.avg(duration_nano)": "ns",
+                  "A.P95 Latency": "ns",
+                  "A.Avg Latency": "ns",
+                  "P95 Latency": "ns",
+                  "Avg Latency": "ns"
+                }
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "count()",
+                        "alias": "Requests"
+                      },
+                      {
+                        "expression": "p95(duration_nano)",
+                        "alias": "P95 Latency"
+                      },
+                      {
+                        "expression": "avg(duration_nano)",
+                        "alias": "Avg Latency"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "count()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.route",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "latency-percentiles": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Latency Percentiles",
+            "description": "P50, P95 and P99 request duration (from traces)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "ns"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "latency",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "expression": "p50(duration_nano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p50(duration_nano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "legend": "P50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "expression": "p95(duration_nano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p95(duration_nano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "legend": "P95"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "traces",
+                          "name": "C",
+                          "aggregations": [
+                            {
+                              "expression": "p99(duration_nano)"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "p99(duration_nano)"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "legend": "P99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "p95-by-route": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "P95 Latency by Route",
+            "description": "95th percentile request duration per route (from traces)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "ns"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "p95(duration_nano)"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "p95(duration_nano)"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.route",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{http.route}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "server-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "5xx Responses",
+            "description": "Server errors per second by status code"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.response.status_code >= 500"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(rate(http.server.request.duration.count))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.response.status_code",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "number",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{http.response.status_code}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "error-pct": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Error Percentage",
+            "description": "Share of requests that returned a 5xx status"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "error_pct",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "metricName": "http.server.request.duration.count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.response.status_code >= 500"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(rate(http.server.request.duration.count))"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000,
+                          "disabled": true
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "metricName": "http.server.request.duration.count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "sum(rate(http.server.request.duration.count))"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000,
+                          "disabled": true
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A / B * 100",
+                          "legend": "Error Rate",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "client-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "4xx Responses",
+            "description": "Client errors per second by status code"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "http.server.request.duration.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.response.status_code >= 400 AND http.response.status_code < 500"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(rate(http.server.request.duration.count))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.response.status_code",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "number",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{http.response.status_code}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "errors-by-route": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Errors by Route",
+            "description": "Error spans per second for each route (from traces)"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "traces",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "expression": "rate()"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment AND http.route IN $http_route AND http.route EXISTS AND has_error = true"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "rate()"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "http.route",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "traces"
+                      }
+                    ],
+                    "legend": "{{http.route}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "event-loop-delay": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Event Loop Delay",
+            "description": "P50, P90 and P99 event loop delay"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "eld",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "metricName": "nodejs.eventloop.delay.p50",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "avg(avg(nodejs.eventloop.delay.p50))"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "legend": "P50"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "metricName": "nodejs.eventloop.delay.p90",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "avg(avg(nodejs.eventloop.delay.p90))"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "legend": "P90"
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "C",
+                          "aggregations": [
+                            {
+                              "metricName": "nodejs.eventloop.delay.p99",
+                              "temporality": "unspecified",
+                              "timeAggregation": "avg",
+                              "spaceAggregation": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                          },
+                          "order": [
+                            {
+                              "key": {
+                                "name": "avg(avg(nodejs.eventloop.delay.p99))"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100,
+                          "legend": "P99"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cpu-util": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Process CPU Utilization",
+            "description": "CPU time used by the process, by mode"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "percentunit"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "process.cpu.utilization",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(avg(process.cpu.utilization))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "cpu.mode",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{cpu.mode}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "heap-used": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Heap Used",
+            "description": "Heap memory in use"
+          },
+          "links": [],
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "v8js.memory.heap.used",
+                        "temporality": "unspecified",
+                        "timeAggregation": "avg",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND deployment.environment.name IN $environment"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "sum(avg(v8js.memory.heap.used))"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100,
+                    "groupBy": [
+                      {
+                        "name": "service.name",
+                        "fieldContext": "resource",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{service.name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Overview"
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/request-rate"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/error-rate"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/p95-latency"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/heap-used-kpi"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Traffic"
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/rate-by-method"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/rate-by-status"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/rate-by-route"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/routes-table"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Latency"
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/latency-percentiles"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/p95-by-route"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Errors"
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/server-errors"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/error-pct"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/client-errors"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/errors-by-route"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Runtime"
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/event-loop-delay"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/cpu-util"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/heap-used"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
