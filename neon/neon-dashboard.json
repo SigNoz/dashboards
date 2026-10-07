@@ -1,0 +1,1413 @@
+{
+  "schemaVersion": "v6",
+  "tags": [
+    {
+      "key": "technology",
+      "value": "neon"
+    },
+    {
+      "key": "technology",
+      "value": "postgresql"
+    },
+    {
+      "key": "signal",
+      "value": "metrics"
+    },
+    {
+      "key": "tag",
+      "value": "database"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Neon Postgres",
+      "description": "Neon Postgres health from the native OpenTelemetry integration: connections, database activity, Local File Cache, PgBouncer pooling, read replica lag, and compute CPU and memory. Filter by Neon project and compute endpoint."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "project_id",
+          "display": {
+            "name": "Project",
+            "description": "Neon project ID"
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "project_id",
+              "signal": "metrics"
+            }
+          }
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "endpoint_id",
+          "display": {
+            "name": "Compute endpoint",
+            "description": "Neon compute endpoint ID"
+          },
+          "allowAllValue": true,
+          "allowMultiple": true,
+          "sort": "alphabetical-asc",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "endpoint_id",
+              "signal": "metrics"
+            }
+          }
+        }
+      }
+    ],
+    "panels": {
+      "ov-db-size": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Database Size",
+            "description": "Total size of all databases in the selected projects."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "ov-db-size",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum(max by (project_id) ({\"neon_db_total_size\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}))",
+                    "legend": "Database Size"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-active-conn": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Active Connections",
+            "description": "Postgres backends currently running a query."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "ov-active-conn",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum({\"neon_connection_counts\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",state=\"active\"})",
+                    "legend": "Active Connections"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-cache-hit": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cache Hit Ratio",
+            "description": "Share of page reads served from the Local File Cache instead of Neon storage."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "ov-cache-hit",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum(rate({\"neon_lfc_hits\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])) / (sum(rate({\"neon_lfc_hits\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])) + sum(rate({\"neon_lfc_misses\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])))",
+                    "legend": "Cache Hit Ratio"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "ov-cpu": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Utilization",
+            "description": "Busy share of compute CPU time across all cores."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percentunit",
+                "decimalPrecision": "2"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "ov-cpu",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "1 - (sum(rate({\"host_cpu_seconds_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",mode=\"idle\"}[5m])) / sum(rate({\"host_cpu_seconds_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])))",
+                    "legend": "CPU Utilization"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "conn-by-state": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Connections by State",
+            "description": "Postgres connections grouped by pg_stat_activity state. Many idle in transaction sessions hold locks and pool slots."
+          },
+          "plugin": {
+            "kind": "signoz/AreaChartPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              },
+              "visualization": {
+                "stack": "normal"
+              },
+              "chartAppearance": {
+                "fillMode": "gradient",
+                "fillOpacity": 0.4
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "conn-by-state",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum by (state) ({\"neon_connection_counts\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                    "legend": "{{state}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "conn-by-endpoint": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Connections by Compute",
+            "description": "Total Postgres connections per compute endpoint."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "conn-by-endpoint",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum by (endpoint_id) ({\"neon_connection_counts\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "db-rows": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Row Operations",
+            "description": "Rows inserted, updated, and deleted per second, from pg_stat_database."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "ops"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "db-rows",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum by (kind) (rate({\"neon_pg_stats_userdb\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",kind=~\"inserted|updated|deleted\"}[5m]))",
+                    "legend": "{{kind}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "db-deadlocks": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Deadlocks",
+            "description": "Deadlocks detected per database in each 5-minute window."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 5
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "db-deadlocks",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum by (datname) (increase({\"neon_pg_stats_userdb\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",kind=\"deadlocks\"}[5m]))",
+                    "legend": "{{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "db-size-by-db": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Size by Database",
+            "description": "On-disk size of each user database, per project."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "db-size-by-db",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "max by (project_id, datname) ({\"neon_pg_stats_userdb\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",kind=\"db_size\"})",
+                    "legend": "{{project_id}} {{datname}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "db-total-size": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Total Database Size",
+            "description": "Total size of all databases over time."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "db-total-size",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "max by (endpoint_id) ({\"neon_db_total_size\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "lfc-hit-ratio": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cache Hit Ratio",
+            "description": "Share of page reads served from the Local File Cache. A falling ratio means reads go to Neon storage and get slower."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "percentunit"
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 1
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "lfc-hit-ratio",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum(rate({\"neon_lfc_hits\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])) / (sum(rate({\"neon_lfc_hits\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])) + sum(rate({\"neon_lfc_misses\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])))",
+                    "legend": "hit ratio"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "lfc-ops": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cache Operations",
+            "description": "Local File Cache hits, misses, and writes per second."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom",
+                "customColors": {
+                  "hits": "#2BB673",
+                  "misses": "#F25F5C",
+                  "writes": "#4E8FF2"
+                }
+              },
+              "formatting": {
+                "unit": "ops"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "lfc-ops",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "sum(rate({\"neon_lfc_hits\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m]))",
+                          "legend": "hits"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "sum(rate({\"neon_lfc_misses\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m]))",
+                          "legend": "misses"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "C",
+                          "query": "sum(rate({\"neon_lfc_writes\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m]))",
+                          "legend": "writes"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "lfc-used": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Cache Used vs Limit",
+            "description": "Pages held in each compute's Local File Cache compared with that compute's cache size limit."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "lfc-used",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "sum by (endpoint_id) ({\"neon_lfc_used_pages\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}) * 8192",
+                          "legend": "{{endpoint_id}} used"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "max by (endpoint_id) ({\"neon_lfc_cache_size_limit\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                          "legend": "{{endpoint_id}} limit"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "lfc-working-set": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Working Set Size",
+            "description": "Approximate size of the pages each compute touched in each window, compared with that compute's cache limit. A working set above the cache limit causes misses."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "lfc-working-set",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "max by (endpoint_id, duration) ({\"neon_lfc_approximate_working_set_size_windows\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}) * 8192",
+                          "legend": "{{endpoint_id}} {{duration}}"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "max by (endpoint_id) ({\"neon_lfc_cache_size_limit\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                          "legend": "{{endpoint_id}} cache limit"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "pool-clients": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Client Connections",
+            "description": "Clients connected to the pooled endpoint. Waiting clients have no free server connection."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "pool-clients",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "sum({\"neon_pgbouncer_pools_client_active_connections\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"})",
+                          "legend": "active"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "sum({\"neon_pgbouncer_pools_client_waiting_connections\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"})",
+                          "legend": "waiting"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "pool-servers": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Server Connections",
+            "description": "Connections from PgBouncer to Postgres by state."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "pool-servers",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "sum({\"neon_pgbouncer_pools_server_active_connections\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"})",
+                          "legend": "active"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "sum({\"neon_pgbouncer_pools_server_idle_connections\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"})",
+                          "legend": "idle"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "C",
+                          "query": "sum({\"neon_pgbouncer_pools_server_used_connections\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"})",
+                          "legend": "used"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "pool-maxwait": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Max Client Wait",
+            "description": "Longest time a client in the queue has waited for a server connection."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "pool-maxwait",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "max({\"neon_pgbouncer_pools_client_maxwait_seconds\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"})",
+                    "legend": "max wait"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "pool-throughput": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Pooled Throughput",
+            "description": "Transactions and queries per second through PgBouncer."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "ops"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "pool-throughput",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "A",
+                          "query": "sum(rate({\"neon_pgbouncer_stats_totals_sql_transactions_pooled_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"}[5m]))",
+                          "legend": "transactions"
+                        }
+                      },
+                      {
+                        "type": "promql",
+                        "spec": {
+                          "name": "B",
+                          "query": "sum(rate({\"neon_pgbouncer_stats_totals_queries_pooled_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"}[5m]))",
+                          "legend": "queries"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "pool-query-time": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Average Query Duration",
+            "description": "Mean time PgBouncer spent per pooled query."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "pool-query-time",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum(rate({\"neon_pgbouncer_stats_totals_queries_duration_seconds_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"}[5m])) / sum(rate({\"neon_pgbouncer_stats_totals_queries_pooled_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",database!=\"pgbouncer\"}[5m]))",
+                    "legend": "avg duration"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "repl-bytes": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Replication Delay (Bytes)",
+            "description": "WAL received but not yet replayed on each read replica."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "repl-bytes",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "max by (endpoint_id) ({\"neon_replication_delay_bytes\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",endpoint_type!=\"read_write\"})",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "repl-seconds": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Replication Delay (Time)",
+            "description": "Time since each read replica last replayed WAL."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "repl-seconds",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "max by (endpoint_id) ({\"neon_replication_delay_seconds\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",endpoint_type!=\"read_write\"})",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "cpu": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "CPU Utilization by Compute",
+            "description": "Busy share of CPU time on each compute, across all of its cores."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "percentunit"
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 1
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "cpu",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "1 - (sum by (endpoint_id) (rate({\"host_cpu_seconds_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\",mode=\"idle\"}[5m])) / sum by (endpoint_id) (rate({\"host_cpu_seconds_total\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}[5m])))",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "load": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Load Average (1m) by Compute",
+            "description": "1-minute run-queue length on each compute."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "short"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "load",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "max by (endpoint_id) ({\"host_load1\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "memory": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Memory Utilization by Compute",
+            "description": "Memory in use as a share of total memory on each compute."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "percentunit"
+              },
+              "axes": {
+                "softMin": 0,
+                "softMax": 1
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "memory",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum by (endpoint_id) ({\"host_memory_used_bytes\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"}) / sum by (endpoint_id) ({\"host_memory_total_bytes\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "swap": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Swap Used by Compute",
+            "description": "Swap space in use on each compute. Sustained swap means the compute is short on memory."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "swap",
+                "plugin": {
+                  "kind": "signoz/PromQLQuery",
+                  "spec": {
+                    "name": "A",
+                    "query": "sum by (endpoint_id) ({\"host_memory_swap_used_bytes\",project_id=~\"$project_id\",endpoint_id=~\"$endpoint_id\"})",
+                    "legend": "{{endpoint_id}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Overview",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-db-size"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-active-conn"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-cache-hit"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/ov-cpu"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Connections",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/conn-by-state"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/conn-by-endpoint"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Database Activity",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/db-rows"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/db-deadlocks"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/db-size-by-db"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/db-total-size"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Local File Cache",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/lfc-hit-ratio"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/lfc-ops"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/lfc-used"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/lfc-working-set"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Connection Pooler (PgBouncer)",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/pool-clients"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/pool-servers"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/pool-maxwait"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/pool-throughput"
+              }
+            },
+            {
+              "x": 0,
+              "y": 14,
+              "width": 12,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/pool-query-time"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Read Replicas",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/repl-bytes"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/repl-seconds"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Compute",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/cpu"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/load"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/memory"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/swap"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
