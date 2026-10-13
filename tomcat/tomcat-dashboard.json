@@ -1,0 +1,817 @@
+{
+  "title": "Tomcat",
+  "description": "Apache Tomcat monitoring: request throughput, errors, processing time, connector threads, active sessions and network traffic. Built on the metrics collected by the OpenTelemetry Collector's JMX receiver with target_system: tomcat.",
+  "tags": [
+    "tomcat",
+    "java",
+    "jmx",
+    "apm"
+  ],
+  "version": "v5",
+  "variables": {
+    "var_service_name": {
+      "id": "var_service_name",
+      "name": "service_name",
+      "key": "service_name",
+      "description": "Filter by Tomcat instance (service.name resource attribute).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "service.name",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 0
+    },
+    "var_proto_handler": {
+      "id": "var_proto_handler",
+      "name": "proto_handler",
+      "key": "proto_handler",
+      "description": "Filter by Tomcat connector / protocol handler (proto_handler attribute).",
+      "type": "DYNAMIC",
+      "dynamicVariablesAttribute": "proto_handler",
+      "dynamicVariablesSource": "Metrics",
+      "queryValue": "",
+      "customValue": "",
+      "textboxValue": "",
+      "multiSelect": true,
+      "showALLOption": true,
+      "allSelected": true,
+      "sort": "ASC",
+      "order": 1
+    }
+  },
+  "layout": [
+    {
+      "i": "row_overview",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    {
+      "i": "v_sessions",
+      "x": 0,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "v_request_rate",
+      "x": 3,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "v_error_rate",
+      "x": 6,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "v_busy_threads",
+      "x": 9,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "row_requests",
+      "x": 0,
+      "y": 4,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    {
+      "i": "g_requests_by_handler",
+      "x": 0,
+      "y": 5,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "g_errors_by_handler",
+      "x": 6,
+      "y": 5,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "g_error_ratio",
+      "x": 0,
+      "y": 8,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "row_latency",
+      "x": 0,
+      "y": 11,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    {
+      "i": "g_avg_processing_time",
+      "x": 0,
+      "y": 12,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "g_max_time",
+      "x": 6,
+      "y": 12,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "row_threads",
+      "x": 0,
+      "y": 15,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    {
+      "i": "g_threads_by_state",
+      "x": 0,
+      "y": 16,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "g_sessions",
+      "x": 6,
+      "y": 16,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    },
+    {
+      "i": "row_traffic",
+      "x": 0,
+      "y": 19,
+      "w": 12,
+      "h": 1,
+      "minW": 12,
+      "minH": 1
+    },
+    {
+      "i": "g_traffic",
+      "x": 0,
+      "y": 20,
+      "w": 6,
+      "h": 3,
+      "minW": 2,
+      "minH": 2
+    }
+  ],
+  "panelMap": {},
+  "widgets": [
+    {
+      "id": "row_overview",
+      "panelTypes": "row",
+      "title": "Overview"
+    },
+    {
+      "id": "v_sessions",
+      "panelTypes": "value",
+      "title": "Active Sessions",
+      "description": "Active HTTP sessions across the selected Tomcat instances (tomcat.sessions).",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.sessions",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name"
+              },
+              "legend": ""
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "v_request_rate",
+      "panelTypes": "value",
+      "title": "Requests / sec",
+      "description": "Request throughput, rate of tomcat.request_count across all protocol handlers.",
+      "yAxisUnit": "reqps",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.request_count",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name"
+              },
+              "legend": ""
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "v_error_rate",
+      "panelTypes": "value",
+      "title": "Errors / sec",
+      "description": "Rate of requests that ended in an error (tomcat.errors).",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [
+        {
+          "index": "t0",
+          "thresholdValue": 1,
+          "thresholdFormat": "Background",
+          "thresholdOperator": ">",
+          "thresholdColor": "#e53935",
+          "thresholdUnit": "none",
+          "thresholdLabel": ""
+        }
+      ],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.errors",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name"
+              },
+              "legend": ""
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "v_busy_threads",
+      "panelTypes": "value",
+      "title": "Busy Threads",
+      "description": "Threads currently serving requests (tomcat.threads, state=busy).",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.threads",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND state = 'busy'"
+              },
+              "legend": ""
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "row_requests",
+      "panelTypes": "row",
+      "title": "Requests and Errors"
+    },
+    {
+      "id": "g_requests_by_handler",
+      "panelTypes": "graph",
+      "title": "Request Rate by Protocol Handler",
+      "description": "Requests per second per connector (proto_handler), from tomcat.request_count.",
+      "yAxisUnit": "reqps",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.request_count",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "{{proto_handler}}",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "g_errors_by_handler",
+      "panelTypes": "graph",
+      "title": "Error Rate by Protocol Handler",
+      "description": "Errors per second per connector, from tomcat.errors.",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.errors",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "{{proto_handler}}",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "g_error_ratio",
+      "panelTypes": "graph",
+      "title": "Error Ratio",
+      "description": "Share of requests ending in an error: rate(tomcat.errors) / rate(tomcat.request_count).",
+      "yAxisUnit": "percentunit",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.errors",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "errors",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.request_count",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "requests",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "row_latency",
+      "panelTypes": "row",
+      "title": "Latency"
+    },
+    {
+      "id": "g_avg_processing_time",
+      "panelTypes": "graph",
+      "title": "Average Processing Time",
+      "description": "Mean time spent per request: rate(tomcat.processing_time) / rate(tomcat.request_count).",
+      "yAxisUnit": "ms",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.processing_time",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "processing time",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            },
+            {
+              "queryName": "B",
+              "dataSource": "metrics",
+              "expression": "B",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.request_count",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "requests",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "g_max_time",
+      "panelTypes": "graph",
+      "title": "Slowest Request (max time)",
+      "description": "Longest single request time reported per connector (tomcat.max_time).",
+      "yAxisUnit": "ms",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.max_time",
+                  "temporality": "unspecified",
+                  "timeAggregation": "max",
+                  "spaceAggregation": "max"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "{{proto_handler}}",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "row_threads",
+      "panelTypes": "row",
+      "title": "Threads and Sessions"
+    },
+    {
+      "id": "g_threads_by_state",
+      "panelTypes": "graph",
+      "title": "Threads by State",
+      "description": "Busy vs idle connector threads (tomcat.threads, state attribute).",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.threads",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "{{proto_handler}} - {{state}}",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                },
+                {
+                  "key": "state",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "g_sessions",
+      "panelTypes": "graph",
+      "title": "Active Sessions Over Time",
+      "description": "Active HTTP sessions (tomcat.sessions).",
+      "yAxisUnit": "none",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.sessions",
+                  "temporality": "unspecified",
+                  "timeAggregation": "latest",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name"
+              },
+              "legend": "sessions"
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    },
+    {
+      "id": "row_traffic",
+      "panelTypes": "row",
+      "title": "Network Traffic"
+    },
+    {
+      "id": "g_traffic",
+      "panelTypes": "graph",
+      "title": "Traffic Sent and Received",
+      "description": "Bytes per second in each direction (tomcat.traffic, direction attribute).",
+      "yAxisUnit": "Bps",
+      "selectedLogFields": [],
+      "selectedTracesFields": [],
+      "contextLinks": {
+        "linksData": []
+      },
+      "thresholds": [],
+      "query": {
+        "queryType": "builder",
+        "builder": {
+          "queryData": [
+            {
+              "queryName": "A",
+              "dataSource": "metrics",
+              "expression": "A",
+              "stepInterval": 60,
+              "aggregations": [
+                {
+                  "metricName": "tomcat.traffic",
+                  "temporality": "unspecified",
+                  "timeAggregation": "rate",
+                  "spaceAggregation": "sum"
+                }
+              ],
+              "filter": {
+                "expression": "service.name IN $service_name AND proto_handler IN $proto_handler"
+              },
+              "legend": "{{proto_handler}} - {{direction}}",
+              "groupBy": [
+                {
+                  "key": "proto_handler",
+                  "dataType": "string",
+                  "type": "tag"
+                },
+                {
+                  "key": "direction",
+                  "dataType": "string",
+                  "type": "tag"
+                }
+              ]
+            }
+          ],
+          "queryFormulas": []
+        }
+      }
+    }
+  ]
+}
