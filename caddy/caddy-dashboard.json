@@ -1,0 +1,1747 @@
+{
+  "schemaVersion": "v6",
+  "generateName": true,
+  "tags": [
+    {
+      "key": "technology",
+      "value": "caddy"
+    },
+    {
+      "key": "signal",
+      "value": "metrics"
+    },
+    {
+      "key": "category",
+      "value": "web-server"
+    }
+  ],
+  "spec": {
+    "display": {
+      "name": "Caddy",
+      "description": "Caddy web server and reverse proxy metrics: request rate, status codes, latency, errors, bandwidth, upstream health, and config reloads. Built on the metrics that Caddy pushes over OTLP with the `metrics { otlp }` option."
+    },
+    "variables": [
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "route",
+          "display": {
+            "name": "Route",
+            "description": "First handler of the route that sees every request. Keep tracing if you followed the setup guide. Every request panel uses it, except Requests per Second by Handler."
+          },
+          "allowMultiple": false,
+          "allowAllValue": false,
+          "defaultValue": "tracing",
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "handler",
+              "signal": "metrics"
+            }
+          }
+        }
+      },
+      {
+        "kind": "ListVariable",
+        "spec": {
+          "name": "service_name",
+          "display": {
+            "name": "Service",
+            "description": "Caddy service, from OTEL_SERVICE_NAME"
+          },
+          "allowMultiple": true,
+          "allowAllValue": true,
+          "plugin": {
+            "kind": "signoz/DynamicVariable",
+            "spec": {
+              "name": "service.name",
+              "signal": "metrics"
+            }
+          }
+        }
+      }
+    ],
+    "links": [],
+    "panels": {
+      "request-rate": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Rate",
+            "description": "Requests per second handled by Caddy, averaged over the selected range."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_requests_total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "error-percentage": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "5xx Responses (%)",
+            "description": "Share of responses with a 5xx status code over the selected range."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "percent"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "metricName": "caddy_http_request_duration_seconds.count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND handler = $route AND code LIKE '5%'"
+                          },
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "metricName": "caddy_http_request_duration_seconds.count",
+                              "temporality": "cumulative",
+                              "timeAggregation": "rate",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "avg"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND handler = $route"
+                          },
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A * 100 / B",
+                          "legend": "5xx %",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "in-flight-now": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Requests In Flight",
+            "description": "Requests that Caddy is handling right now, summed across servers."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_requests_in_flight",
+                        "temporality": "unspecified",
+                        "timeAggregation": "latest",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "last"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "unhealthy-upstreams": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Unhealthy Upstreams",
+            "description": "Reverse proxy upstreams that report unhealthy right now. Needs active or passive health checks in reverse_proxy."
+          },
+          "plugin": {
+            "kind": "signoz/NumberPanel",
+            "spec": {
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "scalar",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "metricName": "caddy_reverse_proxy_upstreams_healthy",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "count",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name"
+                          },
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "metricName": "caddy_reverse_proxy_upstreams_healthy",
+                              "temporality": "unspecified",
+                              "timeAggregation": "latest",
+                              "spaceAggregation": "sum",
+                              "reduceTo": "last"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name"
+                          },
+                          "disabled": true,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 10000
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "A - B",
+                          "legend": "unhealthy",
+                          "disabled": false,
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "requests-by-handler": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Requests per Second by Handler",
+            "description": "Request rate of every route, by server and the first handler of the route. A request counts once for each route it matches, so do not add the lines up."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_requests_total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      },
+                      {
+                        "name": "handler",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}} / {{handler}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "requests-by-code": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Requests per Second by Status Code",
+            "description": "Request rate by HTTP response status code."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_duration_seconds.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "code",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{code}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "requests-by-method": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Requests per Second by Method",
+            "description": "Request rate by HTTP method."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_duration_seconds.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "method",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{method}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "in-flight": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Requests In Flight by Server",
+            "description": "Requests that each Caddy server is handling at the same time."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_requests_in_flight",
+                        "temporality": "unspecified",
+                        "timeAggregation": "max",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "duration-percentiles": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Duration (p50, p95, p99)",
+            "description": "Round-trip request duration percentiles across all servers."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "A",
+                          "aggregations": [
+                            {
+                              "metricName": "caddy_http_request_duration_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p50"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND handler = $route"
+                          },
+                          "legend": "p50",
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "B",
+                          "aggregations": [
+                            {
+                              "metricName": "caddy_http_request_duration_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p95"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND handler = $route"
+                          },
+                          "legend": "p95",
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "signal": "metrics",
+                          "name": "C",
+                          "aggregations": [
+                            {
+                              "metricName": "caddy_http_request_duration_seconds.bucket",
+                              "temporality": "cumulative",
+                              "timeAggregation": "",
+                              "spaceAggregation": "p99"
+                            }
+                          ],
+                          "filter": {
+                            "expression": "service.name IN $service_name AND handler = $route"
+                          },
+                          "legend": "p99",
+                          "order": [
+                            {
+                              "key": {
+                                "name": "__result"
+                              },
+                              "direction": "desc"
+                            }
+                          ],
+                          "limit": 100
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "duration-by-server": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "p95 Request Duration by Server",
+            "description": "95th percentile round-trip request duration for each Caddy server."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_duration_seconds.bucket",
+                        "temporality": "cumulative",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p95"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "duration-by-code": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "p95 Request Duration by Status Code",
+            "description": "95th percentile request duration for each response status code."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_duration_seconds.bucket",
+                        "temporality": "cumulative",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p95"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "code",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{code}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "ttfb-by-server": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "p95 Time to First Byte by Server",
+            "description": "95th percentile time until Caddy writes the first byte of the response body."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "s"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_response_duration_seconds.bucket",
+                        "temporality": "cumulative",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p95"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "error-responses": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "4xx and 5xx Responses per Second",
+            "description": "Rate of responses with a 4xx or 5xx status code, by code."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_duration_seconds.count",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route AND (code LIKE '4%' OR code LIKE '5%')"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "code",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{code}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "middleware-errors": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Middleware Errors per Second by Server",
+            "description": "Rate of requests that ended in a handler error, such as an upstream that does not respond."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "reqps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_errors_total",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "request-bandwidth": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Request Bandwidth by Server",
+            "description": "Bytes per second that clients send to each Caddy server, headers and body included."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "binBps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_size_bytes.sum",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "response-bandwidth": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Response Bandwidth by Server",
+            "description": "Bytes per second that each Caddy server sends in response bodies."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "binBps"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_response_size_bytes.sum",
+                        "temporality": "cumulative",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "request-size": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "p95 Request Size by Server",
+            "description": "95th percentile request size for each Caddy server."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_request_size_bytes.bucket",
+                        "temporality": "cumulative",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p95"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "response-size": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "p95 Response Size by Server",
+            "description": "95th percentile response body size for each Caddy server."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "bytes"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_http_response_size_bytes.bucket",
+                        "temporality": "cumulative",
+                        "timeAggregation": "",
+                        "spaceAggregation": "p95"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name AND handler = $route"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "server",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{server}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "upstream-health": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Upstream Health",
+            "description": "Health of each reverse proxy upstream: 1 is healthy, 0 is unhealthy. Needs active or passive health checks in reverse_proxy. Shows the lowest value across Caddy instances."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_reverse_proxy_upstreams_healthy",
+                        "temporality": "unspecified",
+                        "timeAggregation": "min",
+                        "spaceAggregation": "min"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "upstream",
+                        "fieldContext": "attribute",
+                        "fieldDataType": "string",
+                        "signal": "metrics"
+                      }
+                    ],
+                    "legend": "{{upstream}}",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      },
+      "config-reload": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Last Config Reload Successful",
+            "description": "1 when the last configuration reload succeeded, 0 when it failed. Shows the lowest value across Caddy instances."
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "legend": {
+                "position": "bottom"
+              },
+              "formatting": {
+                "unit": "none"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "name": "A",
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "signal": "metrics",
+                    "name": "A",
+                    "aggregations": [
+                      {
+                        "metricName": "caddy_config_last_reload_successful",
+                        "temporality": "unspecified",
+                        "timeAggregation": "min",
+                        "spaceAggregation": "min"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN $service_name"
+                    },
+                    "legend": "last reload ok",
+                    "order": [
+                      {
+                        "key": {
+                          "name": "__result"
+                        },
+                        "direction": "desc"
+                      }
+                    ],
+                    "limit": 100
+                  }
+                }
+              }
+            }
+          ],
+          "links": []
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Overview",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/request-rate"
+              }
+            },
+            {
+              "x": 3,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/error-percentage"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/in-flight-now"
+              }
+            },
+            {
+              "x": 9,
+              "y": 0,
+              "width": 3,
+              "height": 3,
+              "content": {
+                "$ref": "#/spec/panels/unhealthy-upstreams"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Traffic",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/requests-by-handler"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/requests-by-code"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/requests-by-method"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/in-flight"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Latency",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/duration-percentiles"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/duration-by-server"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/duration-by-code"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/ttfb-by-server"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Errors",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/error-responses"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/middleware-errors"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Bandwidth",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/request-bandwidth"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/response-bandwidth"
+              }
+            },
+            {
+              "x": 0,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/request-size"
+              }
+            },
+            {
+              "x": 6,
+              "y": 7,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/response-size"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": "Upstreams and Configuration",
+            "collapse": {
+              "open": true
+            }
+          },
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/upstream-health"
+              }
+            },
+            {
+              "x": 6,
+              "y": 0,
+              "width": 6,
+              "height": 7,
+              "content": {
+                "$ref": "#/spec/panels/config-reload"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
